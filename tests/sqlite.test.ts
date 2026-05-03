@@ -16,7 +16,7 @@ afterEach(async () => {
 })
 
 async function makeTmpDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'exe-watcher-sqlite-'))
+  const dir = await mkdtemp(join(tmpdir(), 'qma-watcher-sqlite-'))
   tmpDirs.push(dir)
   return dir
 }

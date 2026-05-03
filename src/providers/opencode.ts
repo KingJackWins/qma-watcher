@@ -128,13 +128,13 @@ function createParser(
       try {
         db = openDatabase(dbPath)
       } catch (err) {
-        process.stderr.write(`exe-watcher: cannot open OpenCode database: ${err instanceof Error ? err.message : err}\n`)
+        process.stderr.write(`qma-watcher: cannot open OpenCode database: ${err instanceof Error ? err.message : err}\n`)
         return
       }
 
       try {
         if (!validateSchema(db)) {
-          process.stderr.write('exe-watcher: OpenCode storage format not recognized. You may need to update Exe Watcher.\n')
+          process.stderr.write('qma-watcher: OpenCode storage format not recognized. You may need to update QMA Watcher.\n')
           return
         }
 

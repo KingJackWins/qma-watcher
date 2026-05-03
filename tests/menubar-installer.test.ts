@@ -47,7 +47,7 @@ type InstallResult = Awaited<ReturnType<typeof installMenubarApp>>
 // The regex lives in the module as a constant. We replicate it here for the
 // pattern-matching tests since it is not exported. The spec asks us to verify
 // the pattern, and duplicating a one-line regex is the pragmatic approach.
-const ASSET_PATTERN = /^ExeWatcherMenubar-.*\.zip$/
+const ASSET_PATTERN = /^QmaWatcherMenubar-.*\.zip$/
 
 describe('menubar-installer', () => {
   const savedEnv: Record<string, string | undefined> = {}
@@ -94,7 +94,7 @@ describe('menubar-installer', () => {
         tag_name: 'v0.1.1',
         assets: [
           {
-            name: 'ExeWatcherMenubar-v0.1.1.zip',
+            name: 'QmaWatcherMenubar-v0.1.1.zip',
             browser_download_url: 'https://example.com/fake.zip',
           },
         ],
@@ -169,24 +169,24 @@ describe('menubar-installer', () => {
   // -----------------------------------------------------------------------
 
   describe('ASSET_PATTERN regex', () => {
-    it('matches "ExeWatcherMenubar-v0.1.1.zip"', () => {
-      expect(ASSET_PATTERN.test('ExeWatcherMenubar-v0.1.1.zip')).toBe(true)
+    it('matches "QmaWatcherMenubar-v0.1.1.zip"', () => {
+      expect(ASSET_PATTERN.test('QmaWatcherMenubar-v0.1.1.zip')).toBe(true)
     })
 
-    it('matches "ExeWatcherMenubar-v2.0.0-beta.zip"', () => {
-      expect(ASSET_PATTERN.test('ExeWatcherMenubar-v2.0.0-beta.zip')).toBe(true)
+    it('matches "QmaWatcherMenubar-v2.0.0-beta.zip"', () => {
+      expect(ASSET_PATTERN.test('QmaWatcherMenubar-v2.0.0-beta.zip')).toBe(true)
     })
 
     it('does not match "SomethingElse.zip"', () => {
       expect(ASSET_PATTERN.test('SomethingElse.zip')).toBe(false)
     })
 
-    it('does not match "ExeWatcherMenubar.zip" (no dash after name)', () => {
-      expect(ASSET_PATTERN.test('ExeWatcherMenubar.zip')).toBe(false)
+    it('does not match "QmaWatcherMenubar.zip" (no dash after name)', () => {
+      expect(ASSET_PATTERN.test('QmaWatcherMenubar.zip')).toBe(false)
     })
 
-    it('does not match "ExeWatcherMenubar-v0.1.1.tar.gz" (wrong extension)', () => {
-      expect(ASSET_PATTERN.test('ExeWatcherMenubar-v0.1.1.tar.gz')).toBe(false)
+    it('does not match "QmaWatcherMenubar-v0.1.1.tar.gz" (wrong extension)', () => {
+      expect(ASSET_PATTERN.test('QmaWatcherMenubar-v0.1.1.tar.gz')).toBe(false)
     })
   })
 })

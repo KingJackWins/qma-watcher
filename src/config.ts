@@ -15,7 +15,7 @@ export type Plan = {
   setAt: string
 }
 
-export type ExeWatcherConfig = {
+export type QmaWatcherConfig = {
   currency?: {
     code: string
     symbol?: string
@@ -26,23 +26,23 @@ export type ExeWatcherConfig = {
 
 function getConfigDir(): string {
   const xdgConfig = process.env['XDG_CONFIG_HOME']
-  return join(xdgConfig || join(homedir(), '.config'), 'exe-watcher')
+  return join(xdgConfig || join(homedir(), '.config'), 'qma-watcher')
 }
 
 function getConfigPath(): string {
   return join(getConfigDir(), 'config.json')
 }
 
-export async function readConfig(): Promise<ExeWatcherConfig> {
+export async function readConfig(): Promise<QmaWatcherConfig> {
   try {
     const raw = await readFile(getConfigPath(), 'utf-8')
-    return JSON.parse(raw) as ExeWatcherConfig
+    return JSON.parse(raw) as QmaWatcherConfig
   } catch {
     return {}
   }
 }
 
-export async function saveConfig(config: ExeWatcherConfig): Promise<void> {
+export async function saveConfig(config: QmaWatcherConfig): Promise<void> {
   await mkdir(getConfigDir(), { recursive: true })
   const configPath = getConfigPath()
   const tmpPath = `${configPath}.${randomBytes(8).toString('hex')}.tmp`

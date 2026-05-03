@@ -46,7 +46,7 @@ const tmpDirs: string[] = []
 let fakeHome: string
 
 beforeEach(async () => {
-  fakeHome = await mkdtemp(join(tmpdir(), 'exe-watcher-cc-'))
+  fakeHome = await mkdtemp(join(tmpdir(), 'qma-watcher-cc-'))
   tmpDirs.push(fakeHome)
   vi.mocked(homedir).mockReturnValue(fakeHome)
 })
@@ -154,7 +154,7 @@ describe('writeCachedResults edge cases', () => {
 
   it('creates cache directory if it does not exist', async () => {
     // Point homedir to a fresh location with no .cache directory
-    const freshHome = await mkdtemp(join(tmpdir(), 'exe-watcher-fresh-'))
+    const freshHome = await mkdtemp(join(tmpdir(), 'qma-watcher-fresh-'))
     tmpDirs.push(freshHome)
     vi.mocked(homedir).mockReturnValue(freshHome)
 

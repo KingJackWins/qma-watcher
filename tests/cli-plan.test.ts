@@ -16,15 +16,15 @@ function runCli(args: string[], home: string) {
   })
 }
 
-describe('exe-watcher plan command', () => {
+describe('qma-watcher plan command', () => {
   it('persists plan set and clears on reset', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'exe-watcher-cli-plan-'))
+    const home = await mkdtemp(join(tmpdir(), 'qma-watcher-cli-plan-'))
 
     try {
       const setResult = runCli(['plan', 'set', 'claude-max'], home)
       expect(setResult.status).toBe(0)
 
-      const configPath = join(home, '.config', 'exe-watcher', 'config.json')
+      const configPath = join(home, '.config', 'qma-watcher', 'config.json')
       const configRaw = await readFile(configPath, 'utf-8')
       const config = JSON.parse(configRaw) as { plan?: { id?: string; monthlyUsd?: number } }
       expect(config.plan?.id).toBe('claude-max')
@@ -42,7 +42,7 @@ describe('exe-watcher plan command', () => {
   })
 
   it('shows invalid reset-day value in error output', async () => {
-    const home = await mkdtemp(join(tmpdir(), 'exe-watcher-cli-plan-'))
+    const home = await mkdtemp(join(tmpdir(), 'qma-watcher-cli-plan-'))
 
     try {
       const result = runCli(['plan', 'set', 'claude-max', '--reset-day', '99'], home)

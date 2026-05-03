@@ -8,6 +8,7 @@ import { Readable } from 'node:stream'
 
 /// Public GitHub repo that hosts signed macOS release builds. `/releases/latest` returns the
 /// newest tagged release; we filter its assets list for our zipped .app bundle.
+// Still pulls releases from upstream — the Swift menubar app is built there
 const RELEASE_API = 'https://api.github.com/repos/AskExe/exe-watcher/releases/latest'
 const APP_BUNDLE_NAME = 'Watcher by EXE.app'
 const ASSET_PATTERN = /^ExeWatcherMenubar-.*\.zip$/
@@ -61,7 +62,7 @@ async function fetchLatestReleaseAsset(): Promise<ReleaseAsset> {
   const response = await fetch(RELEASE_API, {
     headers: {
       // Identify the installer so GitHub's abuse heuristics treat us as a known client.
-      'User-Agent': 'exe-watcher-installer',
+      'User-Agent': 'qma-watcher-installer',
       Accept: 'application/vnd.github+json',
     },
   })
@@ -81,7 +82,7 @@ async function fetchLatestReleaseAsset(): Promise<ReleaseAsset> {
 
 async function downloadToFile(url: string, destPath: string): Promise<void> {
   const response = await fetch(url, {
-    headers: { 'User-Agent': 'exe-watcher-installer' },
+    headers: { 'User-Agent': 'qma-watcher-installer' },
     redirect: 'follow',
   })
   if (!response.ok || response.body === null) {
@@ -133,10 +134,10 @@ export async function installMenubarApp(options: { force?: boolean } = {}): Prom
     return { installedPath: targetPath, launched: true }
   }
 
-  console.log('Looking up the latest Exe Watcher Menubar release...')
+  console.log('Looking up the latest QMA Watcher Menubar release...')
   const asset = await fetchLatestReleaseAsset()
 
-  const stagingDir = await mkdtemp(join(tmpdir(), 'exe-watcher-menubar-'))
+  const stagingDir = await mkdtemp(join(tmpdir(), 'qma-watcher-menubar-'))
   try {
     const archivePath = join(stagingDir, asset.name)
     console.log(`Downloading ${asset.name}...`)
@@ -175,7 +176,7 @@ export async function installMenubarApp(options: { force?: boolean } = {}): Prom
       }
     }
 
-    console.log('Launching Exe Watcher Menubar...')
+    console.log('Launching QMA Watcher Menubar...')
     await runCommand('/usr/bin/open', [targetPath])
     return { installedPath: targetPath, launched: true }
   } finally {

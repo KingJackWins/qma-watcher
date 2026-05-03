@@ -136,7 +136,7 @@ async function runJsonReport(period: Period, provider: string, project: string[]
 }
 
 const program = new Command()
-  .name('exe-watcher')
+  .name('qma-watcher')
   .description('See where your AI coding tokens go - by task, tool, model, and project')
   .version(version)
   .option('--verbose', 'print warnings to stderr on read failures and skipped files')
@@ -434,13 +434,13 @@ program
         const msg = err instanceof Error ? err.message : String(err)
         const warn = `parseAllSessions failed: ${msg}`
         warnings.push(warn)
-        process.stderr.write(`[exe-watcher] WARNING: ${warn}\n`)
+        process.stderr.write(`[qma-watcher] WARNING: ${warn}\n`)
         todayProjects = []
       }
       if (todayProjects.length === 0) {
         const warn = `parseAllSessions returned 0 projects for range ${toDateString(todayRange.start)}..${toDateString(todayRange.end)}`
         warnings.push(warn)
-        process.stderr.write(`[exe-watcher] WARNING: ${warn}\n`)
+        process.stderr.write(`[qma-watcher] WARNING: ${warn}\n`)
       }
       const parseTimeMs = Date.now() - parseStart
       const todayDays = aggregateProjectsIntoDays(todayProjects)
@@ -487,7 +487,7 @@ program
         if (allDaysForProviders.length === 0) {
           const warn = 'allDaysForProviders is empty — all providers will show $0'
           warnings.push(warn)
-          process.stderr.write(`[exe-watcher] WARNING: ${warn}\n`)
+          process.stderr.write(`[qma-watcher] WARNING: ${warn}\n`)
         }
         const providerTotals: Record<string, number> = {}
         for (const d of allDaysForProviders) {
@@ -568,12 +568,12 @@ program
           if (parsed && Array.isArray(parsed.agents) && typeof parsed.generated === 'string') {
             agentStats = parsed as AgentStatsPayload
           } else {
-            process.stderr.write('[exe-watcher] agent-stats.json has unexpected schema, ignoring\n')
+            process.stderr.write('[qma-watcher] agent-stats.json has unexpected schema, ignoring\n')
           }
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
-        process.stderr.write(`[exe-watcher] agent-stats.json found but failed to parse: ${msg}\n`)
+        process.stderr.write(`[qma-watcher] agent-stats.json found but failed to parse: ${msg}\n`)
       }
 
       // Per-agent spend: use daemon's token data (from session_agent_map + JSONL parsing)
@@ -676,7 +676,7 @@ program
       return
     }
 
-    const defaultName = `exe-watcher-${toDateString(new Date())}`
+    const defaultName = `qma-watcher-${toDateString(new Date())}`
     const outputPath = opts.output ?? `${defaultName}.${opts.format}`
 
     let savedPath: string
@@ -687,7 +687,7 @@ program
         savedPath = await exportCsv(periods, outputPath)
       }
     } catch (err) {
-      // Protection guards in export.ts (symlink refusal, non-exe-watcher folder refusal, etc.)
+      // Protection guards in export.ts (symlink refusal, non-qma-watcher folder refusal, etc.)
       // throw with a user-readable message. Print just the message, not the stack, so the CLI
       // doesn't spray its internals at the user.
       const message = err instanceof Error ? err.message : String(err)
@@ -715,7 +715,7 @@ program
 
 program
   .command('currency [code]')
-  .description('Set display currency (e.g. exe-watcher currency GBP)')
+  .description('Set display currency (e.g. qma-watcher currency GBP)')
   .option('--symbol <symbol>', 'Override the currency symbol')
   .option('--reset', 'Reset to USD (removes currency config)')
   .action(async (code?: string, opts?: { symbol?: string; reset?: boolean }) => {
@@ -766,7 +766,7 @@ program
 
 program
   .command('model-alias [from] [to]')
-  .description('Map a provider model name to a canonical one for pricing (e.g. exe-watcher model-alias my-model claude-opus-4-6)')
+  .description('Map a provider model name to a canonical one for pricing (e.g. qma-watcher model-alias my-model claude-opus-4-6)')
   .option('--remove <from>', 'Remove an alias')
   .option('--list', 'List configured aliases')
   .action(async (from?: string, to?: string, opts?: { remove?: string; list?: boolean }) => {
@@ -802,7 +802,7 @@ program
     }
 
     if (!from || !to) {
-      console.error('\n  Usage: exe-watcher model-alias <from> <to>\n')
+      console.error('\n  Usage: qma-watcher model-alias <from> <to>\n')
       process.exitCode = 1
       return
     }
@@ -861,7 +861,7 @@ program
     }
 
     if (mode !== 'set') {
-      console.error('\n  Usage: exe-watcher plan [set <id> | reset]\n')
+      console.error('\n  Usage: qma-watcher plan [set <id> | reset]\n')
       process.exitCode = 1
       return
     }

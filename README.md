@@ -1,60 +1,26 @@
-<p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/AskExe/exe-watcher@main/assets/owl-header.png" alt="WATCHER" width="520" />
-</p>
+# QMA Watcher
 
-<p align="center"><strong>The fuel gauge for your AI coding day — by <a href="https://github.com/AskExe">Exe AI</a>.</strong></p>
+**Quantum Memory AI fuel bar** — cost, tokens, agents, and projects in your terminal and menu bar.
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/exe-watcher"><img src="https://img.shields.io/npm/v/exe-watcher.svg" alt="npm version" /></a>
-  <a href="https://www.npmjs.com/package/exe-watcher"><img src="https://img.shields.io/npm/dt/exe-watcher.svg" alt="total downloads" /></a>
-  <a href="https://github.com/AskExe/exe-watcher/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/exe-watcher.svg" alt="license" /></a>
-  <a href="https://github.com/AskExe/exe-watcher"><img src="https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg" alt="node version" /></a>
-  <a href="https://discord.gg/pJ2DMWvtAx"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
-</p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/AskExe/exe-watcher/main/assets/dashboard.jpg" alt="Watcher TUI dashboard" width="620" />
-</p>
-
-You're spending real money on AI coding tools every day. Watcher shows you exactly where it goes — cost, tokens, models, projects, and whether the AI is getting it right the first time or burning through retry loops. One command, zero cloud, everything local.
+Fork of [exe-watcher](https://github.com/AskExe/exe-fuelbar) by [Exe AI](https://github.com/AskExe) (MIT license), rebranded for the Quantum Memory AI ecosystem.
 
 ```bash
-npm install -g exe-watcher
+npm install -g qma-watcher
 ```
 
 ---
 
 ## What you get
 
-**Dashboard** — Interactive TUI with gradient charts, responsive panels, keyboard navigation. Breaks down spend by day, project, model, activity type, tools, MCP servers, and shell commands. Auto-refreshes every 30 seconds.
+**Dashboard** — Interactive TUI with gradient charts, responsive panels, keyboard navigation. Breaks down spend by day, project, model, activity type, tools, MCP servers, and shell commands.
 
-**One-shot rate** — For every category that involves edits, Watcher detects edit/test/fix retry cycles and shows you the percentage of turns where the AI got it right on the first try. Coding at 90% means 9 out of 10 edits landed without retries.
+**Optimize** — Scans your sessions and config for waste. Hands back exact, copy-paste fixes. Grades your setup A through F.
 
-**Optimize** — Scans your sessions and `~/.claude/` config for waste: re-read files, low read:edit ratios, uncapped bash output, unused MCP servers, ghost agents, bloated CLAUDE.md files. Hands back exact, copy-paste fixes. Grades your setup A through F.
+**Compare** — Side-by-side model comparison on your own data.
 
-**Compare** — Side-by-side model comparison on your own data. One-shot rate, retry rate, cost per edit, cache hit rate, delegation style, fast mode usage — broken down by task category.
+**Menubar** — Native macOS app showing today's cost in your menu bar. (Uses upstream exe-watcher menubar builds.)
 
-**Menubar** — Native macOS app showing today's cost in your menu bar. Period switcher, trend/forecast/pulse insights, activity breakdowns, per-project spend, and AI employee tracking. Launches at login, one command to install.
-
-**Export** — CSV and JSON export for any time period. Pipe `--format json` output to `jq` for scripting.
-
----
-
-## Supported tools
-
-| Tool | Data source | Notes |
-|------|-------------|-------|
-| **Claude Code** | `~/.claude/projects/` | Full support |
-| **Claude Desktop** | `~/Library/Application Support/Claude/local-agent-mode-sessions/` | Full support |
-| **Codex** (OpenAI) | `~/.codex/sessions/` | Full support |
-| **Cursor** | SQLite (`state.vscdb`) | Auto mode estimated at Sonnet pricing |
-| **cursor-agent** | CLI sessions | Full support |
-| **OpenCode** | SQLite (`~/.local/share/opencode/`) | Subtask sessions excluded |
-| **Pi** | `~/.pi/agent/sessions/` | Full support |
-| **OMP** (Oh My Pi) | `~/.omp/agent/sessions/` | Full support |
-| **GitHub Copilot** | `~/.copilot/session-state/` | Output tokens only |
-
-Auto-detected. If multiple tools have data, press `p` in the dashboard to toggle. Provider plugin system makes adding new tools straightforward — see `src/providers/codex.ts` for the pattern.
+**Export** — CSV and JSON export for any time period.
 
 ---
 
@@ -62,208 +28,66 @@ Auto-detected. If multiple tools have data, press `p` in the dashboard to toggle
 
 ```bash
 # Dashboard
-exe-watcher                                    # interactive (default: 7 days)
-exe-watcher today                              # today only
-exe-watcher month                              # this month
+qma-watcher                                    # interactive (default: 7 days)
+qma-watcher today                              # today only
+qma-watcher month                              # this month
 
 # Reports
-exe-watcher report -p 30days                   # rolling 30-day window
-exe-watcher report -p all                      # everything on disk
-exe-watcher report --from 2026-04-01 --to 2026-04-10
-exe-watcher report --format json               # structured JSON to stdout
-exe-watcher status                             # compact one-liner (today + month)
-
-# Filter
-exe-watcher report --provider claude           # single provider
-exe-watcher report --project myapp             # project substring match
-exe-watcher report --exclude tests             # exclude projects
+qma-watcher report -p 30days
+qma-watcher report --format json
+qma-watcher status                             # compact one-liner
 
 # Tools
-exe-watcher optimize                           # find waste, get fixes
-exe-watcher optimize -p week                   # scope to last 7 days
-exe-watcher compare                            # interactive model picker
-exe-watcher export                             # CSV (today, 7d, 30d)
-exe-watcher export -f json                     # JSON export
+qma-watcher optimize                           # find waste, get fixes
+qma-watcher compare                            # model comparison
+qma-watcher export                             # CSV export
+qma-watcher export -f json                     # JSON export
+
+# Config
+qma-watcher currency GBP                       # set display currency
+qma-watcher plan set claude-max                # track plan usage
+qma-watcher menubar                            # install macOS menubar app
 ```
 
-**Dashboard keys:** `1`-`5` switch periods (Today / 7d / 30d / Month / All). `p` toggle providers. `c` compare mode. `o` optimize view. `q` quit.
-
-**Flags work everywhere:** `--provider`, `--project`, `--exclude`, `--from`, `--to`, and `--format json` combine freely across all commands.
+See the [upstream README](https://github.com/AskExe/exe-fuelbar#readme) for full documentation, supported tools, activity tracking, and configuration details.
 
 ---
 
-## Menubar app
+## Upstream sync
 
-<!-- Screenshot: native macOS menubar popover with gold/purple Exe Foundry Bold theme -->
-<!-- To update: screencapture -w assets/menubar-v0.2.0.png (click the Watcher menubar icon) -->
+This fork tracks `AskExe/exe-fuelbar` as `upstream`. Branding lives in a single commit on `qma-brand`, merged to `main`.
+
+### Pulling upstream updates
 
 ```bash
-exe-watcher menubar
+git fetch upstream
+git merge upstream/main
 ```
 
-Downloads, installs to `~/Applications`, and launches. Re-run with `--force` to reinstall. Native Swift + SwiftUI — silent background refresh every 60 seconds, no loading overlay. Pre-fetches all periods on launch so tab switching is instant. Launches at login automatically via macOS Login Items (toggleable in System Settings).
+Conflicts will only appear in branding files (package.json name, README, etc.). Resolve by keeping our QMA branding.
 
-**v0.2.0 additions:**
-- **Project Spend** — per-project cost breakdown across 24h / 7d / 30d
-- **AI Employees** — collapsible section with Memory counts (+ growth) and Employee Spend (model-aware pricing per agent)
-- **Dynamic provider tabs** — only shows providers that have actual spend data
-- **Quit button** — clean shutdown from the footer bar
-- **App icon** — gold EXE on dark purple (Exe Foundry Bold palette)
+### What was changed from upstream
 
-**Compact mode** drops decimals in the menubar (e.g. `$110` instead of `$110.20`):
+- Package name: `exe-watcher` → `qma-watcher`
+- CLI binary name: `exe-watcher` → `qma-watcher`
+- All display strings: "Exe Watcher" → "QMA Watcher"
+- Config/cache dirs: `~/.config/exe-watcher` → `~/.config/qma-watcher`, `~/.cache/exe-watcher` → `~/.cache/qma-watcher`
+- Author/repo URLs → KingJackWins/qma-watcher
+- **No functionality changes** — all features identical to upstream
 
-```bash
-defaults write ExeWatcherMenubar ExeWatcherMenubarCompact -bool true
-```
+### What was NOT changed
 
----
-
-## Configuration
-
-### Currency
-
-```bash
-exe-watcher currency GBP              # any ISO 4217 code (162 currencies)
-exe-watcher currency --reset           # back to USD
-```
-
-Exchange rates from the European Central Bank via [Frankfurter](https://www.frankfurter.app/). Cached 24 hours. Applies everywhere: dashboard, menubar, exports.
-
-### Plans
-
-Track spend against your subscription:
-
-```bash
-exe-watcher plan set claude-max        # $200/month
-exe-watcher plan set claude-pro        # $20/month
-exe-watcher plan set cursor-pro        # $20/month
-exe-watcher plan set custom --monthly-usd 150 --provider claude
-exe-watcher plan set none              # disable
-```
-
-### Model aliases
-
-If a model shows `$0.00`, your provider's model name doesn't match LiteLLM pricing data. Map it:
-
-```bash
-exe-watcher model-alias "my-proxy-model" "claude-opus-4-6"
-exe-watcher model-alias --list
-exe-watcher model-alias --remove "my-proxy-model"
-```
-
-Stored in `~/.config/exe-watcher/config.json`. User aliases override built-ins.
-
----
-
-## Activity tracking
-
-6 categories classified from tool usage patterns and keywords. No LLM calls, fully deterministic.
-
-| Category | What triggers it |
-|----------|-----------------|
-| Building | Edit, Write tools; "add", "create", "implement"; refactoring keywords |
-| Debugging | Error/fix/bug keywords + tools |
-| Testing | pytest, vitest, jest in Bash |
-| Research | Read, Grep, WebSearch without edits; brainstorming; conversation |
-| DevOps | git push/commit/merge; npm build, docker, deploy |
-| Planning | EnterPlanMode, TaskCreate, Agent tool spawns |
-
----
-
-## Reading the signals
-
-| What you see | What it might mean |
-|---|---|
-| Cache hit < 80% | Unstable system prompt or caching not enabled |
-| Lots of `Read` calls per session | Agent re-reading files, missing context |
-| Low 1-shot rate (Coding 30%) | Agent struggling, retry loops |
-| Opus on small turns | Overpowered model for simple tasks |
-| Bash dominated by `git status`, `ls` | Agent exploring instead of executing |
-| Conversation category dominant | Agent talking instead of doing |
-
-Starting points, not verdicts. A single experimental session with 60% cache hit is fine. That same number across weeks of work is a config issue.
-
----
-
-## How it works
-
-Reads session data directly from disk. No wrapper, no proxy, no API keys needed. Pricing from [LiteLLM](https://github.com/BerriAI/litellm) (auto-cached 24h). Handles input, output, cache write, cache read, and web search costs. Deduplicates messages by API message ID (Claude), cumulative token cross-check (Codex), conversation/timestamp (Cursor), session+message ID (OpenCode), or responseId (Pi/OMP).
-
-**Environment variables:**
-
-| Variable | Description |
-|----------|-------------|
-| `CLAUDE_CONFIG_DIR` | Override Claude data directory (default: `~/.claude`) |
-| `CODEX_HOME` | Override Codex data directory (default: `~/.codex`) |
-
----
-
-## Contributing
-
-Contributions welcome. The provider plugin system is the easiest entry point — each provider is a single file in `src/providers/`. See `src/providers/codex.ts` for the pattern.
-
-```
-src/
-  cli.ts           Entry point (Commander.js)
-  dashboard.tsx    TUI (Ink — React for terminals)
-  parser.ts        Session reader, dedup, date filter
-  models.ts        LiteLLM pricing engine
-  classifier.ts   Activity classifier (6 categories)
-  compare-stats.ts Model comparison engine
-  menubar-json.ts  Menubar payload builder (agent spend, project spend)
-  export.ts        CSV/JSON export
-  config.ts        Config management
-  currency.ts      Currency conversion
-  providers/       One file per supported tool
-mac/               Native macOS menubar app (Swift + SwiftUI)
-```
-
----
-
-## Exe OS integration
-
-If [Exe OS](https://github.com/AskExe/exe-os) is installed, Watcher auto-detects it and shows a live **AI Employees** section in the menubar with two sub-panels:
-
-- **Memory** — per-agent memory count with 24h / 7d / 30d growth columns
-- **Employee Spend** — per-agent cost across 24h / 7d / 30d, using model-aware pricing (Opus, Sonnet, Haiku rates applied per-model from the daemon's token data)
-
-No configuration needed. The section appears when exe-os is present and hides when it's not. The data pipeline: exe-os SessionStart hook maps Claude Code sessions to agents, the daemon computes `getAgentSpend()` with per-model pricing, writes `~/.exe-os/agent-stats.json` every 60 seconds, and Watcher reads this file — zero coupling, no auth, no direct database access.
+- Mac menubar app (still downloads from upstream `AskExe/exe-watcher` releases)
+- Swift source in `mac/` (not rebranded — uses upstream builds)
+- All test files (unchanged, may reference upstream names)
 
 ---
 
 ## Origin & attribution
 
-Watcher is forked from [codeburn](https://github.com/getagentseal/codeburn) by [AgentSeal](https://github.com/getagentseal) (MIT license). We forked rather than contributed upstream because our roadmap diverges significantly:
+This is a branding fork of [exe-watcher](https://github.com/AskExe/exe-fuelbar) by [Exe AI](https://askexe.com), which itself was forked from [codeburn](https://github.com/getagentseal/codeburn) by [AgentSeal](https://github.com/getagentseal).
 
-**What we changed:**
-- Rebranded to Watcher with the Exe Foundry Bold design system (gold + purple palette, owl icon)
-- Consolidated activity categories from 13 → 6 (less overlap, clearer signal)
-- Fixed double-counting bugs in the menubar JSON pipeline (cache + fresh parse overlap)
-- Performance: 7-day and 30-day queries from 2-5 seconds down to ~1 second (parse today only, use daily cache for history)
-- Menubar: removed loading overlay entirely — silent background refresh, pre-fetched periods for instant tab switching
-- Added exe-os agent memory and spend integration (auto-detected, model-aware pricing)
-- Per-project spend breakdown in the menubar (24h / 7d / 30d)
-- Launch at login via SMAppService, quit button, macOS app icon
-- Dark mode forced on popover, dynamic provider tabs (no empty states)
-
-**Why we forked:**
-- We need full control over the data pipeline to integrate with exe-os (our AI employee operating system)
-- Our classification model, provider support, and UI direction serve a different user base (AI-first teams running multi-agent workflows)
-- MIT license allows this — we give full credit to AgentSeal for the foundation
-
-Thank you to AgentSeal for building the original. If you just want a clean cost tracker without exe-os integration, [codeburn](https://github.com/getagentseal/codeburn) is excellent.
-
----
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=AskExe%2Fexe-watcher&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AskExe/exe-watcher&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AskExe/exe-watcher&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AskExe/exe-watcher&type=date&legend=top-left" />
- </picture>
-</a>
+Full credit to Exe AI for the dashboard, optimize, compare, and menubar features. Full credit to AgentSeal for the original codeburn foundation.
 
 ---
 
@@ -273,4 +97,4 @@ MIT
 
 ---
 
-Built by [Exe AI](https://askexe.com). Forked from [codeburn](https://github.com/getagentseal/codeburn) by AgentSeal (MIT). Pricing data from [LiteLLM](https://github.com/BerriAI/litellm). Exchange rates from [Frankfurter](https://www.frankfurter.app/).
+Built by [Quantum Memory AI](https://quantummemory.ai). Upstream: [Exe AI](https://askexe.com). Originally forked from [codeburn](https://github.com/getagentseal/codeburn). Pricing data from [LiteLLM](https://github.com/BerriAI/litellm). Exchange rates from [Frankfurter](https://www.frankfurter.app/).

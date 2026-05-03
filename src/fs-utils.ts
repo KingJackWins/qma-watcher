@@ -13,7 +13,7 @@ function verbose(): boolean {
 }
 
 function warn(msg: string): void {
-  if (verbose()) process.stderr.write(`exe-watcher: ${msg}\n`)
+  if (verbose()) process.stderr.write(`qma-watcher: ${msg}\n`)
 }
 
 async function readViaStream(filePath: string): Promise<string> {

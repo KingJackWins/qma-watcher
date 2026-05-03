@@ -39,7 +39,7 @@ import {
 const FIXTURE_ROOTS: string[] = [FAKE_HOME_FOR_MOCK]
 
 function makeFixtureRoot(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'exe-watcher-test-'))
+  const dir = mkdtempSync(join(tmpdir(), 'qma-watcher-test-'))
   FIXTURE_ROOTS.push(dir)
   return dir
 }
