@@ -342,18 +342,14 @@ async function scanProjectDirs(dirs: Array<{ path: string; name: string }>, seen
     }
   }
 
-  const projects: ProjectSummary[] = []
-  for (const [dirName, sessions] of projectMap) {
-    projects.push({
+  return Array.from(projectMap.entries())
+    .map(([dirName, sessions]) => ({
       project: dirName,
       projectPath: unsanitizePath(dirName),
       sessions,
       totalCostUSD: sessions.reduce((s, sess) => s + sess.totalCostUSD, 0),
       totalApiCalls: sessions.reduce((s, sess) => s + sess.apiCalls, 0),
-    })
-  }
-
-  return projects
+    }))
 }
 
 function providerCallToTurn(call: ParsedProviderCall): ParsedTurn {
@@ -479,34 +475,23 @@ function cacheKey(dateRange?: DateRange, providerFilter?: string, sourceFingerpr
   return `${s}:${providerFilter ?? 'all'}:${sourceFingerprint}`
 }
 
-async function buildSourceFingerprint(path: string): Promise<string> {
-  try {
-    const fp = await stat(path)
-    if (!fp.isDirectory()) return `f:${Math.round(fp.mtimeMs)}:${fp.size}`
-
-    const entries = await readdir(path)
-    const children = await Promise.all(entries.map(async entry => stat(join(path, entry)).catch(() => null)))
-    let childCount = 0
-    let childSizeBytes = 0
-    let newestChildMtimeMs = 0
-    for (const child of children) {
-      if (!child) continue
-      childCount += 1
-      childSizeBytes += child.size
-      newestChildMtimeMs = Math.max(newestChildMtimeMs, child.mtimeMs)
+/**
+ * Cheap fingerprint: source count + newest source path hash.
+ * The old approach stat()'d every source file (2000+ calls) which added 15-18s overhead.
+ * Since we already have a 60s TTL on the session cache, a lightweight fingerprint that
+ * detects new/removed sessions is sufficient — file content changes within the TTL
+ * are caught on the next cache miss.
+ */
+function buildCacheFingerprint(sources: Array<{ provider: string; project: string; path: string }>): string {
+  // Use count + sorted paths hash. New sessions change the count or the path list.
+  let hash = sources.length
+  for (const s of sources) {
+    // djb2-style fast string hash — enough to detect path set changes
+    for (let i = 0; i < s.path.length; i++) {
+      hash = ((hash << 5) + hash + s.path.charCodeAt(i)) | 0
     }
-    return `d:${Math.round(fp.mtimeMs)}:${fp.size}:${childCount}:${Math.round(newestChildMtimeMs)}:${childSizeBytes}`
-  } catch {
-    return 'missing'
   }
-}
-
-async function buildCacheFingerprint(sources: Array<{ provider: string; project: string; path: string }>): Promise<string> {
-  const parts = await Promise.all(sources.map(async source => {
-    const fingerprint = await buildSourceFingerprint(source.path)
-    return `${source.provider}:${source.project}:${source.path}:${fingerprint}`
-  }))
-  return parts.sort().join('|')
+  return `${sources.length}:${hash >>> 0}`
 }
 
 async function getSourceContext(providerFilter?: string): Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }> {
@@ -518,7 +503,7 @@ async function getSourceContext(providerFilter?: string): Promise<{ sources: Arr
 
   const promise = (async () => {
     const sources = await discoverAllSessions(providerFilter)
-    const fingerprint = await buildCacheFingerprint(sources)
+    const fingerprint = buildCacheFingerprint(sources)
     return { sources, fingerprint }
   })()
 

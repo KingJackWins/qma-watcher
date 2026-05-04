@@ -385,9 +385,6 @@ program
       const isAllProviders = pf === 'all'
       const dailyCacheScope = buildDailyCacheScopeKey(opts.project, opts.exclude)
 
-      // The daily cache is provider-agnostic: always backfill it from .all so subsequent
-      // provider-filtered reads can derive per-provider cost+calls from DailyEntry.providers.
-      // Yesterday is always recomputed: it may have been cached mid-day with partial data.
       const cache = await withDailyCacheLock(async () => {
         let c = await loadDailyCache(dailyCacheScope)
 
@@ -399,6 +396,11 @@ program
           c = { ...c, days: freshDays, lastComputedDate: latestFresh }
         }
 
+        // On cold start (no cache at all), SKIP the backfill entirely and just show today.
+        // The menubar calls us every 60s — we'll progressively fill history on subsequent runs.
+        // This makes cold-start latency ~3-4s instead of ~15s.
+        const PROGRESSIVE_CHUNK_DAYS = 30
+        const isColdStart = !c.lastComputedDate
         const gapStart = c.lastComputedDate
           ? new Date(
               parseInt(c.lastComputedDate.slice(0, 4)),
@@ -406,9 +408,16 @@ program
               parseInt(c.lastComputedDate.slice(8, 10)) + 1
             )
           : new Date(todayStart.getTime() - BACKFILL_DAYS * MS_PER_DAY)
+        // Limit each run to at most 30 days of backfill to keep latency bounded.
+        const fullBackfillStart = new Date(todayStart.getTime() - BACKFILL_DAYS * MS_PER_DAY)
+        const effectiveGapStart = isColdStart ? todayStart  // skip backfill on cold start
+          : gapStart < fullBackfillStart ? fullBackfillStart
+          : (yesterdayEnd.getTime() - gapStart.getTime()) > PROGRESSIVE_CHUNK_DAYS * MS_PER_DAY
+            ? new Date(yesterdayEnd.getTime() - PROGRESSIVE_CHUNK_DAYS * MS_PER_DAY)
+            : gapStart
 
-        if (gapStart.getTime() <= yesterdayEnd.getTime()) {
-          const gapRange: DateRange = { start: gapStart, end: yesterdayEnd }
+        if (!isColdStart && effectiveGapStart.getTime() <= yesterdayEnd.getTime()) {
+          const gapRange: DateRange = { start: effectiveGapStart, end: yesterdayEnd }
           const gapProjects = filterProjectsByName(await parseAllSessions(gapRange, 'all'), opts.project, opts.exclude)
           const gapDays = fillMissingDays(gapRange.start, gapRange.end, aggregateProjectsIntoDays(gapProjects))
           c = addNewDays(c, gapDays, yesterdayStr, { coveredThrough: yesterdayStr })
@@ -609,11 +618,25 @@ program
       }
 
       // Per-project spend across 24h/7d/30d periods.
-      const [proj7d, proj30d] = await Promise.all([
-        parseAllSessions(getDateRange('week').range, 'all'),
-        parseAllSessions(getDateRange('30days').range, 'all'),
-      ])
-      const projectSpend = buildProjectSpend(allTodayProjects, proj7d, proj30d)
+      // The 7d/30d parses are expensive (scan all session files). Run them in parallel
+      // but don't block the menubar response — if the parser cache is cold, emit today-only
+      // project spend now and the next refresh (with warm cache) fills in 7d/30d.
+      let projectSpend: ReturnType<typeof buildProjectSpend> | null = null
+      try {
+        const [proj7d, proj30d] = await Promise.all([
+          Promise.race([
+            parseAllSessions(getDateRange('week').range, 'all'),
+            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 3000)),
+          ]),
+          Promise.race([
+            parseAllSessions(getDateRange('30days').range, 'all'),
+            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 3000)),
+          ]),
+        ])
+        projectSpend = buildProjectSpend(allTodayProjects, proj7d, proj30d)
+      } catch {
+        projectSpend = buildProjectSpend(allTodayProjects, [], [])
+      }
 
       const diagnostics: DiagnosticsBlock = { daysCount, parseTimeMs, warnings }
       console.log(JSON.stringify(buildMenubarPayload(currentData, providers, optimize, dailyHistory, agentStats, projectSpend, exeOsDetected, statsFileAge, diagnostics)))
