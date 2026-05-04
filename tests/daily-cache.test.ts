@@ -6,7 +6,9 @@ import { join } from 'path'
 
 import {
   addNewDays,
+  buildDailyCacheScopeKey,
   DAILY_CACHE_VERSION,
+  DEFAULT_DAILY_CACHE_SCOPE,
   type DailyCache,
   type DailyEntry,
   getDaysInRange,
@@ -50,6 +52,7 @@ describe('loadDailyCache', () => {
   it('returns an empty cache when the file does not exist', async () => {
     const cache = await loadDailyCache()
     expect(cache.version).toBe(DAILY_CACHE_VERSION)
+    expect(cache.scopeKey).toBe(DEFAULT_DAILY_CACHE_SCOPE)
     expect(cache.lastComputedDate).toBeNull()
     expect(cache.days).toEqual([])
   })
@@ -65,6 +68,7 @@ describe('loadDailyCache', () => {
   it('returns an empty cache when the version does not match', async () => {
     const saved: DailyCache = {
       version: DAILY_CACHE_VERSION - 999,
+      scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
       lastComputedDate: '2026-04-10',
       days: [emptyDay('2026-04-10', 10)],
     }
@@ -73,12 +77,14 @@ describe('loadDailyCache', () => {
     await writeFile(join(TMP_CACHE_ROOT, 'daily-cache.json'), JSON.stringify(saved), 'utf-8')
     const cache = await loadDailyCache()
     expect(cache.days).toEqual([])
+    expect(cache.scopeKey).toBe(DEFAULT_DAILY_CACHE_SCOPE)
     expect(cache.lastComputedDate).toBeNull()
   })
 
   it('round-trips a valid cache through save and load', async () => {
     const saved: DailyCache = {
       version: DAILY_CACHE_VERSION,
+      scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
       lastComputedDate: '2026-04-10',
       days: [emptyDay('2026-04-09', 12.5, 40), emptyDay('2026-04-10', 7.25, 28)],
     }
@@ -86,12 +92,28 @@ describe('loadDailyCache', () => {
     const loaded = await loadDailyCache()
     expect(loaded).toEqual(saved)
   })
+
+  it('round-trips a scoped cache through save and load without touching global cache', async () => {
+    const scopeKey = buildDailyCacheScopeKey(['jarvis-repo'], ['sandbox'])
+    const saved: DailyCache = {
+      version: DAILY_CACHE_VERSION,
+      scopeKey,
+      lastComputedDate: '2026-04-10',
+      days: [emptyDay('2026-04-10', 42, 9)],
+    }
+    await saveDailyCache(saved)
+    const loaded = await loadDailyCache(scopeKey)
+    expect(loaded).toEqual(saved)
+    const global = await loadDailyCache()
+    expect(global.days).toEqual([])
+  })
 })
 
 describe('saveDailyCache', () => {
   it('writes atomically so no temp file is left after a successful save', async () => {
     const saved: DailyCache = {
       version: DAILY_CACHE_VERSION,
+      scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
       lastComputedDate: '2026-04-10',
       days: [emptyDay('2026-04-10', 5)],
     }
@@ -109,17 +131,20 @@ describe('addNewDays', () => {
   it('returns a new cache with the added days sorted ascending by date', () => {
     const base: DailyCache = {
       version: DAILY_CACHE_VERSION,
+      scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
       lastComputedDate: '2026-04-08',
       days: [emptyDay('2026-04-07', 3), emptyDay('2026-04-08', 5)],
     }
     const updated = addNewDays(base, [emptyDay('2026-04-10', 9), emptyDay('2026-04-09', 7)], '2026-04-10')
     expect(updated.days.map(d => d.date)).toEqual(['2026-04-07', '2026-04-08', '2026-04-09', '2026-04-10'])
+    expect(updated.scopeKey).toBe(DEFAULT_DAILY_CACHE_SCOPE)
     expect(updated.lastComputedDate).toBe('2026-04-10')
   })
 
   it('replaces existing days with incoming data (last write wins)', () => {
     const base: DailyCache = {
       version: DAILY_CACHE_VERSION,
+      scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
       lastComputedDate: '2026-04-08',
       days: [emptyDay('2026-04-08', 5)],
     }
@@ -131,17 +156,30 @@ describe('addNewDays', () => {
   it('does not regress lastComputedDate if incoming newestDate is older', () => {
     const base: DailyCache = {
       version: DAILY_CACHE_VERSION,
+      scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
       lastComputedDate: '2026-04-10',
       days: [emptyDay('2026-04-10', 5)],
     }
     const updated = addNewDays(base, [emptyDay('2026-04-05', 3)], '2026-04-05')
     expect(updated.lastComputedDate).toBe('2026-04-10')
   })
+
+  it('uses coveredThrough instead of advancing from a sparse future day', () => {
+    const base: DailyCache = {
+      version: DAILY_CACHE_VERSION,
+      scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
+      lastComputedDate: '2026-04-08',
+      days: [emptyDay('2026-04-08', 5)],
+    }
+    const updated = addNewDays(base, [emptyDay('2026-04-10', 3)], '2026-04-10', { coveredThrough: '2026-04-09' })
+    expect(updated.lastComputedDate).toBe('2026-04-09')
+  })
 })
 
 describe('getDaysInRange', () => {
   const cache: DailyCache = {
     version: DAILY_CACHE_VERSION,
+    scopeKey: DEFAULT_DAILY_CACHE_SCOPE,
     lastComputedDate: '2026-04-10',
     days: [
       emptyDay('2026-04-05', 1),

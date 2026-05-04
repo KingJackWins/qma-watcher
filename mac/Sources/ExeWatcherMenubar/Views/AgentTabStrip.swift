@@ -25,18 +25,19 @@ struct AgentTabStrip: View {
         }
     }
 
-    /// Drive tab visibility and per-tab cost labels from the *all-provider* payload (today),
-    /// not the currently selected provider's payload. Without this, switching to Codex (which
-    /// has no data) would hide every other tab including Claude.
-    private var allProvidersToday: MenubarPayload {
-        store.todayPayload ?? store.payload
+    /// Drive tab visibility from the selected period's all-provider payload whenever possible.
+    /// Falling back to today keeps tabs visible during first-launch prefetch, but once the
+    /// selected period has loaded we must respect that period so historical-only providers
+    /// remain reachable.
+    private var tabSourcePayload: MenubarPayload {
+        store.allProviderPayloadForPeriod ?? store.todayPayload ?? store.payload
     }
 
     private var visibleFilters: [ProviderFilter] {
         // Only show providers that have actual spend (cost > 0). Providers that are merely
         // "installed" (CLI found credential files) but never used just add clutter.
         let activeKeys = Set(
-            allProvidersToday.current.providers
+            tabSourcePayload.current.providers
                 .filter { $0.value > 0 }
                 .keys.map { $0.lowercased() }
         )
@@ -64,7 +65,7 @@ struct AgentTabStrip: View {
             // tabs keep showing their dollar amount regardless of which tab is selected.
             // This also fixes the discrepancy where the active tab's filtered payload could
             // show a different number than the all-provider breakdown.
-            let allPayload = store.allProviderPayloadForPeriod ?? allProvidersToday
+            let allPayload = store.allProviderPayloadForPeriod ?? tabSourcePayload
             return allPayload.current.providers[key]
         }
     }
@@ -108,8 +109,10 @@ extension ProviderFilter {
         case .claude: return Theme.categoricalClaude
         case .codex: return Theme.categoricalCodex
         case .cursor: return Theme.categoricalCursor
+        case .cursorAgent: return Color(red: 0x8A/255.0, green: 0x6E/255.0, blue: 0xD9/255.0)
         case .copilot: return Color(red: 0x6D/255.0, green: 0x8F/255.0, blue: 0xA6/255.0)
         case .opencode: return Color(red: 0x5B/255.0, green: 0x83/255.0, blue: 0x5B/255.0)
+        case .omp: return Color(red: 0xC2/255.0, green: 0x8A/255.0, blue: 0x36/255.0)
         case .pi: return Color(red: 0xB2/255.0, green: 0x6B/255.0, blue: 0x3D/255.0)
         }
     }

@@ -29,6 +29,58 @@ describe('getModelCosts', () => {
     expect(costs).not.toBeNull()
     expect(costs!.inputCostPerToken).toBe(5e-6)
   })
+
+  it('keeps official regression values for current OpenAI fallback rows', () => {
+    expect(getModelCosts('gpt-5')).toMatchObject({
+      inputCostPerToken: 1.25e-6,
+      outputCostPerToken: 10e-6,
+      cacheReadCostPerToken: 0.125e-6,
+    })
+    expect(getModelCosts('gpt-5-mini')).toMatchObject({
+      inputCostPerToken: 0.25e-6,
+      outputCostPerToken: 2e-6,
+      cacheReadCostPerToken: 0.025e-6,
+    })
+    expect(getModelCosts('gpt-5.1-codex')).toMatchObject({
+      inputCostPerToken: 1.25e-6,
+      outputCostPerToken: 10e-6,
+      cacheReadCostPerToken: 0.125e-6,
+    })
+    expect(getModelCosts('gpt-5.1-codex-mini')).toMatchObject({
+      inputCostPerToken: 0.25e-6,
+      outputCostPerToken: 2e-6,
+      cacheReadCostPerToken: 0.025e-6,
+    })
+    expect(getModelCosts('gpt-5.2-codex')).toMatchObject({
+      inputCostPerToken: 1.75e-6,
+      outputCostPerToken: 14e-6,
+      cacheReadCostPerToken: 0.175e-6,
+    })
+  })
+
+  it('covers current missing fallback catalog rows used offline', () => {
+    expect(getModelCosts('gpt-5.5-pro')).not.toBeNull()
+    expect(getModelCosts('gpt-5.4-pro')).not.toBeNull()
+    expect(getModelCosts('gpt-5.4-nano')).not.toBeNull()
+    expect(getModelCosts('gpt-5.2')).not.toBeNull()
+    expect(getModelCosts('gpt-5.1')).not.toBeNull()
+    expect(getModelCosts('gpt-5-codex')).not.toBeNull()
+  })
+
+  it('models Gemini 2.5 Pro long-context tiers in fallback pricing', () => {
+    const costs = getModelCosts('gemini-2.5-pro')
+    expect(costs).toMatchObject({
+      inputCostPerToken: 1.25e-6,
+      outputCostPerToken: 10e-6,
+      cacheReadCostPerToken: 0.125e-6,
+    })
+    expect(costs?.contextTiers?.[0]).toMatchObject({
+      minPromptTokens: 200_000,
+      inputCostPerToken: 2.5e-6,
+      outputCostPerToken: 15e-6,
+      cacheReadCostPerToken: 0.25e-6,
+    })
+  })
 })
 
 describe('getShortModelName', () => {
@@ -155,6 +207,14 @@ describe('calculateCost - OMP names produce non-zero cost', () => {
 
   it('calculates cost for anthropic/anthropic--claude-4.6-sonnet', () => {
     expect(calculateCost('anthropic/anthropic--claude-4.6-sonnet', 1000, 200, 0, 0, 0)).toBeGreaterThan(0)
+  })
+
+  it('applies GPT-5.4 long-context pricing once prompts cross 272K tokens', () => {
+    expect(calculateCost('gpt-5.4', 300_000, 100, 0, 0, 0)).toBeCloseTo(1.50225, 6)
+  })
+
+  it('applies Gemini 2.5 Pro long-context pricing once prompts cross 200K tokens', () => {
+    expect(calculateCost('gemini-2.5-pro', 250_000, 100, 0, 0, 0)).toBeCloseTo(0.6265, 6)
   })
 })
 

@@ -294,4 +294,35 @@ describe('parser pipeline via parseAllSessions', () => {
     // Filtered to 'claude' only, and our temp dir has no sessions
     expect(projects).toEqual([])
   })
+
+  it('invalidates the in-memory parser cache when the source file changes inside the TTL window', async () => {
+    const base = await setupTmpClaudeDir()
+    const fixedRange = {
+      start: new Date('2026-04-10T00:00:00Z'),
+      end: new Date('2026-04-10T23:59:59Z'),
+    }
+
+    const sessionPath = await writeSessionFile(base, 'cache-bust', 'sess-008', [
+      userEntry('initial', '2026-04-10T12:00:00Z', 'sess-008'),
+      assistantEntry('msg_initial', 'claude-opus-4-6', 100, 50, '2026-04-10T12:00:01Z'),
+    ])
+
+    const first = await parseAllSessions(fixedRange, 'claude')
+    const firstSession = first.find(p => p.project === 'cache-bust')!.sessions[0]!
+    expect(firstSession.apiCalls).toBe(1)
+    expect(firstSession.totalInputTokens).toBe(100)
+
+    await new Promise(resolve => setTimeout(resolve, 25))
+    await writeFile(sessionPath, [
+      JSON.stringify(userEntry('updated', '2026-04-10T12:00:00Z', 'sess-008')),
+      JSON.stringify(assistantEntry('msg_initial', 'claude-opus-4-6', 100, 50, '2026-04-10T12:00:01Z')),
+      JSON.stringify(assistantEntry('msg_second', 'claude-opus-4-6', 200, 75, '2026-04-10T12:00:02Z')),
+    ].join('\n') + '\n')
+
+    const second = await parseAllSessions(fixedRange, 'claude')
+    const secondSession = second.find(p => p.project === 'cache-bust')!.sessions[0]!
+    expect(secondSession.apiCalls).toBe(2)
+    expect(secondSession.totalInputTokens).toBe(300)
+    expect(secondSession.totalOutputTokens).toBe(125)
+  })
 })

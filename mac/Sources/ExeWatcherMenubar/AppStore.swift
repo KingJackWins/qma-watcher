@@ -2,16 +2,33 @@ import Foundation
 import Observation
 
 private let cacheTTLSeconds: TimeInterval = 30
+typealias MenubarPayloadFetcher = @Sendable (Period, ProviderFilter, Bool) async throws -> MenubarPayload
+typealias AppStoreDateProvider = @Sendable () -> Date
 
 struct CachedPayload {
     let payload: MenubarPayload
     let fetchedAt: Date
-    var isFresh: Bool { Date().timeIntervalSince(fetchedAt) < cacheTTLSeconds }
+    func isFresh(now: Date) -> Bool { now.timeIntervalSince(fetchedAt) < cacheTTLSeconds }
 }
 
 struct PayloadCacheKey: Hashable {
     let period: Period
     let provider: ProviderFilter
+    let includeOptimize: Bool
+    let dateAnchor: String
+
+    init(period: Period, provider: ProviderFilter, includeOptimize: Bool = false, now: Date = Date()) {
+        self.period = period
+        self.provider = provider
+        self.includeOptimize = includeOptimize
+        self.dateAnchor = Self.anchor(for: period, now: now)
+    }
+
+    private static func anchor(for _: Period, now: Date) -> String {
+        let calendar = Calendar(identifier: .gregorian)
+        let comps = calendar.dateComponents([.year, .month, .day], from: now)
+        return String(format: "%04d-%02d-%02d", comps.year ?? 0, comps.month ?? 0, comps.day ?? 0)
+    }
 }
 
 @MainActor
@@ -22,36 +39,89 @@ final class AppStore {
     var selectedInsight: InsightMode = .trend
     var currency: String = "USD"
     var isLoading: Bool = false
-    var lastError: String?
     var subscription: SubscriptionUsage?
     var subscriptionError: String?
     var subscriptionLoadState: SubscriptionLoadState = .idle
     var capacityEstimates: [String: CapacityEstimate] = [:]
 
+    private let fetchPayload: MenubarPayloadFetcher
+    private let now: AppStoreDateProvider
     private var cache: [PayloadCacheKey: CachedPayload] = [:]
+    private var errorsByKey: [PayloadCacheKey: String] = [:]
 
-    private var currentKey: PayloadCacheKey {
-        PayloadCacheKey(period: selectedPeriod, provider: selectedProvider)
+    init(
+        fetchPayload: @escaping MenubarPayloadFetcher = DataClient.fetch,
+        now: @escaping AppStoreDateProvider = Date.init
+    ) {
+        self.fetchPayload = fetchPayload
+        self.now = now
+    }
+
+    private func key(period: Period, provider: ProviderFilter, includeOptimize: Bool) -> PayloadCacheKey {
+        PayloadCacheKey(period: period, provider: provider, includeOptimize: includeOptimize, now: now())
+    }
+
+    private var currentBaseKey: PayloadCacheKey {
+        key(period: selectedPeriod, provider: selectedProvider, includeOptimize: false)
+    }
+
+    private var currentOptimizeKey: PayloadCacheKey {
+        key(period: selectedPeriod, provider: selectedProvider, includeOptimize: true)
+    }
+
+    private func mergedPayload(period: Period, provider: ProviderFilter) -> MenubarPayload? {
+        let base = cache[key(period: period, provider: provider, includeOptimize: false)]
+        let optimized = cache[key(period: period, provider: provider, includeOptimize: true)]
+
+        switch (base, optimized) {
+        case (nil, nil):
+            return nil
+        case let (.some(basePayload), nil):
+            return basePayload.payload
+        case let (nil, .some(optimizedPayload)):
+            return optimizedPayload.payload
+        case let (.some(basePayload), .some(optimizedPayload)):
+            let body = optimizedPayload.fetchedAt >= basePayload.fetchedAt ? optimizedPayload.payload : basePayload.payload
+            return MenubarPayload(
+                generated: body.generated,
+                current: body.current,
+                optimize: optimizedPayload.payload.optimize,
+                history: body.history,
+                diagnostics: body.diagnostics,
+                agentStats: body.agentStats,
+                exeOsDetected: body.exeOsDetected,
+                statsFileAge: body.statsFileAge,
+                projectSpend: body.projectSpend
+            )
+        }
+    }
+
+    var lastError: String? {
+        errorsByKey[currentOptimizeKey] ?? errorsByKey[currentBaseKey]
     }
 
     var payload: MenubarPayload {
-        cache[currentKey]?.payload ?? .empty
+        mergedPayload(period: selectedPeriod, provider: selectedProvider) ?? .empty
     }
 
     /// Today (across all providers) is pinned for the always-visible menubar icon, independent of
     /// the popover's selected period or provider.
     var todayPayload: MenubarPayload? {
-        cache[PayloadCacheKey(period: .today, provider: .all)]?.payload
+        mergedPayload(period: .today, provider: .all)
     }
 
     /// All-provider payload for the currently selected period. Used by tab labels to show each
     /// provider's cost even when a specific provider tab is active.
     var allProviderPayloadForPeriod: MenubarPayload? {
-        cache[PayloadCacheKey(period: selectedPeriod, provider: .all)]?.payload
+        mergedPayload(period: selectedPeriod, provider: .all)
     }
 
     var hasCachedData: Bool {
-        cache[currentKey] != nil
+        mergedPayload(period: selectedPeriod, provider: selectedProvider) != nil
+    }
+
+    var isCurrentSelectionLoading: Bool {
+        inFlightKeys.contains(currentBaseKey) || inFlightKeys.contains(currentOptimizeKey)
     }
 
     var findingsCount: Int {
@@ -92,8 +162,8 @@ final class AppStore {
     /// fetches for the same key so a slow initial request can't overwrite a newer one that
     /// finished first (which would show stale numbers the user has already moved past).
     func refresh(includeOptimize: Bool) async {
-        let key = currentKey
-        await refreshKey(key, includeOptimize: includeOptimize)
+        let target = key(period: selectedPeriod, provider: selectedProvider, includeOptimize: includeOptimize)
+        await refreshKey(target, includeOptimize: includeOptimize)
     }
 
     private func refreshKey(_ key: PayloadCacheKey, includeOptimize: Bool) async {
@@ -101,21 +171,21 @@ final class AppStore {
         inFlightKeys.insert(key)
         defer { inFlightKeys.remove(key) }
         do {
-            let fresh = try await DataClient.fetch(period: key.period, provider: key.provider, includeOptimize: includeOptimize)
-            cache[key] = CachedPayload(payload: fresh, fetchedAt: Date())
-            lastError = nil
+            let fresh = try await fetchPayload(key.period, key.provider, includeOptimize)
+            cache[key] = CachedPayload(payload: fresh, fetchedAt: now())
+            errorsByKey[key] = nil
 
             if key.provider == .all {
                 await prefetchVisibleProviderPayloads(for: key.period)
             }
         } catch {
-            lastError = String(describing: error)
+            errorsByKey[key] = String(describing: error)
             NSLog("Exe Watcher: fetch failed for \(key.period.rawValue)/\(key.provider.rawValue): \(error)")
         }
     }
 
     private func isFresh(_ key: PayloadCacheKey) -> Bool {
-        cache[key]?.isFresh ?? false
+        cache[key]?.isFresh(now: now()) ?? false
     }
 
     /// Refresh payload for key only when missing or stale.
@@ -129,14 +199,14 @@ final class AppStore {
     /// Always refreshes the .all-provider payload for the menubar badge, then preloads any
     /// active provider payloads for that period so tab switches are instant.
     func refreshQuietly(period: Period) async {
-        let allKey = PayloadCacheKey(period: period, provider: .all)
+        let allKey = key(period: period, provider: .all, includeOptimize: false)
         await refreshIfNeeded(allKey, includeOptimize: false)
         await prefetchVisibleProviderPayloads(for: period)
     }
 
     /// Front-load all visible provider payloads for the period so tab switches can be immediate.
     private func prefetchVisibleProviderPayloads(for period: Period) async {
-        guard let payload = cache[PayloadCacheKey(period: period, provider: .all)]?.payload else { return }
+        guard let payload = mergedPayload(period: period, provider: .all) else { return }
 
         let providers = ProviderFilter.allCases
             .filter { filter in
@@ -150,14 +220,14 @@ final class AppStore {
             }
 
         for filter in providers {
-            let key = PayloadCacheKey(period: period, provider: filter)
+            let key = key(period: period, provider: filter, includeOptimize: false)
             await refreshIfNeeded(key, includeOptimize: false)
         }
     }
 
     /// Silent background refresh for the user-selected state that never blocks tab switching.
     private func refreshForSelectionInBackground(period: Period, provider: ProviderFilter) async {
-        let target = PayloadCacheKey(period: period, provider: provider == .all ? .all : provider)
+        let target = key(period: period, provider: provider == .all ? .all : provider, includeOptimize: false)
         await refreshIfNeeded(target, includeOptimize: false)
         if provider != .all {
             await prefetchVisibleProviderPayloads(for: period)
@@ -274,8 +344,10 @@ enum ProviderFilter: String, CaseIterable, Identifiable {
     case claude = "Claude"
     case codex = "Codex"
     case cursor = "Cursor"
+    case cursorAgent = "Cursor Agent"
     case copilot = "Copilot"
     case opencode = "OpenCode"
+    case omp = "OMP"
     case pi = "Pi"
 
     var id: String { rawValue }
@@ -287,8 +359,10 @@ enum ProviderFilter: String, CaseIterable, Identifiable {
         case .claude: "claude"
         case .codex: "codex"
         case .cursor: "cursor"
+        case .cursorAgent: "cursor-agent"
         case .copilot: "copilot"
         case .opencode: "opencode"
+        case .omp: "omp"
         case .pi: "pi"
         }
     }

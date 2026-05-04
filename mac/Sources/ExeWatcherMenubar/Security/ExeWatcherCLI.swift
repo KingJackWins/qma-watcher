@@ -11,8 +11,41 @@ enum ExeWatcherCLI {
     private static let safeArgPattern = try! NSRegularExpression(pattern: "^[A-Za-z0-9 ._/\\-]+$")
 
     /// PATH additions for GUI-launched apps, which otherwise get a minimal PATH that misses
-    /// Homebrew and npm global installs.
-    private static let additionalPathEntries = ["/opt/homebrew/bin", "/usr/local/bin"]
+    /// Homebrew and npm global installs. Includes dynamic NVM resolution since macOS GUI apps
+    /// never source ~/.zshrc and NVM paths are the most common npm global binary location.
+    private static let additionalPathEntries: [String] = {
+        var entries = ["/opt/homebrew/bin", "/usr/local/bin"]
+        let home = NSHomeDirectory()
+        let nvmDir = ProcessInfo.processInfo.environment["NVM_DIR"] ?? "\(home)/.nvm"
+        let fm = FileManager.default
+        // Add the most recent NVM node version's bin directory
+        let versionsPath = "\(nvmDir)/versions/node"
+        if let versions = try? fm.contentsOfDirectory(atPath: versionsPath) {
+            for version in versions.sorted(by: isNewerNodeVersion) {
+                let binPath = "\(versionsPath)/\(version)/bin"
+                if fm.fileExists(atPath: binPath) {
+                    entries.append(binPath)
+                    break
+                }
+            }
+        }
+        // Fallback: ~/.local/bin (common on Linux, some macOS setups)
+        let localBin = "\(home)/.local/bin"
+        if fm.fileExists(atPath: localBin) { entries.append(localBin) }
+        return entries
+    }()
+
+    private static func isNewerNodeVersion(_ lhs: String, _ rhs: String) -> Bool {
+        let left = lhs.split(separator: ".").map { Int($0.trimmingCharacters(in: CharacterSet(charactersIn: "v"))) ?? 0 }
+        let right = rhs.split(separator: ".").map { Int($0.trimmingCharacters(in: CharacterSet(charactersIn: "v"))) ?? 0 }
+        let count = max(left.count, right.count)
+        for idx in 0..<count {
+            let l = idx < left.count ? left[idx] : 0
+            let r = idx < right.count ? right[idx] : 0
+            if l != r { return l > r }
+        }
+        return lhs > rhs
+    }
 
     /// Returns the argv that launches the CLI. Dev override via `EXE_WATCHER_BIN` is honoured only
     /// if every whitespace-delimited token passes `safeArgPattern`. Otherwise falls back to the

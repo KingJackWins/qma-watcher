@@ -190,8 +190,64 @@ describe('aggregateProjectsIntoDays', () => {
       inputTokens: 100, outputTokens: 200,
       cacheReadTokens: 50, cacheWriteTokens: 0,
     })
-    expect(day.providers['claude']).toEqual({ calls: 1, cost: 7 })
-    expect(day.providers['codex']).toEqual({ calls: 1, cost: 3 })
+    expect(day.providers['claude']).toEqual({
+      calls: 1,
+      cost: 7,
+      sessions: 1,
+      inputTokens: 100,
+      outputTokens: 200,
+      cacheReadTokens: 50,
+      cacheWriteTokens: 0,
+      editTurns: 0,
+      oneShotTurns: 0,
+      models: {
+        'Opus 4.7': {
+          calls: 1,
+          cost: 7,
+          inputTokens: 100,
+          outputTokens: 200,
+          cacheReadTokens: 50,
+          cacheWriteTokens: 0,
+        },
+      },
+      categories: {
+        coding: {
+          turns: 1,
+          cost: 7,
+          editTurns: 0,
+          oneShotTurns: 0,
+        },
+      },
+    })
+    expect(day.providers['codex']).toEqual({
+      calls: 1,
+      cost: 3,
+      sessions: 1,
+      inputTokens: 100,
+      outputTokens: 200,
+      cacheReadTokens: 50,
+      cacheWriteTokens: 0,
+      editTurns: 0,
+      oneShotTurns: 0,
+      models: {
+        'gpt-5': {
+          calls: 1,
+          cost: 3,
+          inputTokens: 100,
+          outputTokens: 200,
+          cacheReadTokens: 50,
+          cacheWriteTokens: 0,
+        },
+      },
+      categories: {
+        coding: {
+          turns: 1,
+          cost: 3,
+          editTurns: 0,
+          oneShotTurns: 0,
+        },
+      },
+    })
   })
 })
 
@@ -213,7 +269,21 @@ describe('buildPeriodDataFromDays', () => {
         'Haiku 4.5': { calls: 2, cost: cost * 0.2, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
       },
       categories: { 'building': { turns: 2, cost: cost * 0.5, editTurns: 2, oneShotTurns: 1 } },
-      providers: { 'claude': { calls: 10, cost } },
+      providers: {
+        claude: {
+          calls: 10,
+          cost,
+          sessions: 2,
+          inputTokens: 100,
+          outputTokens: 200,
+          cacheReadTokens: 300,
+          cacheWriteTokens: 0,
+          editTurns: 3,
+          oneShotTurns: 2,
+          models: {},
+          categories: {},
+        },
+      },
     }
   }
 

@@ -116,16 +116,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         guard let code = CLICurrencyConfig.loadCode(), code != "USD" else { return }
         let symbol = CurrencyState.symbolForCode(code)
         store.currency = code
+        let generation = CurrencyState.shared.beginSelection(code: code, symbol: symbol)
 
         Task {
             let cached = await FXRateCache.shared.cachedRate(for: code)
             await MainActor.run {
-                CurrencyState.shared.apply(code: code, rate: cached, symbol: symbol)
+                CurrencyState.shared.apply(code: code, rate: cached, symbol: symbol, generation: generation)
             }
             let fresh = await FXRateCache.shared.rate(for: code)
             if let fresh, fresh != cached {
                 await MainActor.run {
-                    CurrencyState.shared.apply(code: code, rate: fresh, symbol: symbol)
+                    CurrencyState.shared.apply(code: code, rate: fresh, symbol: symbol, generation: generation)
                 }
             }
         }

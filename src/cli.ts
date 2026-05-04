@@ -10,12 +10,12 @@ import { convertCost } from './currency.js'
 import { renderStatusBar } from './format.js'
 import { type PeriodData, type ProviderCost, type AgentStatsPayload } from './menubar-json.js'
 import { buildMenubarPayload, computeAgentSpend, mergeAgentSpend, buildProjectSpend, estimateAgentCosts, type DiagnosticsBlock } from './menubar-json.js'
-import { addNewDays, getDaysInRange, loadDailyCache, saveDailyCache, withDailyCacheLock } from './daily-cache.js'
-import { aggregateProjectsIntoDays, buildPeriodDataFromDays, filterDaysToProvider, dateKey } from './day-aggregator.js'
+import { addNewDays, buildDailyCacheScopeKey, getDaysInRange, loadDailyCache, saveDailyCache, withDailyCacheLock } from './daily-cache.js'
+import { aggregateProjectsIntoDays, buildPeriodDataFromDays, filterDaysToProvider, dateKey, fillMissingDays } from './day-aggregator.js'
 import { CATEGORY_LABELS, type DateRange, type ProjectSummary, type TaskCategory } from './types.js'
 import { renderDashboard } from './dashboard.js'
 import { parseDateRangeFlags } from './cli-date.js'
-import { runOptimize, scanAndDetect } from './optimize.js'
+import { prewarmOptimizeScan, runOptimize, scanAndDetect } from './optimize.js'
 import { renderCompare } from './compare.js'
 import { getAllProviders } from './providers/index.js'
 import { clearPlan, readConfig, readPlan, saveConfig, savePlan, getConfigFilePath, type PlanId } from './config.js'
@@ -49,7 +49,7 @@ function getDateRange(period: string): { range: DateRange; label: string } {
       return { range: { start, end: yesterdayEnd }, label: `Yesterday (${toDateString(start)})` }
     }
     case 'week': {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
       return { range: { start, end }, label: 'Last 7 Days' }
     }
     case 'month': {
@@ -57,7 +57,7 @@ function getDateRange(period: string): { range: DateRange; label: string } {
       return { range: { start, end }, label: `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}` }
     }
     case '30days': {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)
       return { range: { start, end }, label: 'Last 30 Days' }
     }
     case 'all': {
@@ -68,7 +68,7 @@ function getDateRange(period: string): { range: DateRange; label: string } {
       return { range: { start, end }, label: 'Last 6 months' }
     }
     default: {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
       return { range: { start, end }, label: 'Last 7 Days' }
     }
   }
@@ -383,12 +383,13 @@ program
       const yesterdayEnd = new Date(todayStart.getTime() - 1)
       const yesterdayStr = toDateString(new Date(todayStart.getTime() - MS_PER_DAY))
       const isAllProviders = pf === 'all'
+      const dailyCacheScope = buildDailyCacheScopeKey(opts.project, opts.exclude)
 
       // The daily cache is provider-agnostic: always backfill it from .all so subsequent
       // provider-filtered reads can derive per-provider cost+calls from DailyEntry.providers.
       // Yesterday is always recomputed: it may have been cached mid-day with partial data.
       const cache = await withDailyCacheLock(async () => {
-        let c = await loadDailyCache()
+        let c = await loadDailyCache(dailyCacheScope)
 
         // Evict yesterday (and any stale future entries) so the gap fill recomputes them.
         const hadYesterday = c.days.some(d => d.date >= yesterdayStr)
@@ -409,8 +410,8 @@ program
         if (gapStart.getTime() <= yesterdayEnd.getTime()) {
           const gapRange: DateRange = { start: gapStart, end: yesterdayEnd }
           const gapProjects = filterProjectsByName(await parseAllSessions(gapRange, 'all'), opts.project, opts.exclude)
-          const gapDays = aggregateProjectsIntoDays(gapProjects)
-          c = addNewDays(c, gapDays, yesterdayStr)
+          const gapDays = fillMissingDays(gapRange.start, gapRange.end, aggregateProjectsIntoDays(gapProjects))
+          c = addNewDays(c, gapDays, yesterdayStr, { coveredThrough: yesterdayStr })
           await saveDailyCache(c)
         }
         return c
@@ -420,21 +421,23 @@ program
       // - .all provider: assemble from cache + today (fast)
       // - specific provider: parse the period range with provider filter (correct, but slower)
       let currentData: PeriodData
-      let scanProjects: ProjectSummary[]
-      let scanRange: DateRange
+      const scanRange = periodInfo.range
 
       // Parse only today's sessions once — reused across period data, providers, and history.
       const todayRange: DateRange = { start: todayStart, end: periodInfo.range.end }
       const warnings: string[] = []
       const parseStart = Date.now()
       let todayProjects: ProjectSummary[]
+      let allTodayProjects: ProjectSummary[]
       try {
-        todayProjects = fp(await parseAllSessions(todayRange, 'all'))
+        allTodayProjects = await parseAllSessions(todayRange, 'all')
+        todayProjects = fp(allTodayProjects)
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         const warn = `parseAllSessions failed: ${msg}`
         warnings.push(warn)
         process.stderr.write(`[exe-watcher] WARNING: ${warn}\n`)
+        allTodayProjects = []
         todayProjects = []
       }
       if (todayProjects.length === 0) {
@@ -467,8 +470,6 @@ program
           const providerDays = filterDaysToProvider(allDays, pf)
           currentData = buildPeriodDataFromDays(providerDays, periodInfo.label)
         }
-        scanProjects = todayProjects
-        scanRange = periodInfo.range
       }
 
       // PROVIDERS
@@ -540,20 +541,45 @@ program
             topModels,
           }
         }
-        const prov = d.providers[pf] ?? { calls: 0, cost: 0 }
+        const prov = d.providers[pf]
+        const topModels = Object.entries(prov?.models ?? {})
+          .filter(([name]) => name !== '<synthetic>')
+          .sort(([, a], [, b]) => b.cost - a.cost)
+          .slice(0, 5)
+          .map(([name, m]) => ({
+            name,
+            cost: m.cost,
+            calls: m.calls,
+            inputTokens: m.inputTokens,
+            outputTokens: m.outputTokens,
+          }))
         return {
           date: d.date,
-          cost: prov.cost,
-          calls: prov.calls,
-          inputTokens: 0,
-          outputTokens: 0,
-          cacheReadTokens: 0,
-          cacheWriteTokens: 0,
-          topModels: [],
+          cost: prov?.cost ?? 0,
+          calls: prov?.calls ?? 0,
+          inputTokens: prov?.inputTokens ?? 0,
+          outputTokens: prov?.outputTokens ?? 0,
+          cacheReadTokens: prov?.cacheReadTokens ?? 0,
+          cacheWriteTokens: prov?.cacheWriteTokens ?? 0,
+          topModels,
         }
       })
 
-      const optimize = opts.optimize === false ? null : await scanAndDetect(scanProjects, scanRange)
+      let optimize = null
+      if (opts.optimize !== false) {
+        try {
+          const optimizeProjects = isAllProviders && opts.period === 'today'
+            ? todayProjects
+            : fp(await parseAllSessions(scanRange, isAllProviders ? 'all' : pf))
+          optimize = await scanAndDetect(optimizeProjects, scanRange)
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          const warn = `optimize parse failed: ${msg}`
+          warnings.push(warn)
+          process.stderr.write(`[exe-watcher] WARNING: ${warn}\n`)
+          optimize = await scanAndDetect(todayProjects, scanRange)
+        }
+      }
 
       // Read exe-os agent stats if available (auto-detect exe-os presence)
       const exeOsDir = join(homedir(), '.exe-os')
@@ -583,12 +609,11 @@ program
       }
 
       // Per-project spend across 24h/7d/30d periods.
-      const [proj24h, proj7d, proj30d] = await Promise.all([
-        parseAllSessions(getDateRange('today').range, 'all'),
+      const [proj7d, proj30d] = await Promise.all([
         parseAllSessions(getDateRange('week').range, 'all'),
         parseAllSessions(getDateRange('30days').range, 'all'),
       ])
-      const projectSpend = buildProjectSpend(proj24h, proj7d, proj30d)
+      const projectSpend = buildProjectSpend(allTodayProjects, proj7d, proj30d)
 
       const diagnostics: DiagnosticsBlock = { daysCount, parseTimeMs, warnings }
       console.log(JSON.stringify(buildMenubarPayload(currentData, providers, optimize, dailyHistory, agentStats, projectSpend, exeOsDetected, statsFileAge, diagnostics)))
@@ -941,8 +966,9 @@ program
   .action(async (opts) => {
     await loadPricing()
     const { range, label } = getDateRange(opts.period)
+    const scanPromise = prewarmOptimizeScan(range)
     const projects = await parseAllSessions(range, opts.provider)
-    await runOptimize(projects, label, range)
+    await runOptimize(projects, label, range, scanPromise)
   })
 
 program

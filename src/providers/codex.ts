@@ -17,6 +17,8 @@ const modelDisplayNames: Record<string, string> = {
   'gpt-4o': 'GPT-4o',
 }
 
+const modelDisplayEntries = Object.entries(modelDisplayNames).sort((a, b) => b[0].length - a[0].length)
+
 const toolNameMap: Record<string, string> = {
   exec_command: 'Bash',
   read_file: 'Read',
@@ -282,7 +284,7 @@ export function createCodexProvider(codexDir?: string): Provider {
     displayName: 'Codex',
 
     modelDisplayName(model: string): string {
-      for (const [key, name] of Object.entries(modelDisplayNames)) {
+      for (const [key, name] of modelDisplayEntries) {
         if (model.startsWith(key)) return name
       }
       return model

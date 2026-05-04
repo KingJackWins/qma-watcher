@@ -462,10 +462,77 @@ async function parseProviderSources(
 const CACHE_TTL_MS = 60_000
 const MAX_CACHE_ENTRIES = 10
 const sessionCache = new Map<string, { data: ProjectSummary[]; ts: number }>()
+const inFlightSourceContexts = new Map<string, Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }>>()
 
-function cacheKey(dateRange?: DateRange, providerFilter?: string): string {
+function sourceContextCacheKey(providerFilter?: string): string {
+  return JSON.stringify({
+    provider: providerFilter ?? 'all',
+    claudeConfigDir: process.env['CLAUDE_CONFIG_DIR'] ?? '',
+    codexHome: process.env['CODEX_HOME'] ?? '',
+    xdgDataHome: process.env['XDG_DATA_HOME'] ?? '',
+    home: process.env['HOME'] ?? '',
+  })
+}
+
+function cacheKey(dateRange?: DateRange, providerFilter?: string, sourceFingerprint = 'static'): string {
   const s = dateRange ? `${dateRange.start.getTime()}:${dateRange.end.getTime()}` : 'none'
-  return `${s}:${providerFilter ?? 'all'}`
+  return `${s}:${providerFilter ?? 'all'}:${sourceFingerprint}`
+}
+
+async function buildSourceFingerprint(path: string): Promise<string> {
+  try {
+    const fp = await stat(path)
+    if (!fp.isDirectory()) return `f:${Math.round(fp.mtimeMs)}:${fp.size}`
+
+    const entries = await readdir(path)
+    const children = await Promise.all(entries.map(async entry => stat(join(path, entry)).catch(() => null)))
+    let childCount = 0
+    let childSizeBytes = 0
+    let newestChildMtimeMs = 0
+    for (const child of children) {
+      if (!child) continue
+      childCount += 1
+      childSizeBytes += child.size
+      newestChildMtimeMs = Math.max(newestChildMtimeMs, child.mtimeMs)
+    }
+    return `d:${Math.round(fp.mtimeMs)}:${fp.size}:${childCount}:${Math.round(newestChildMtimeMs)}:${childSizeBytes}`
+  } catch {
+    return 'missing'
+  }
+}
+
+async function buildCacheFingerprint(sources: Array<{ provider: string; project: string; path: string }>): Promise<string> {
+  const parts = await Promise.all(sources.map(async source => {
+    const fingerprint = await buildSourceFingerprint(source.path)
+    return `${source.provider}:${source.project}:${source.path}:${fingerprint}`
+  }))
+  return parts.sort().join('|')
+}
+
+async function getSourceContext(providerFilter?: string): Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }> {
+  const key = sourceContextCacheKey(providerFilter)
+  const cached = inFlightSourceContexts.get(key)
+  if (cached) {
+    return cached
+  }
+
+  const promise = (async () => {
+    const sources = await discoverAllSessions(providerFilter)
+    const fingerprint = await buildCacheFingerprint(sources)
+    return { sources, fingerprint }
+  })()
+
+  inFlightSourceContexts.set(key, promise)
+
+  try {
+    return await promise
+  } catch (err) {
+    throw err
+  } finally {
+    if (inFlightSourceContexts.get(key) === promise) {
+      inFlightSourceContexts.delete(key)
+    }
+  }
 }
 
 function cachePut(key: string, data: ProjectSummary[]) {
@@ -506,13 +573,14 @@ export function filterProjectsByName(
 }
 
 export async function parseAllSessions(dateRange?: DateRange, providerFilter?: string): Promise<ProjectSummary[]> {
-  const key = cacheKey(dateRange, providerFilter)
+  const sourceContext = await getSourceContext(providerFilter)
+  const allSources = sourceContext.sources
+  const key = cacheKey(dateRange, providerFilter, sourceContext.fingerprint)
   const cached = sessionCache.get(key)
   if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data
 
   const seenMsgIds = new Set<string>()
   const seenKeys = new Set<string>()
-  const allSources = await discoverAllSessions(providerFilter)
 
   const claudeSources = allSources.filter(s => s.provider === 'claude')
   const nonClaudeSources = allSources.filter(s => s.provider !== 'claude')
