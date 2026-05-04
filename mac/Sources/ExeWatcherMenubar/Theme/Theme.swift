@@ -1,22 +1,22 @@
 import SwiftUI
 
-/// Design tokens — Exe Foundry Bold palette.
-/// Gold accent, void/stratum dark surfaces, aura purple highlights.
+/// Design tokens — Quantum Memory palette.
+/// Emerald green accent, deep purple surfaces, quantum glow highlights.
 enum Theme {
-    // Brand accent — Exe Gold (#F5D76E)
-    static let brandAccent       = Color(red: 0xF5/255.0, green: 0xD7/255.0, blue: 0x6E/255.0)
-    // Hover / lighter gold (#FADF85)
-    static let brandAccentDark   = Color(red: 0xFA/255.0, green: 0xDF/255.0, blue: 0x85/255.0)
-    // Aura purple for depth/glow (#6B4C9A)
-    static let brandEmberDeep    = Color(red: 0x6B/255.0, green: 0x4C/255.0, blue: 0x9A/255.0)
-    // Dark purple for text on gold backgrounds (#3A285C) — high contrast
-    static let brandPurpleDark   = Color(red: 0x3A/255.0, green: 0x28/255.0, blue: 0x5C/255.0)
-    // Pressed / darker gold (#E6C54F)
-    static let brandEmberGlow    = Color(red: 0xE6/255.0, green: 0xC5/255.0, blue: 0x4F/255.0)
+    // Brand accent — QM Emerald (#4ADE80)
+    static let brandAccent       = Color(red: 0x4A/255.0, green: 0xDE/255.0, blue: 0x80/255.0)
+    // Hover / lighter emerald (#6EE7A0)
+    static let brandAccentDark   = Color(red: 0x6E/255.0, green: 0xE7/255.0, blue: 0xA0/255.0)
+    // Deep purple for depth/glow (#7C3AED)
+    static let brandEmberDeep    = Color(red: 0x7C/255.0, green: 0x3A/255.0, blue: 0xED/255.0)
+    // Dark purple for text on green backgrounds (#2E1065) — high contrast
+    static let brandPurpleDark   = Color(red: 0x2E/255.0, green: 0x10/255.0, blue: 0x65/255.0)
+    // Pressed / deeper emerald (#22C55E)
+    static let brandEmberGlow    = Color(red: 0x22/255.0, green: 0xC5/255.0, blue: 0x5E/255.0)
 
     // Surfaces
     static let warmSurface       = Color(red: 0xFA/255.0, green: 0xF8/255.0, blue: 0xF3/255.0) // light canvas
-    static let warmSurfaceDark   = Color(red: 0x1A/255.0, green: 0x15/255.0, blue: 0x28/255.0) // Deep purple canvas
+    static let warmSurfaceDark   = Color(red: 0x14/255.0, green: 0x0A/255.0, blue: 0x2E/255.0) // Deep purple canvas
 
     // Categorical provider colors (distinct hues, good contrast on dark)
     static let categoricalClaude = Color(red: 0xDA/255.0, green: 0x7E/255.0, blue: 0x56/255.0) // Anthropic warm
@@ -25,12 +25,12 @@ enum Theme {
 
     // One-shot success rate indicators
     static let oneShotGood  = Color(red: 0x86/255.0, green: 0xEF/255.0, blue: 0xAC/255.0) // success green
-    static let oneShotMid   = Color(red: 0xF5/255.0, green: 0x9E/255.0, blue: 0x0B/255.0) // warning orange (not gold)
+    static let oneShotMid   = Color(red: 0xF5/255.0, green: 0x9E/255.0, blue: 0x0B/255.0) // warning orange
     static let oneShotLow   = Color(red: 0xF8/255.0, green: 0x71/255.0, blue: 0x71/255.0) // error red
 
-    // Semantic colors — tuned for Exe Foundry Bold dark surfaces.
+    // Semantic colors — tuned for QM dark purple surfaces.
     static let semanticDanger  = Color(red: 0xDC/255.0, green: 0x26/255.0, blue: 0x26/255.0) // clear red
-    static let semanticWarning = Color(red: 0xF5/255.0, green: 0x9E/255.0, blue: 0x0B/255.0) // orange, never gold
+    static let semanticWarning = Color(red: 0xF5/255.0, green: 0x9E/255.0, blue: 0x0B/255.0) // orange
     static let semanticSuccess = Color(red: 0x16/255.0, green: 0xA3/255.0, blue: 0x4A/255.0) // confident green
 }
 
@@ -41,7 +41,7 @@ extension Font {
     }
 }
 
-/// Modifier for gold-background buttons that need purple text instead of white.
+/// Modifier for green-background buttons that need purple text instead of white.
 extension View {
     func goldButton() -> some View {
         self

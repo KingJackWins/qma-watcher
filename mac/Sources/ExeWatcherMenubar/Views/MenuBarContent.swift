@@ -238,7 +238,7 @@ private struct Header: View {
                     .foregroundStyle(Theme.brandAccent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("WATCHER")
-                    .foregroundStyle(Color(red: 0xD4/255.0, green: 0x61/255.0, blue: 0x9C/255.0))
+                    .foregroundStyle(Color(red: 0x4A/255.0, green: 0xDE/255.0, blue: 0x80/255.0))
                     .font(.custom("Epilogue", size: 14).weight(.bold))
                     .tracking(2)
                     Text("by Quantum Memory")
