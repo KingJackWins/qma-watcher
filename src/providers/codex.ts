@@ -172,6 +172,13 @@ function createParser(source: SessionSource, seenKeys: Set<string>): SessionPars
           continue
         }
 
+        // Codex stores the actual model name (e.g. "gpt-5.4") in turn_context events,
+        // not in session_meta or token_count. Capture it so we don't fall back to "gpt-5".
+        if (entry.type === 'turn_context' && entry.payload?.model) {
+          sessionModel = entry.payload.model
+          continue
+        }
+
         if (entry.type === 'response_item' && entry.payload?.type === 'function_call') {
           const rawName = entry.payload.name ?? ''
           pendingTools.push(toolNameMap[rawName] ?? rawName)
