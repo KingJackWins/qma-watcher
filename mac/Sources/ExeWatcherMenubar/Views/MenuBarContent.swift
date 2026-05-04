@@ -241,7 +241,7 @@ private struct Header: View {
                     .foregroundStyle(Color(red: 0xD4/255.0, green: 0x61/255.0, blue: 0x9C/255.0))
                     .font(.custom("Epilogue", size: 14).weight(.bold))
                     .tracking(2)
-                    Text("by EXE")
+                    Text("by Quantum Memory")
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(Theme.brandAccent.opacity(0.6))
                 }
@@ -336,7 +336,7 @@ struct StarBanner: View {
                     NSWorkspace.shared.open(starBannerGitHubURL)
                 } label: {
                     HStack(spacing: 4) {
-                        Text("Enjoying Watcher?")
+                        Text("Enjoying Watcher by QM?")
                             .foregroundStyle(.primary)
                         Text("Star us on GitHub")
                             .foregroundStyle(Theme.brandAccent)
@@ -478,10 +478,10 @@ struct FooterBar: View {
                 if process.terminationStatus == 0 {
                     NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: outputPath)])
                 } else {
-                    NSLog("Exe Watcher: \(format.cliName.uppercased()) export exited with status \(process.terminationStatus)")
+                    NSLog("Watcher by QM: \(format.cliName.uppercased()) export exited with status \(process.terminationStatus)")
                 }
             } catch {
-                NSLog("Exe Watcher: \(format.cliName.uppercased()) export failed: \(error)")
+                NSLog("Watcher by QM: \(format.cliName.uppercased()) export failed: \(error)")
             }
         }
     }

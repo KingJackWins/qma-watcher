@@ -48,7 +48,7 @@ enum SubscriptionSnapshotStore {
                 all = all.filter { $0.capturedAt >= cutoff }
                 try save(all)
             } catch {
-                NSLog("Exe Watcher: snapshot record failed: \(error)")
+                NSLog("Watcher by QM: snapshot record failed: \(error)")
             }
         }
     }

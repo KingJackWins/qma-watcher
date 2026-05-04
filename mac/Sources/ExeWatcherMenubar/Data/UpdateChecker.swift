@@ -57,7 +57,7 @@ final class UpdateChecker {
             UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: lastCheckKey)
             UserDefaults.standard.set(version, forKey: cachedVersionKey)
         } catch {
-            NSLog("Exe Watcher: update check failed: \(error)")
+            NSLog("Watcher by QM: update check failed: \(error)")
         }
     }
 
@@ -78,7 +78,7 @@ final class UpdateChecker {
                 if proc.terminationStatus != 0 {
                     self.isUpdating = false
                     self.updateError = stderr.isEmpty ? "Update failed (exit \(proc.terminationStatus))" : stderr
-                    NSLog("Exe Watcher: update failed (exit \(proc.terminationStatus)): \(stderr)")
+                    NSLog("Watcher by QM: update failed (exit \(proc.terminationStatus)): \(stderr)")
                 }
             }
         }
@@ -88,7 +88,7 @@ final class UpdateChecker {
         } catch {
             isUpdating = false
             updateError = error.localizedDescription
-            NSLog("Exe Watcher: update spawn failed: \(error)")
+            NSLog("Watcher by QM: update spawn failed: \(error)")
         }
     }
 }

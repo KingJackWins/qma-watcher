@@ -110,7 +110,7 @@ final class AppStore {
             }
         } catch {
             lastError = String(describing: error)
-            NSLog("Exe Watcher: fetch failed for \(key.period.rawValue)/\(key.provider.rawValue): \(error)")
+            NSLog("Watcher by QM: fetch failed for \(key.period.rawValue)/\(key.provider.rawValue): \(error)")
         }
     }
 
@@ -182,7 +182,7 @@ final class AppStore {
             subscription = nil
             subscriptionError = String(describing: error)
             subscriptionLoadState = .failed
-            NSLog("Exe Watcher: subscription fetch failed: \(error)")
+            NSLog("Watcher by QM: subscription fetch failed: \(error)")
         }
     }
 

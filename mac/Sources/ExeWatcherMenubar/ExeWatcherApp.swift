@@ -95,9 +95,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         if service.status == .notRegistered {
             do {
                 try service.register()
-                NSLog("Exe Watcher: registered as Login Item")
+                NSLog("Watcher by QM: registered as Login Item")
             } catch {
-                NSLog("Exe Watcher: Login Item registration failed: \(error)")
+                NSLog("Watcher by QM: Login Item registration failed: \(error)")
             }
         }
     }
@@ -288,7 +288,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let fontNames = ["Epilogue-Bold"]
         for name in fontNames {
             guard let url = Bundle.module.url(forResource: name, withExtension: "ttf") else {
-                NSLog("Exe Watcher: font \(name).ttf not found in bundle")
+                NSLog("Watcher by QM: font \(name).ttf not found in bundle")
                 continue
             }
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)

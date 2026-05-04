@@ -19,12 +19,12 @@ enum ExeWatcherCLI {
     /// plain `exe-watcher` name (resolved via PATH).
     static func baseArgv() -> [String] {
         guard let raw = ProcessInfo.processInfo.environment["EXE_WATCHER_BIN"], !raw.isEmpty else {
-            return ["exe-watcher"]
+            return ["qma-watcher"]
         }
         let parts = raw.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
         guard parts.allSatisfy(isSafe) else {
-            NSLog("Exe Watcher: refusing unsafe EXE_WATCHER_BIN; using default 'exe-watcher'")
-            return ["exe-watcher"]
+            NSLog("Watcher by QM: refusing unsafe EXE_WATCHER_BIN; using default 'qma-watcher'")
+            return ["qma-watcher"]
         }
         return parts
     }

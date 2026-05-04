@@ -17,7 +17,7 @@ enum TerminalLauncher {
     static func open(subcommand: [String]) {
         let argv = ExeWatcherCLI.baseArgv() + subcommand
         guard argv.allSatisfy(ExeWatcherCLI.isSafe) else {
-            NSLog("Exe Watcher: refusing to open terminal with unsafe argv")
+            NSLog("Watcher by QM: refusing to open terminal with unsafe argv")
             return
         }
         let command = argv.joined(separator: " ")
@@ -36,7 +36,7 @@ enum TerminalLauncher {
     /// interpolated, so there's no injection surface.
     static func openClaudeLogin() -> Bool {
         guard terminalPaths.contains(where: FileManager.default.fileExists(atPath:)) else {
-            NSLog("Exe Watcher: Terminal.app not present; user must run `claude login` manually")
+            NSLog("Watcher by QM: Terminal.app not present; user must run `claude login` manually")
             return false
         }
         runInTerminal(command: "claude login", preValidated: true)
@@ -47,7 +47,7 @@ enum TerminalLauncher {
         if !preValidated {
             let tokens = command.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
             guard tokens.allSatisfy(ExeWatcherCLI.isSafe) else {
-                NSLog("Exe Watcher: refusing to run unvalidated command in Terminal")
+                NSLog("Watcher by QM: refusing to run unvalidated command in Terminal")
                 return
             }
         }

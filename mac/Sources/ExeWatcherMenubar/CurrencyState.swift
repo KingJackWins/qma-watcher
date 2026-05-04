@@ -138,7 +138,7 @@ actor FXRateCache {
             let decoded = try JSONDecoder().decode(Response.self, from: data)
             guard let fresh = decoded.rates[code],
                   fresh.isFinite, fresh >= minValidFXRate, fresh <= maxValidFXRate else {
-                NSLog("Exe Watcher: discarding out-of-band FX rate for \(code)")
+                NSLog("Watcher by QM: discarding out-of-band FX rate for \(code)")
                 return entries[code]?.rate
             }
             entries[code] = Entry(rate: fresh, savedAt: Date().timeIntervalSince1970)
@@ -203,7 +203,7 @@ enum CLICurrencyConfig {
                 try SafeFile.write(data, to: configPath, mode: 0o600)
             }
         } catch {
-            NSLog("Exe Watcher: failed to persist currency config: \(error)")
+            NSLog("Watcher by QM: failed to persist currency config: \(error)")
         }
     }
 }
