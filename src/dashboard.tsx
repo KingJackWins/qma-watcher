@@ -28,9 +28,9 @@ const PERIOD_LABELS: Record<Period, string> = {
 }
 
 const MIN_WIDE = 90
-const ORANGE = '#4ADE80'  // QM Emerald (was orange)
+const ORANGE = '#A78BFA'  // QM Lavender (monochrome purple)
 const DIM = '#555555'
-const GOLD = '#22C55E'    // QM Deep Emerald (was gold)
+const GOLD = '#8B5CF6'    // QM Violet (monochrome purple)
 const PLAN_BAR_WIDTH = 10
 
 const LANG_DISPLAY_NAMES: Record<string, string> = {
