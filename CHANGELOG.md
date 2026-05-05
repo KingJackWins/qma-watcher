@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.10 (2026-05-05)
+
+### Fixes
+- Resolve the menubar CLI from PATH, Homebrew, and every NVM Node bin instead of trusting only the latest NVM version or a broken PATH shim
+- Keep the popover header and provider tabs locked to the selected period's all-provider payload so historical fetch failures no longer show today's provider totals beside a $0 header
+- Surface human-readable CLI-not-found and timeout errors in the menubar instead of raw Swift enum dumps
+
+### Tests
+- Add Swift coverage for CLI path resolution, selected-period header consistency, historical-period error isolation, and period-to-CLI argument mapping
+
 ## 0.2.9 (2026-05-05)
 
 ### Fixes

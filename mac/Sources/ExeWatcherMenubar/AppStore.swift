@@ -104,6 +104,19 @@ final class AppStore {
         mergedPayload(period: selectedPeriod, provider: selectedProvider) ?? .empty
     }
 
+    /// Summary payload for the selected period across all providers. Header totals and provider
+    /// tabs must stay anchored to this payload so the grand total always matches the visible
+    /// provider breakdown.
+    var selectedPeriodSummaryPayload: MenubarPayload? {
+        mergedPayload(period: selectedPeriod, provider: .all)
+    }
+
+    /// Header should always reflect the selected period's aggregate spend, not whichever provider
+    /// detail tab happens to be open underneath.
+    var headerPayload: MenubarPayload {
+        selectedPeriodSummaryPayload ?? .empty
+    }
+
     /// Today (across all providers) is pinned for the always-visible menubar icon, independent of
     /// the popover's selected period or provider.
     var todayPayload: MenubarPayload? {
@@ -113,7 +126,19 @@ final class AppStore {
     /// All-provider payload for the currently selected period. Used by tab labels to show each
     /// provider's cost even when a specific provider tab is active.
     var allProviderPayloadForPeriod: MenubarPayload? {
-        mergedPayload(period: selectedPeriod, provider: .all)
+        selectedPeriodSummaryPayload
+    }
+
+    /// Provider tabs should only render from data scoped to the selected period. Falling back to
+    /// today's payload makes the tab strip lie when a historical period is still loading or has
+    /// failed, which is how we ended up with a $0 header and $117/$45 provider tabs.
+    var providerTabsPayload: MenubarPayload? {
+        selectedPeriodSummaryPayload
+    }
+
+    var showProviderTabs: Bool {
+        guard let providerTabsPayload else { return false }
+        return !providerTabsPayload.current.providers.isEmpty
     }
 
     var hasCachedData: Bool {
@@ -133,6 +158,7 @@ final class AppStore {
     var dataMayBeStale: Bool {
         if lastError != nil { return true }
         if let diag = payload.diagnostics, !diag.warnings.isEmpty { return true }
+        if let diag = selectedPeriodSummaryPayload?.diagnostics, !diag.warnings.isEmpty { return true }
         return false
     }
 
@@ -179,7 +205,7 @@ final class AppStore {
                 await prefetchVisibleProviderPayloads(for: key.period)
             }
         } catch {
-            errorsByKey[key] = String(describing: error)
+            errorsByKey[key] = Self.describe(error: error)
             NSLog("Exe Watcher: fetch failed for \(key.period.rawValue)/\(key.provider.rawValue): \(error)")
         }
     }
@@ -310,6 +336,13 @@ final class AppStore {
             }
         }
         capacityEstimates = next
+    }
+
+    private static func describe(error: Error) -> String {
+        if let localized = (error as? LocalizedError)?.errorDescription, !localized.isEmpty {
+            return localized
+        }
+        return String(describing: error)
     }
 }
 

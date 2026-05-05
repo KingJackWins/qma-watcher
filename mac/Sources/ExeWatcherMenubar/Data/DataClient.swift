@@ -16,21 +16,46 @@ enum DataClientError: Error {
     case outputTooLarge
 }
 
+extension DataClientError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case let .spawn(message):
+            let cleaned = message.trimmingCharacters(in: .whitespacesAndNewlines)
+            if cleaned.localizedCaseInsensitiveContains("no such file or directory") {
+                return "Couldn't launch exe-watcher. Reinstall the CLI or set EXE_WATCHER_BIN to a working binary."
+            }
+            return cleaned.isEmpty ? "Couldn't launch exe-watcher." : cleaned
+        case let .nonZeroExit(code, stderr):
+            let cleaned = stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+            if code == 127 || cleaned.localizedCaseInsensitiveContains("exe-watcher: no such file or directory") {
+                return "The exe-watcher CLI was not found. Reinstall it (`npm install -g exe-watcher`) or set EXE_WATCHER_BIN."
+            }
+            if code == 126 {
+                return "The exe-watcher CLI exists but isn't executable. Reinstall it or fix its permissions."
+            }
+            if cleaned.isEmpty {
+                return "exe-watcher exited with status \(code)."
+            }
+            return cleaned
+        case .decode:
+            return "Watcher couldn't decode the CLI response."
+        case .timeout:
+            return "exe-watcher timed out after 60 seconds. Retry once the machine is idle."
+        case .outputTooLarge:
+            return "Watcher received an unexpectedly large CLI response and refused to render it."
+        }
+    }
+}
+
 /// Runs the CLI via argv (no shell interpretation). See `ExeWatcherCLI` for why we never route
 /// commands through `/bin/zsh -c` anymore.
 struct DataClient {
     static func fetch(period: Period, provider: ProviderFilter, includeOptimize: Bool) async throws -> MenubarPayload {
-        var subcommand = [
-            "status",
-            "--format", "menubar-json",
-            "--period", period.cliArg,
-            "--provider", provider.cliArg,
-        ]
-        if !includeOptimize {
-            subcommand.append("--no-optimize")
-        }
-
-        let result = try await runCLI(subcommand: subcommand)
+        let result = try await runCLI(subcommand: subcommand(
+            period: period,
+            provider: provider,
+            includeOptimize: includeOptimize
+        ))
         guard result.exitCode == 0 else {
             throw DataClientError.nonZeroExit(code: result.exitCode, stderr: result.stderr)
         }
@@ -50,6 +75,19 @@ struct DataClient {
         return payload
     }
 
+    static func subcommand(period: Period, provider: ProviderFilter, includeOptimize: Bool) -> [String] {
+        var command = [
+            "status",
+            "--format", "menubar-json",
+            "--period", period.cliArg,
+            "--provider", provider.cliArg,
+        ]
+        if !includeOptimize {
+            command.append("--no-optimize")
+        }
+        return command
+    }
+
     private struct ProcessResult {
         let stdout: Data
         let stderr: String
@@ -58,6 +96,7 @@ struct DataClient {
 
     private static func runCLI(subcommand: [String]) async throws -> ProcessResult {
         let process = ExeWatcherCLI.makeProcess(subcommand: subcommand)
+        let timeoutState = TimeoutState()
 
         let outPipe = Pipe()
         let errPipe = Pipe()
@@ -79,6 +118,7 @@ struct DataClient {
         let timeoutTask = Task.detached(priority: .utility) {
             try? await Task.sleep(nanoseconds: spawnTimeoutSeconds * 1_000_000_000)
             if process.isRunning {
+                timeoutState.markTimedOut()
                 process.terminate()
             }
         }
@@ -86,6 +126,10 @@ struct DataClient {
 
         let (out, err) = await (stdoutData, stderrData)
         process.waitUntilExit()
+
+        if timeoutState.read() {
+            throw DataClientError.timeout
+        }
 
         if out.count >= maxPayloadBytes {
             throw DataClientError.outputTooLarge
@@ -112,5 +156,22 @@ struct DataClient {
             }
             return buffer
         }.value
+    }
+}
+
+private final class TimeoutState: @unchecked Sendable {
+    private let lock = NSLock()
+    private var timedOut = false
+
+    func markTimedOut() {
+        lock.lock()
+        timedOut = true
+        lock.unlock()
+    }
+
+    func read() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return timedOut
     }
 }

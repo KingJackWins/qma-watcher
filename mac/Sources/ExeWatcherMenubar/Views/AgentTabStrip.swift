@@ -26,14 +26,14 @@ struct AgentTabStrip: View {
     }
 
     /// Drive tab visibility from the selected period's all-provider payload whenever possible.
-    /// Falling back to today keeps tabs visible during first-launch prefetch, but once the
-    /// selected period has loaded we must respect that period so historical-only providers
-    /// remain reachable.
-    private var tabSourcePayload: MenubarPayload {
-        store.allProviderPayloadForPeriod ?? store.todayPayload ?? store.payload
+    /// Never fall back to today's payload here; that makes the tab strip disagree with the
+    /// selected period's header whenever a historical fetch is still warming or failed.
+    private var tabSourcePayload: MenubarPayload? {
+        store.providerTabsPayload
     }
 
     private var visibleFilters: [ProviderFilter] {
+        guard let tabSourcePayload else { return [] }
         // Only show providers that have actual spend (cost > 0). Providers that are merely
         // "installed" (CLI found credential files) but never used just add clutter.
         let activeKeys = Set(
@@ -58,15 +58,14 @@ struct AgentTabStrip: View {
         switch filter {
         case .all:
             // "All" always reflects the selected period's grand total
-            return store.payload.current.cost
+            return store.headerPayload.current.cost
         default:
             let key = filter.rawValue.lowercased()
             // Always look up per-provider cost from the all-provider payload so inactive
             // tabs keep showing their dollar amount regardless of which tab is selected.
             // This also fixes the discrepancy where the active tab's filtered payload could
             // show a different number than the all-provider breakdown.
-            let allPayload = store.allProviderPayloadForPeriod ?? tabSourcePayload
-            return allPayload.current.providers[key]
+            return tabSourcePayload?.current.providers[key]
         }
     }
 }

@@ -223,4 +223,88 @@ struct AppStoreProviderPrefetchTests {
         #expect(await counter.value() == 2)
         #expect(store.payload.current.cost == 2)
     }
+
+    @Test("header stays anchored to the all-provider total when a provider tab is selected")
+    @MainActor
+    func headerUsesSelectedPeriodSummary() async throws {
+        let weekAll = PayloadCacheKey(period: .sevenDays, provider: .all)
+        let weekClaude = PayloadCacheKey(period: .sevenDays, provider: .claude)
+        let weekCodex = PayloadCacheKey(period: .sevenDays, provider: .codex)
+
+        let recorder = FetchRecorder(payloads: [
+            weekAll: makePayload(label: "Last 7 Days", cost: 100, providers: ["claude": 70, "codex": 30]),
+            weekClaude: makePayload(label: "Last 7 Days", cost: 70, providers: ["claude": 70]),
+            weekCodex: makePayload(label: "Last 7 Days", cost: 30, providers: ["codex": 30]),
+        ])
+
+        let store = AppStore(fetchPayload: { period, provider, includeOptimize in
+            try await recorder.fetch(period: period, provider: provider, includeOptimize: includeOptimize)
+        })
+
+        await store.refreshQuietly(period: .sevenDays)
+        await store.switchTo(period: .sevenDays)
+        await store.switchTo(provider: .claude)
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        #expect(store.payload.current.cost == 70)
+        #expect(store.headerPayload.current.cost == 100)
+        #expect(store.allProviderPayloadForPeriod?.current.cost == 100)
+        #expect(store.showProviderTabs)
+    }
+
+    @Test("failed historical periods do not reuse today's provider tabs")
+    @MainActor
+    func failedHistoricalPeriodDoesNotShowTodayTabs() async throws {
+        let todayAll = PayloadCacheKey(period: .today, provider: .all)
+        let todayClaude = PayloadCacheKey(period: .today, provider: .claude)
+        let todayCodex = PayloadCacheKey(period: .today, provider: .codex)
+
+        let recorder = FetchRecorder(payloads: [
+            todayAll: makePayload(label: "Today", cost: 18, providers: ["claude": 12, "codex": 6]),
+            todayClaude: makePayload(label: "Today", cost: 12, providers: ["claude": 12]),
+            todayCodex: makePayload(label: "Today", cost: 6, providers: ["codex": 6]),
+        ])
+
+        let store = AppStore(fetchPayload: { period, provider, includeOptimize in
+            try await recorder.fetch(period: period, provider: provider, includeOptimize: includeOptimize)
+        })
+
+        await store.refreshQuietly(period: .today)
+        #expect(store.showProviderTabs)
+
+        await store.switchTo(period: .sevenDays)
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        #expect(store.providerTabsPayload == nil)
+        #expect(!store.showProviderTabs)
+        #expect(store.lastError != nil)
+    }
+
+    @Test("a failed historical fetch does not contaminate the cached today view")
+    @MainActor
+    func historicalFailureDoesNotLeakIntoToday() async throws {
+        let todayAll = PayloadCacheKey(period: .today, provider: .all)
+        let todayClaude = PayloadCacheKey(period: .today, provider: .claude)
+
+        let recorder = FetchRecorder(payloads: [
+            todayAll: makePayload(label: "Today", cost: 18, providers: ["claude": 12]),
+            todayClaude: makePayload(label: "Today", cost: 12, providers: ["claude": 12]),
+        ])
+
+        let store = AppStore(fetchPayload: { period, provider, includeOptimize in
+            try await recorder.fetch(period: period, provider: provider, includeOptimize: includeOptimize)
+        })
+
+        await store.refreshQuietly(period: .today)
+        await store.switchTo(period: .sevenDays)
+        try await Task.sleep(nanoseconds: 50_000_000)
+        #expect(store.lastError != nil)
+
+        await store.switchTo(period: .today)
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        #expect(store.lastError == nil)
+        #expect(store.headerPayload.current.cost == 18)
+        #expect(store.showProviderTabs)
+    }
 }

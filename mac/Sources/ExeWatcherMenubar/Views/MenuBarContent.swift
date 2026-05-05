@@ -160,8 +160,7 @@ struct MenuBarContent: View {
     /// on this machine. Hidden only when nothing is detected, which means there's
     /// nothing to filter by anyway.
     private var showAgentTabs: Bool {
-        let payload = store.allProviderPayloadForPeriod ?? store.todayPayload ?? store.payload
-        return !payload.current.providers.isEmpty
+        store.showProviderTabs
     }
 
     private var showInitialLoadingOverlay: Bool {
@@ -305,7 +304,7 @@ private struct Header: View {
                 UpdateBadge()
             } else {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(store.payload.current.cost.asCurrency())
+                    Text(store.headerPayload.current.cost.asCurrency())
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .tracking(-0.5)
