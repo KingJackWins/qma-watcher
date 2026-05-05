@@ -71,11 +71,10 @@ export function computeProgressiveBackfillStart({
 
   // Backward gap: cache covers through yesterday but doesn't go far enough back
   // for the requested period. E.g., cache has 7 days but user wants 30 days.
+  // Fill the ENTIRE missing range at once — no chunking. Each period should get
+  // its full data on the first request (today=1d, week=7d, 30d=30d, all=365d).
   if (oldestCachedDate && neededStart.getTime() < new Date(oldestCachedDate).getTime()) {
-    const backTarget = new Date(oldestCachedDate)
-    // Fill backward in chunks, capped at the needed start
-    const chunkStart = new Date(backTarget.getTime() - progressiveChunkDays * MS_PER_DAY)
-    return chunkStart < neededStart ? neededStart : chunkStart
+    return neededStart < fullBackfillStart ? fullBackfillStart : neededStart
   }
 
   return gapStart
