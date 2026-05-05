@@ -1045,14 +1045,16 @@ private struct PlanNoCredentialsView: View {
             Text("No credentials found")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.primary)
-            Text("Sign in to Claude Code to see your 5-hour and weekly usage limits. Watcher reads your credentials automatically.")
+            Text("Sign in to your Anthropic account to see your 5-hour and weekly usage limits.")
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 260)
             HStack(spacing: 8) {
-                Button("Sign In via Claude Code") {
-                    _ = TerminalLauncher.openClaudeLogin()
+                Button("Sign In") {
+                    if let url = URL(string: "https://console.anthropic.com") {
+                        NSWorkspace.shared.open(url)
+                    }
                 }
                 .controlSize(.small)
                 .goldButton()
