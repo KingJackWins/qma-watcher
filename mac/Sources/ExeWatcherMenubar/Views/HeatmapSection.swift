@@ -1012,14 +1012,9 @@ private struct PlanIdleView: View {
             Image(systemName: "person.crop.circle.dashed")
                 .font(.system(size: 22))
                 .foregroundStyle(.tertiary)
-            Text("Loading your plan...")
+            Text("Loading usage data...")
                 .font(.system(size: 11.5, weight: .medium))
                 .foregroundStyle(.secondary)
-            Text("macOS may ask permission to read your Claude Code credentials.")
-                .font(.system(size: 10))
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 260)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
@@ -1030,7 +1025,7 @@ private struct PlanLoadingView: View {
     var body: some View {
         VStack(spacing: 8) {
             ProgressView().scaleEffect(0.8)
-            Text("Reading Claude credentials...")
+            Text("Fetching usage limits...")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
         }
@@ -1047,19 +1042,25 @@ private struct PlanNoCredentialsView: View {
             Image(systemName: "key.slash")
                 .font(.system(size: 20))
                 .foregroundStyle(.tertiary)
-            Text("No account connected")
+            Text("No credentials found")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.primary)
-            Text("Sign in with your Claude or OpenAI account to see your 5-hour and weekly usage limits.")
+            Text("Sign in to Claude Code to see your 5-hour and weekly usage limits. Watcher reads your credentials automatically.")
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 260)
-            Button("Retry") {
-                Task { await store.refreshSubscription() }
+            HStack(spacing: 8) {
+                Button("Sign In via Claude Code") {
+                    _ = TerminalLauncher.openClaudeLogin()
+                }
+                .controlSize(.small)
+                .goldButton()
+                Button("Retry") {
+                    Task { await store.refreshSubscription() }
+                }
+                .controlSize(.small)
             }
-            .controlSize(.small)
-            .goldButton()
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)

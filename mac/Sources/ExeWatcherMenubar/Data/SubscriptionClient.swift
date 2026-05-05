@@ -1,8 +1,6 @@
 import Foundation
-import Security
 
 private let credentialsRelativePath = ".claude/.credentials.json"
-private let keychainService = "Claude Code-credentials"
 private let oauthClientID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
 private let refreshURL = URL(string: "https://platform.claude.com/v1/oauth/token")!
 private let usageURL = URL(string: "https://api.anthropic.com/api/oauth/usage")!
@@ -52,10 +50,7 @@ struct SubscriptionClient {
 
     private static func loadCredentials() throws -> StoredCredentials {
         if let data = try readFileCredentials() {
-            return try parseCredentials(data: sanitizeKeychainData(data))
-        }
-        if let creds = try readKeychainCredentials() {
-            return creds
+            return try parseCredentials(data: sanitize(data))
         }
         throw SubscriptionError.noCredentials
     }
@@ -68,29 +63,12 @@ struct SubscriptionClient {
         return try SafeFile.read(from: url.path, maxBytes: maxCredentialBytes)
     }
 
-    private static func readKeychainCredentials() throws -> StoredCredentials? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-            kSecReturnData as String: true,
-        ]
-        var result: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        if status == errSecItemNotFound { return nil }
-        guard status == errSecSuccess, let data = result as? Data else {
-            NSLog("Exe Watcher: keychain query failed status=\(status)")
-            return nil
-        }
-        return try parseCredentials(data: sanitizeKeychainData(data))
-    }
-
-    /// Claude Code's keychain writer line-wraps long string values (newline + leading spaces)
+    /// Claude Code's credential writer line-wraps long string values (newline + leading spaces)
     /// mid-token, producing JSON with literal control chars and stray spaces inside string
     /// values. Replace every newline (CR/LF) plus the run of spaces/tabs that follows it.
     /// Drops both the wrapping in tokens AND pretty-print indentation between fields (both
     /// produce valid, compact JSON afterward).
-    private static func sanitizeKeychainData(_ data: Data) -> Data {
+    private static func sanitize(_ data: Data) -> Data {
         guard var s = String(data: data, encoding: .utf8) else { return data }
         s = s.replacingOccurrences(of: "\r", with: "")
         let regex = try? NSRegularExpression(pattern: "\\n[ \\t]*", options: [])

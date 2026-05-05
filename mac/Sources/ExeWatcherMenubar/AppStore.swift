@@ -261,7 +261,7 @@ final class AppStore {
     }
 
     /// Fetch Claude subscription usage. Sets subscription = nil on missing creds (API users / unauthenticated).
-    /// Triggered lazily when the user opens the Plan pill, so the Keychain prompt only fires on intent.
+    /// Triggered lazily when the user opens the Usage tab.
     func refreshSubscription() async {
         subscriptionLoadState = .loading
         do {
