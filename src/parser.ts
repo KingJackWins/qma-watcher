@@ -32,6 +32,7 @@ function parseJsonlLine(line: string): JournalEntry | null {
   }
 }
 
+
 function extractToolNames(content: ContentBlock[]): string[] {
   return content
     .filter((b): b is ToolUseBlock => b.type === 'tool_use')
