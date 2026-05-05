@@ -25,6 +25,7 @@ export function resolveColdStartHistoryDays(period: ProgressiveBackfillPeriod, n
 
 type ProgressiveBackfillStartInput = {
   lastComputedDate: string | null
+  oldestCachedDate: string | null
   todayStart: Date
   yesterdayEnd: Date
   backfillDays: number
@@ -42,6 +43,7 @@ function nextLocalMidnight(dateString: string): Date {
 
 export function computeProgressiveBackfillStart({
   lastComputedDate,
+  oldestCachedDate,
   todayStart,
   yesterdayEnd,
   backfillDays,
@@ -49,19 +51,31 @@ export function computeProgressiveBackfillStart({
   progressiveChunkDays = DEFAULT_PROGRESSIVE_CHUNK_DAYS,
 }: ProgressiveBackfillStartInput): Date {
   const fullBackfillStart = new Date(todayStart.getTime() - backfillDays * MS_PER_DAY)
+  const neededStart = new Date(todayStart.getTime() - (coldStartHistoryDays - 1) * MS_PER_DAY)
 
   if (!lastComputedDate) {
-    // Today's sessions are always parsed separately below, so the cache only needs the
-    // prior N-1 days to make a complete N-day history window on first load.
+    // Cold start: fill from the period's required start date.
     const priorHistoryDays = Math.max(coldStartHistoryDays - 1, 0)
     return new Date(todayStart.getTime() - priorHistoryDays * MS_PER_DAY)
   }
 
+  // Forward gap: cache doesn't reach yesterday yet.
   const gapStart = nextLocalMidnight(lastComputedDate)
-  if (gapStart < fullBackfillStart) return fullBackfillStart
+  if (gapStart.getTime() <= yesterdayEnd.getTime()) {
+    if (gapStart < fullBackfillStart) return fullBackfillStart
+    if ((yesterdayEnd.getTime() - gapStart.getTime()) > progressiveChunkDays * MS_PER_DAY) {
+      return new Date(yesterdayEnd.getTime() - progressiveChunkDays * MS_PER_DAY)
+    }
+    return gapStart
+  }
 
-  if ((yesterdayEnd.getTime() - gapStart.getTime()) > progressiveChunkDays * MS_PER_DAY) {
-    return new Date(yesterdayEnd.getTime() - progressiveChunkDays * MS_PER_DAY)
+  // Backward gap: cache covers through yesterday but doesn't go far enough back
+  // for the requested period. E.g., cache has 7 days but user wants 30 days.
+  if (oldestCachedDate && neededStart.getTime() < new Date(oldestCachedDate).getTime()) {
+    const backTarget = new Date(oldestCachedDate)
+    // Fill backward in chunks, capped at the needed start
+    const chunkStart = new Date(backTarget.getTime() - progressiveChunkDays * MS_PER_DAY)
+    return chunkStart < neededStart ? neededStart : chunkStart
   }
 
   return gapStart

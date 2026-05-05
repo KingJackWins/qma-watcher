@@ -395,19 +395,29 @@ program
           c = { ...c, days: freshDays, lastComputedDate: latestFresh }
         }
 
+        const oldestCachedDate = c.days.length > 0 ? c.days[0].date : null
         const effectiveGapStart = computeProgressiveBackfillStart({
           lastComputedDate: c.lastComputedDate,
+          oldestCachedDate,
           todayStart,
           yesterdayEnd,
           backfillDays: BACKFILL_DAYS,
           coldStartHistoryDays: selectedPeriodHistoryDays,
         })
 
-        if (effectiveGapStart.getTime() <= yesterdayEnd.getTime()) {
-          const gapRange: DateRange = { start: effectiveGapStart, end: yesterdayEnd }
+        // Determine the gap end: if we're filling backward (effectiveGapStart < oldestCachedDate),
+        // the end is the day before the oldest cached day. Otherwise it's yesterday.
+        const gapEnd = (oldestCachedDate && effectiveGapStart.getTime() < new Date(oldestCachedDate).getTime())
+          ? new Date(new Date(oldestCachedDate).getTime() - MS_PER_DAY)
+          : yesterdayEnd
+
+        if (effectiveGapStart.getTime() <= gapEnd.getTime()) {
+          const gapRange: DateRange = { start: effectiveGapStart, end: gapEnd }
           const gapProjects = filterProjectsByName(await parseAllSessions(gapRange, 'all'), opts.project, opts.exclude)
           const gapDays = fillMissingDays(gapRange.start, gapRange.end, aggregateProjectsIntoDays(gapProjects))
-          c = addNewDays(c, gapDays, yesterdayStr, { coveredThrough: yesterdayStr })
+          // Don't advance lastComputedDate for backward fills
+          const coveredThrough = gapEnd.getTime() >= yesterdayEnd.getTime() ? yesterdayStr : undefined
+          c = addNewDays(c, gapDays, yesterdayStr, coveredThrough ? { coveredThrough } : undefined)
           await saveDailyCache(c)
         }
         return c
