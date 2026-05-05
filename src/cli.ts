@@ -21,7 +21,7 @@ import { getAllProviders } from './providers/index.js'
 import { clearPlan, readConfig, readPlan, saveConfig, savePlan, getConfigFilePath, type PlanId } from './config.js'
 import { clampResetDay, getPlanUsageOrNull, type PlanUsage } from './plan-usage.js'
 import { getPresetPlan, isPlanId, isPlanProvider, planDisplayName } from './plans.js'
-import { computeProgressiveBackfillStart } from './progressive-backfill.js'
+import { ALL_TIME_HISTORY_DAYS, computeProgressiveBackfillStart, resolveColdStartHistoryDays } from './progressive-backfill.js'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
@@ -29,7 +29,7 @@ const { version } = require('../package.json')
 import { loadCurrency, getCurrency, isValidCurrencyCode } from './currency.js'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
-const BACKFILL_DAYS = 365
+const BACKFILL_DAYS = ALL_TIME_HISTORY_DAYS
 
 function toDateString(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -62,11 +62,8 @@ function getDateRange(period: string): { range: DateRange; label: string } {
       return { range: { start, end }, label: 'Last 30 Days' }
     }
     case 'all': {
-      // Cap "All Time" to the last 6 months. Older data is rarely actionable for a cost
-      // tracker and keeps the parse path bounded so providers like Codex/Cursor with sparse
-      // data still load in seconds.
-      const start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
-      return { range: { start, end }, label: 'Last 6 months' }
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (ALL_TIME_HISTORY_DAYS - 1))
+      return { range: { start, end }, label: 'All Time' }
     }
     default: {
       const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
@@ -380,6 +377,7 @@ program
     if (opts.format === 'menubar-json') {
       const periodInfo = getDateRange(opts.period)
       const now = new Date()
+      const selectedPeriodHistoryDays = resolveColdStartHistoryDays(opts.period, now)
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
       const yesterdayEnd = new Date(todayStart.getTime() - 1)
       const yesterdayStr = toDateString(new Date(todayStart.getTime() - MS_PER_DAY))
@@ -402,6 +400,7 @@ program
           todayStart,
           yesterdayEnd,
           backfillDays: BACKFILL_DAYS,
+          coldStartHistoryDays: selectedPeriodHistoryDays,
         })
 
         if (effectiveGapStart.getTime() <= yesterdayEnd.getTime()) {

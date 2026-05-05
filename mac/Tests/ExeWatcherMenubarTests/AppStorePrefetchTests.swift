@@ -34,14 +34,16 @@ private func makePayload(
 
 private actor FetchRecorder {
     private let payloads: [PayloadCacheKey: MenubarPayload]
+    private let now: @Sendable () -> Date
     private var calls: [PayloadCacheKey] = []
 
-    init(payloads: [PayloadCacheKey: MenubarPayload]) {
+    init(payloads: [PayloadCacheKey: MenubarPayload], now: @escaping @Sendable () -> Date = Date.init) {
         self.payloads = payloads
+        self.now = now
     }
 
     func fetch(period: Period, provider: ProviderFilter, includeOptimize: Bool) async throws -> MenubarPayload {
-        let key = PayloadCacheKey(period: period, provider: provider, includeOptimize: includeOptimize)
+        let key = PayloadCacheKey(period: period, provider: provider, includeOptimize: includeOptimize, now: now())
         calls.append(key)
         guard let payload = payloads[key] else {
             throw NSError(domain: "FetchRecorder", code: 1, userInfo: [NSLocalizedDescriptionKey: "Missing payload for \(key)"])
@@ -174,7 +176,7 @@ struct AppStoreProviderPrefetchTests {
                 statsFileAge: nil,
                 projectSpend: nil
             ),
-        ])
+        ], now: { clock.now })
 
         let store = AppStore(
             fetchPayload: { period, provider, includeOptimize in

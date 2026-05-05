@@ -2,6 +2,26 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 export const DEFAULT_COLD_START_HISTORY_DAYS = 7
 export const DEFAULT_PROGRESSIVE_CHUNK_DAYS = 30
+export const ALL_TIME_HISTORY_DAYS = 365
+export const THIRTY_DAY_HISTORY_DAYS = 30
+export const WEEK_HISTORY_DAYS = 7
+
+export type ProgressiveBackfillPeriod = 'today' | 'week' | '30days' | 'month' | 'all'
+
+export function resolveColdStartHistoryDays(period: ProgressiveBackfillPeriod, now = new Date()): number {
+  switch (period) {
+    case 'today':
+      return 1
+    case 'week':
+      return WEEK_HISTORY_DAYS
+    case '30days':
+      return THIRTY_DAY_HISTORY_DAYS
+    case 'month':
+      return Math.max(now.getDate(), 1)
+    case 'all':
+      return ALL_TIME_HISTORY_DAYS
+  }
+}
 
 type ProgressiveBackfillStartInput = {
   lastComputedDate: string | null

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.9 (2026-05-05)
+
+### Fixes
+- Match the active menubar period tab styling to the gold provider tabs, with dark purple text for contrast
+- Make cold-start backfill period-aware so Today/7 Days/30 Days/Month/All fetch the history window that period needs
+- Expand the menubar "All" period to a 365-day window so its totals line up with the backfill/history cap
+
 ## 0.2.8 (2026-05-05)
 
 ### Fixes
