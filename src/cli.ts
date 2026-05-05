@@ -508,11 +508,9 @@ program
         for (const [name, cost] of Object.entries(providerTotals)) {
           providers.push({ name: displayNameByName.get(name) ?? name, cost })
         }
-        for (const p of allProviders) {
-          if (providers.some(pc => pc.name === p.displayName)) continue
-          const sources = await p.discoverSessions()
-          if (sources.length > 0) providers.push({ name: p.displayName, cost: 0 })
-        }
+        // Skip filesystem scan for installed-but-zero providers — only show providers
+        // with actual spend. Saves ~500ms from discoverSessions() calls on cold paths.
+        // Providers appear automatically when they accumulate spend.
       } else {
         const display = displayNameByName.get(pf) ?? pf
         providers.push({ name: display, cost: currentData.cost })
@@ -626,11 +624,11 @@ program
         const [proj7d, proj30d] = await Promise.all([
           Promise.race([
             parseAllSessions(getDateRange('week').range, 'all'),
-            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 3000)),
+            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 500)),
           ]),
           Promise.race([
             parseAllSessions(getDateRange('30days').range, 'all'),
-            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 3000)),
+            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 500)),
           ]),
         ])
         projectSpend = buildProjectSpend(allTodayProjects, proj7d, proj30d)
@@ -639,7 +637,9 @@ program
       }
 
       const diagnostics: DiagnosticsBlock = { daysCount, parseTimeMs, warnings }
-      console.log(JSON.stringify(buildMenubarPayload(currentData, providers, optimize, dailyHistory, agentStats, projectSpend, exeOsDetected, statsFileAge, diagnostics)))
+      const payload = buildMenubarPayload(currentData, providers, optimize, dailyHistory, agentStats, projectSpend, exeOsDetected, statsFileAge, diagnostics)
+      const json = JSON.stringify(payload)
+      console.log(json)
       return
     }
 
