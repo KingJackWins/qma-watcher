@@ -410,7 +410,7 @@ enum SubscriptionLoadState: Sendable, Equatable {
 }
 
 enum InsightMode: String, CaseIterable, Identifiable {
-    case plan = "Plan"
+    case plan = "Usage"
     case trend = "Trend"
     case forecast = "Forecast"
     case pulse = "Pulse"
