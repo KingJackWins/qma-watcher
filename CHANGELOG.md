@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.8 (2026-05-05)
+
+### Fixes
+- Cold-start history now backfills at least 7 days so the default 7-day menubar view is populated immediately instead of showing only today
+- Preserve the 30-day progressive catch-up limit for warm caches while allowing cold starts to parse recent historical spend
+
 ## 0.2.0 (2026-04-28)
 
 ### Features

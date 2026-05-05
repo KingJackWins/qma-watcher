@@ -21,6 +21,7 @@ import { getAllProviders } from './providers/index.js'
 import { clearPlan, readConfig, readPlan, saveConfig, savePlan, getConfigFilePath, type PlanId } from './config.js'
 import { clampResetDay, getPlanUsageOrNull, type PlanUsage } from './plan-usage.js'
 import { getPresetPlan, isPlanId, isPlanProvider, planDisplayName } from './plans.js'
+import { computeProgressiveBackfillStart } from './progressive-backfill.js'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
@@ -396,27 +397,14 @@ program
           c = { ...c, days: freshDays, lastComputedDate: latestFresh }
         }
 
-        // On cold start (no cache at all), SKIP the backfill entirely and just show today.
-        // The menubar calls us every 60s — we'll progressively fill history on subsequent runs.
-        // This makes cold-start latency ~3-4s instead of ~15s.
-        const PROGRESSIVE_CHUNK_DAYS = 30
-        const isColdStart = !c.lastComputedDate
-        const gapStart = c.lastComputedDate
-          ? new Date(
-              parseInt(c.lastComputedDate.slice(0, 4)),
-              parseInt(c.lastComputedDate.slice(5, 7)) - 1,
-              parseInt(c.lastComputedDate.slice(8, 10)) + 1
-            )
-          : new Date(todayStart.getTime() - BACKFILL_DAYS * MS_PER_DAY)
-        // Limit each run to at most 30 days of backfill to keep latency bounded.
-        const fullBackfillStart = new Date(todayStart.getTime() - BACKFILL_DAYS * MS_PER_DAY)
-        const effectiveGapStart = isColdStart ? todayStart  // skip backfill on cold start
-          : gapStart < fullBackfillStart ? fullBackfillStart
-          : (yesterdayEnd.getTime() - gapStart.getTime()) > PROGRESSIVE_CHUNK_DAYS * MS_PER_DAY
-            ? new Date(yesterdayEnd.getTime() - PROGRESSIVE_CHUNK_DAYS * MS_PER_DAY)
-            : gapStart
+        const effectiveGapStart = computeProgressiveBackfillStart({
+          lastComputedDate: c.lastComputedDate,
+          todayStart,
+          yesterdayEnd,
+          backfillDays: BACKFILL_DAYS,
+        })
 
-        if (!isColdStart && effectiveGapStart.getTime() <= yesterdayEnd.getTime()) {
+        if (effectiveGapStart.getTime() <= yesterdayEnd.getTime()) {
           const gapRange: DateRange = { start: effectiveGapStart, end: yesterdayEnd }
           const gapProjects = filterProjectsByName(await parseAllSessions(gapRange, 'all'), opts.project, opts.exclude)
           const gapDays = fillMissingDays(gapRange.start, gapRange.end, aggregateProjectsIntoDays(gapProjects))
