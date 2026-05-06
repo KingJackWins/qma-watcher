@@ -125,6 +125,7 @@ private struct MemoryRow: View {
 // MARK: - Spend sub-section
 
 private struct SpendSubSection: View {
+    @Environment(AppStore.self) private var store
     let stats: AgentStatsBlock
 
     private let colSpend: CGFloat = 52
@@ -147,8 +148,11 @@ private struct SpendSubSection: View {
             .tracking(-0.05)
 
             let sorted = stats.agents
-                .filter { $0.cost30d > 0 }
-                .sorted { $0.cost30d > $1.cost30d }
+                .filter { selectedAgentSpendValue($0, period: store.selectedPeriod) > 0 }
+                .sorted {
+                    selectedAgentSpendValue($0, period: store.selectedPeriod) >
+                    selectedAgentSpendValue($1, period: store.selectedPeriod)
+                }
 
             if sorted.isEmpty {
                 Text("No agent spend recorded yet")
@@ -156,9 +160,14 @@ private struct SpendSubSection: View {
                     .foregroundStyle(.tertiary)
                     .padding(.vertical, 4)
             } else {
-                let maxCost = sorted.first?.cost30d ?? 1
+                let maxCost = sorted.map { selectedAgentSpendValue($0, period: store.selectedPeriod) }.max() ?? 1
                 ForEach(sorted.prefix(8)) { agent in
-                    SpendRow(agent: agent, maxCost: maxCost, colSpend: colSpend)
+                    SpendRow(
+                        agent: agent,
+                        barValue: selectedAgentSpendValue(agent, period: store.selectedPeriod),
+                        maxCost: maxCost,
+                        colSpend: colSpend
+                    )
                 }
             }
         }
@@ -167,12 +176,13 @@ private struct SpendSubSection: View {
 
 private struct SpendRow: View {
     let agent: AgentStat
+    let barValue: Double
     let maxCost: Double
     let colSpend: CGFloat
 
     var body: some View {
         HStack(spacing: 3) {
-            FixedBar(fraction: agent.cost30d / maxCost)
+            FixedBar(fraction: barValue / max(maxCost, 0.01))
                 .frame(width: 32, height: 6)
 
             Text(agent.id)

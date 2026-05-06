@@ -9,7 +9,7 @@ import { parseAllSessions, filterProjectsByName } from './parser.js'
 import { convertCost } from './currency.js'
 import { renderStatusBar } from './format.js'
 import { type PeriodData, type ProviderCost, type AgentStatsPayload } from './menubar-json.js'
-import { buildMenubarPayload, computeAgentSpend, mergeAgentSpend, buildProjectSpend, estimateAgentCosts, type DiagnosticsBlock } from './menubar-json.js'
+import { buildMenubarPayload, computeAgentSpend, mergeAgentSpend, buildProjectSpendFromDays, estimateAgentCosts, type DiagnosticsBlock } from './menubar-json.js'
 import { addNewDays, buildDailyCacheScopeKey, getDaysInRange, loadDailyCache, saveDailyCache, withDailyCacheLock } from './daily-cache.js'
 import { aggregateProjectsIntoDays, buildPeriodDataFromDays, filterDaysToProvider, dateKey, fillMissingDays } from './day-aggregator.js'
 import { CATEGORY_LABELS, type DateRange, type ProjectSummary, type TaskCategory } from './types.js'
@@ -458,6 +458,7 @@ program
       // Previously, specific providers re-parsed all sessions which could produce different
       // totals than the all-provider breakdown (different dedup order, different discovery).
       let daysCount = 0
+      let selectedPeriodDays = [] as ReturnType<typeof aggregateProjectsIntoDays>
       {
         const rangeStartStr = toDateString(periodInfo.range.start)
         const rangeEndStr = toDateString(periodInfo.range.end)
@@ -465,15 +466,15 @@ program
         // Only include today from the fresh parse — historical days already come from cache.
         // Without this filter, days between rangeStart and yesterday appear in BOTH arrays.
         const todayOnly = todayDays.filter(d => d.date > yesterdayStr && d.date <= rangeEndStr)
-        const allDays = [...historicalDays, ...todayOnly].sort((a, b) => a.date.localeCompare(b.date))
-        daysCount = allDays.length
+        selectedPeriodDays = [...historicalDays, ...todayOnly].sort((a, b) => a.date.localeCompare(b.date))
+        daysCount = selectedPeriodDays.length
 
         if (isAllProviders) {
-          currentData = buildPeriodDataFromDays(allDays, periodInfo.label)
+          currentData = buildPeriodDataFromDays(selectedPeriodDays, periodInfo.label)
         } else {
           // Filter to the specific provider's cost/calls from the same aggregated data,
           // so the number always matches the all-provider breakdown.
-          const providerDays = filterDaysToProvider(allDays, pf)
+          const providerDays = filterDaysToProvider(selectedPeriodDays, pf)
           currentData = buildPeriodDataFromDays(providerDays, periodInfo.label)
         }
       }
@@ -612,25 +613,26 @@ program
         agentStats = estimateAgentCosts(agentStats)
       }
 
-      // Per-project spend across 24h/7d/30d periods.
-      // The 7d/30d parses are expensive (scan all session files). Run them in parallel
-      // but don't block the menubar response — if the parser cache is cold, emit today-only
-      // project spend now and the next refresh (with warm cache) fills in 7d/30d.
-      let projectSpend: ReturnType<typeof buildProjectSpend> | null = null
+      // Per-project spend across 24h/7d/30d periods, ranked by the currently selected period.
+      // Use the daily cache + today's fresh parse so this stays fast without rendering empty
+      // 7d/30d columns on cold historical selections.
+      let projectSpend: ReturnType<typeof buildProjectSpendFromDays> | null = null
       try {
-        const [proj7d, proj30d] = await Promise.all([
-          Promise.race([
-            parseAllSessions(getDateRange('week').range, 'all'),
-            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 500)),
-          ]),
-          Promise.race([
-            parseAllSessions(getDateRange('30days').range, 'all'),
-            new Promise<ProjectSummary[]>(r => setTimeout(() => r([]), 500)),
-          ]),
-        ])
-        projectSpend = buildProjectSpend(allTodayProjects, proj7d, proj30d)
+        const weekStartStr = toDateString(getDateRange('week').range.start)
+        const thirtyDayStartStr = toDateString(getDateRange('30days').range.start)
+        const todayOnlyDays = todayDays.filter(d => d.date > yesterdayStr)
+        const days7d = [
+          ...getDaysInRange(cache, weekStartStr, yesterdayStr),
+          ...todayOnlyDays,
+        ].sort((a, b) => a.date.localeCompare(b.date))
+        const days30d = [
+          ...getDaysInRange(cache, thirtyDayStartStr, yesterdayStr),
+          ...todayOnlyDays,
+        ].sort((a, b) => a.date.localeCompare(b.date))
+        projectSpend = buildProjectSpendFromDays(selectedPeriodDays, todayOnlyDays, days7d, days30d)
       } catch {
-        projectSpend = buildProjectSpend(allTodayProjects, [], [])
+        const todayOnlyDays = todayDays.filter(d => d.date > yesterdayStr)
+        projectSpend = buildProjectSpendFromDays(selectedPeriodDays, todayOnlyDays, [], [])
       }
 
       const diagnostics: DiagnosticsBlock = { daysCount, parseTimeMs, warnings }
@@ -981,7 +983,7 @@ program
 program
   .command('optimize')
   .description('Find token waste and get exact fixes')
-  .option('-p, --period <period>', 'Analysis period: today, week, 30days, month, all', '30days')
+  .option('-p, --period <period>', 'Analysis period: today, week, 30days, month, all', 'week')
   .option('--provider <provider>', 'Filter by provider: all, claude, codex, cursor', 'all')
   .action(async (opts) => {
     await loadPricing()

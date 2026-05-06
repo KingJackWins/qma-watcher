@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.13 (2026-05-06)
+
+### Fixes
+- Populate Project Spend from cached per-day project rollups so 7d/30d columns stay filled without blocking the menubar on slow historical re-parses
+- Collapse `.worktrees` project paths like `exe-os-.worktrees-tom` back to their parent project names in the menubar
+- Make Trend, Forecast, Stats, Project Spend, and Employee Spend respond to the selected Today/7 Days/30 Days/Month/All window instead of hardcoded day/month labels
+- Default `exe-watcher optimize` to the 7-day window so the command stays interactive on larger local session corpora
+
+### Tests
+- Add TypeScript regression coverage for project-spend ranking/name cleanup
+- Add Swift period-windowing tests for selected-range labels and zero-filled history windows
+
 ## 0.2.10 (2026-05-05)
 
 ### Fixes

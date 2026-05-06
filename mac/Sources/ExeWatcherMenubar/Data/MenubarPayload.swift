@@ -25,12 +25,13 @@ struct ProjectSpendEntry: Codable, Sendable, Identifiable {
     let cost24h: Double
     let cost7d: Double
     let cost30d: Double
+    let selectedPeriodCost: Double
     let sessions: Int
 
     var id: String { name }
 
     enum CodingKeys: String, CodingKey {
-        case name, cost24h, cost7d, cost30d, sessions
+        case name, cost24h, cost7d, cost30d, selectedPeriodCost, sessions
     }
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -38,6 +39,7 @@ struct ProjectSpendEntry: Codable, Sendable, Identifiable {
         cost24h = try c.decodeIfPresent(Double.self, forKey: .cost24h) ?? 0
         cost7d = try c.decodeIfPresent(Double.self, forKey: .cost7d) ?? 0
         cost30d = try c.decodeIfPresent(Double.self, forKey: .cost30d) ?? 0
+        selectedPeriodCost = try c.decodeIfPresent(Double.self, forKey: .selectedPeriodCost) ?? cost30d
         sessions = try c.decodeIfPresent(Int.self, forKey: .sessions) ?? 0
     }
 }

@@ -21,6 +21,7 @@ function emptyEntry(date: string): DailyEntry {
     models: {},
     categories: {},
     providers: {},
+    projects: {},
   }
 }
 
@@ -60,11 +61,21 @@ export function aggregateProjectsIntoDays(projects: ProjectSummary[]): DailyEntr
     }
     return breakdown
   }
+  const ensureProject = (date: string, projectName: string) => {
+    const day = ensure(date)
+    let project = day.projects[projectName]
+    if (!project) {
+      project = { cost: 0, sessions: 0 }
+      day.projects[projectName] = project
+    }
+    return project
+  }
 
   for (const project of projects) {
     for (const session of project.sessions) {
       const sessionDate = dateKey(session.firstTimestamp)
       ensure(sessionDate).sessions += 1
+      ensureProject(sessionDate, project.project).sessions += 1
       const providersSeenInSession = new Set<string>()
 
       for (const turn of session.turns) {
@@ -114,6 +125,7 @@ export function aggregateProjectsIntoDays(projects: ProjectSummary[]): DailyEntr
           model.cacheReadTokens += call.usage.cacheReadInputTokens
           model.cacheWriteTokens += call.usage.cacheCreationInputTokens
           callDay.models[call.model] = model
+          ensureProject(callDate, project.project).cost += call.costUSD
 
         }
 

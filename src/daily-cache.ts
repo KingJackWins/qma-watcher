@@ -5,7 +5,7 @@ import { join } from 'path'
 
 import { getCacheDir } from './cache-dir.js'
 
-export const DAILY_CACHE_VERSION = 4
+export const DAILY_CACHE_VERSION = 5
 export const DEFAULT_DAILY_CACHE_SCOPE = 'global'
 const DAILY_CACHE_FILENAME = 'daily-cache.json'
 
@@ -53,6 +53,7 @@ export type DailyEntry = {
   models: Record<string, DailyModelTotals>
   categories: Record<string, DailyCategoryTotals>
   providers: Record<string, ProviderDailyBreakdown>
+  projects: Record<string, { cost: number; sessions: number }>
 }
 
 export type DailyCache = {

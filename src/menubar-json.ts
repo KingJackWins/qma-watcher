@@ -20,6 +20,7 @@ export type ProviderCost = {
 }
 import type { OptimizeResult } from './optimize.js'
 import type { ProjectSummary } from './types.js'
+import type { DailyEntry } from './daily-cache.js'
 import { readdirSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { homedir } from 'os'
@@ -95,7 +96,7 @@ export type MenubarPayload = {
   agentStats: AgentStatsPayload | null
   exeOsDetected: boolean
   statsFileAge: number | null
-  projectSpend: Array<{ name: string; cost24h: number; cost7d: number; cost30d: number; sessions: number }> | null
+  projectSpend: Array<{ name: string; cost24h: number; cost7d: number; cost30d: number; selectedPeriodCost: number; sessions: number }> | null
 }
 
 type SpendBucket = { inputTokens?: number; outputTokens?: number; costUSD?: number; sessions?: number }
@@ -195,14 +196,16 @@ export function mergeAgentSpend(stats: AgentStatsPayload | null, spend: Record<s
  * No worktree: `-Users-alice-exe-watcher` → "user"
  */
 /**
- * Builds per-project spend from parsed project summaries. Cleans up directory-style
- * names into human-readable project names (e.g. "-Users-alice-exe-os" → "exe-os").
+ * Builds per-project spend from parsed project summaries. The row set and sort order come from
+ * the currently selected period, while 24h/7d/30d remain visible as comparison columns. Cleans
+ * up directory-style names into human-readable project names (e.g. "-Users-alice-exe-os" → "exe-os").
  */
 export function buildProjectSpend(
+  projectsSelectedPeriod: ProjectSummary[],
   projects24h: ProjectSummary[],
   projects7d: ProjectSummary[],
   projects30d: ProjectSummary[],
-): Array<{ name: string; cost24h: number; cost7d: number; cost30d: number; sessions: number }> {
+): Array<{ name: string; cost24h: number; cost7d: number; cost30d: number; selectedPeriodCost: number; sessions: number }> {
   const aggregate = (projects: ProjectSummary[]) => {
     const byName: Record<string, { cost: number; sessions: number }> = {}
     for (const p of projects) {
@@ -213,31 +216,75 @@ export function buildProjectSpend(
     }
     return byName
   }
+  const selected = aggregate(projectsSelectedPeriod)
   const d24 = aggregate(projects24h)
   const d7 = aggregate(projects7d)
   const d30 = aggregate(projects30d)
-  const allNames = new Set([...Object.keys(d24), ...Object.keys(d7), ...Object.keys(d30)])
+  const allNames = new Set([...Object.keys(selected), ...Object.keys(d24), ...Object.keys(d7), ...Object.keys(d30)])
   return Array.from(allNames)
     .map(name => ({
       name,
       cost24h: d24[name]?.cost ?? 0,
       cost7d: d7[name]?.cost ?? 0,
       cost30d: d30[name]?.cost ?? 0,
-      sessions: d30[name]?.sessions ?? d7[name]?.sessions ?? d24[name]?.sessions ?? 0,
+      selectedPeriodCost: selected[name]?.cost ?? 0,
+      sessions: selected[name]?.sessions ?? d30[name]?.sessions ?? d7[name]?.sessions ?? d24[name]?.sessions ?? 0,
     }))
-    .filter(d => d.cost30d > 0 || d.cost7d > 0 || d.cost24h > 0)
-    .sort((a, b) => b.cost30d - a.cost30d)
+    .filter(d => d.selectedPeriodCost > 0)
+    .sort((a, b) => b.selectedPeriodCost - a.selectedPeriodCost)
+}
+
+export function buildProjectSpendFromDays(
+  selectedDays: DailyEntry[],
+  days24h: DailyEntry[],
+  days7d: DailyEntry[],
+  days30d: DailyEntry[],
+): Array<{ name: string; cost24h: number; cost7d: number; cost30d: number; selectedPeriodCost: number; sessions: number }> {
+  const aggregate = (days: DailyEntry[]) => {
+    const byName: Record<string, { cost: number; sessions: number }> = {}
+    for (const day of days) {
+      for (const [projectName, totals] of Object.entries(day.projects)) {
+        const name = cleanProjectName(projectName)
+        if (!byName[name]) byName[name] = { cost: 0, sessions: 0 }
+        byName[name].cost += totals.cost
+        byName[name].sessions += totals.sessions
+      }
+    }
+    return byName
+  }
+
+  const selected = aggregate(selectedDays)
+  const d24 = aggregate(days24h)
+  const d7 = aggregate(days7d)
+  const d30 = aggregate(days30d)
+  const allNames = new Set([...Object.keys(selected), ...Object.keys(d24), ...Object.keys(d7), ...Object.keys(d30)])
+
+  return Array.from(allNames)
+    .map(name => ({
+      name,
+      cost24h: d24[name]?.cost ?? 0,
+      cost7d: d7[name]?.cost ?? 0,
+      cost30d: d30[name]?.cost ?? 0,
+      selectedPeriodCost: selected[name]?.cost ?? 0,
+      sessions: selected[name]?.sessions ?? d30[name]?.sessions ?? d7[name]?.sessions ?? d24[name]?.sessions ?? 0,
+    }))
+    .filter(d => d.selectedPeriodCost > 0)
+    .sort((a, b) => b.selectedPeriodCost - a.selectedPeriodCost)
 }
 
 /**
  * Extracts a human-readable project name from the Claude projects directory name.
  * "-Users-alice-exe-os" → "exe-os"
  * "-Users-alice-exe-os--worktrees-worker1" → "exe-os"
+ * "Users-alice-exe-os-.worktrees-worker1" → "exe-os"
  * "-Users-alice-CMO" → "CMO"
  */
 function cleanProjectName(dirName: string): string {
   // Strip worktree suffix — attribute to the base project
-  const base = dirName.replace(/--worktrees-.*$/, '')
+  const base = dirName
+    .replace(/--worktrees-.*$/, '')
+    .replace(/-\.worktrees-.*/, '')
+    .replace(/\/\.worktrees\/.*/, '')
   // Take last path segment (after the last single hyphen that follows a known pattern)
   const parts = base.split('-')
   // Find the user directory prefix and take everything after it
@@ -334,7 +381,7 @@ export function buildMenubarPayload(
   optimize: OptimizeResult | null,
   dailyHistory?: DailyHistoryEntry[],
   agentStats?: AgentStatsPayload | null,
-  projectSpend?: Array<{ name: string; cost24h: number; cost7d: number; cost30d: number; sessions: number }> | null,
+  projectSpend?: Array<{ name: string; cost24h: number; cost7d: number; cost30d: number; selectedPeriodCost: number; sessions: number }> | null,
   exeOsDetected?: boolean,
   statsFileAge?: number | null,
   diagnostics?: DiagnosticsBlock,
