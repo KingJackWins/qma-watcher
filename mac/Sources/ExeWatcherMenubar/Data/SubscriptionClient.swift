@@ -1,6 +1,8 @@
 import Foundation
+import Security
 
 private let credentialsRelativePath = ".claude/.credentials.json"
+private let keychainService = "Claude Code-credentials"
 private let oauthClientID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
 private let refreshURL = URL(string: "https://platform.claude.com/v1/oauth/token")!
 private let usageURL = URL(string: "https://api.anthropic.com/api/oauth/usage")!
@@ -49,10 +51,32 @@ struct SubscriptionClient {
     // MARK: - Credentials
 
     private static func loadCredentials() throws -> StoredCredentials {
+        // Try file first (silent, no popup). Falls back to Keychain (one-time macOS
+        // permission prompt — click "Always Allow" and it never asks again).
         if let data = try readFileCredentials() {
             return try parseCredentials(data: sanitize(data))
         }
+        if let creds = try readKeychainCredentials() {
+            return creds
+        }
         throw SubscriptionError.noCredentials
+    }
+
+    private static func readKeychainCredentials() throws -> StoredCredentials? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecReturnData as String: true,
+        ]
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecItemNotFound || status == errSecAuthFailed { return nil }
+        guard status == errSecSuccess, let data = result as? Data else {
+            NSLog("Exe Watcher: keychain query status=\(status)")
+            return nil
+        }
+        return try parseCredentials(data: sanitize(data))
     }
 
     private static func readFileCredentials() throws -> Data? {

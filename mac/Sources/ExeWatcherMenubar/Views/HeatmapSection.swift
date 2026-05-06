@@ -1042,27 +1042,19 @@ private struct PlanNoCredentialsView: View {
             Image(systemName: "key.slash")
                 .font(.system(size: 20))
                 .foregroundStyle(.tertiary)
-            Text("No credentials found")
+            Text("Connect your Claude account")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.primary)
-            Text("Sign in to your Anthropic account to see your 5-hour and weekly usage limits.")
+            Text("Click below to see your 5-hour and weekly usage limits. macOS will ask for Keychain access once — click \"Always Allow\".")
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 260)
-            HStack(spacing: 8) {
-                Button("Sign In") {
-                    if let url = URL(string: "https://console.anthropic.com") {
-                        NSWorkspace.shared.open(url)
-                    }
-                }
-                .controlSize(.small)
-                .goldButton()
-                Button("Retry") {
-                    Task { await store.refreshSubscription() }
-                }
-                .controlSize(.small)
+            Button("Load Usage") {
+                Task { await store.refreshSubscription() }
             }
+            .controlSize(.small)
+            .goldButton()
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
