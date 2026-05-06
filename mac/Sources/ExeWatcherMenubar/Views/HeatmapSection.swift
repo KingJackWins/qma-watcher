@@ -1136,7 +1136,7 @@ private struct UtilizationRow: View {
     /// Single-color brand palette decision (see session notes): the number is the signal, not
     /// the color. Keeping this as a computed property so a future threshold-based palette
     /// reintroduction stays scoped to one place.
-    private var barColor: Color { Theme.brandAccent }
+    private var barColor: Color { Theme.brandEmberDeep }
 }
 
 private struct ProjectionCaption: View {
