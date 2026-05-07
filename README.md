@@ -215,11 +215,11 @@ Two components, loosely coupled via CLI output:
 
 ## Test suite
 
-143 tests across 3 layers:
+637 tests across 3 layers:
 
 | Layer | Framework | Count | What it covers |
 |-------|-----------|-------|----------------|
-| **CLI data integrity** | Vitest | 100 | Schema validation, provider sum consistency, period monotonicity, project spend accuracy, 365-day history, token sanity checks |
+| **CLI data integrity** | Vitest | 594 | Schema validation, provider sum consistency, period monotonicity, project spend accuracy, 365-day history, token sanity checks |
 | **Swift state** | XCTest | 37 | Period windowing, cache isolation, prefetch logic, capacity estimation, CLI resolution, provider sum validation, JSON decode |
 | **UI smoke** | XCTest + Accessibility | 6 | App launch, status item presence, popover display, period switching via macOS Accessibility APIs |
 
@@ -315,7 +315,7 @@ Watcher is forked from [codeburn](https://github.com/getagentseal/codeburn) by [
 - Daily cache system (v5) with atomic writes and cold-start 365-day backfill
 - Capacity estimation from usage patterns
 - Multi-currency support (17 currencies)
-- 143-test suite across CLI, Swift state, and UI smoke layers
+- 637-test suite across CLI, Swift state, and UI smoke layers
 - Consolidated activity categories from 13 to 6
 - Fixed double-counting bugs in the menubar JSON pipeline
 - Performance: 7-day and 30-day queries from 2-5s down to ~1s via daily cache
