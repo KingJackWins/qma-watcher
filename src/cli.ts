@@ -395,6 +395,7 @@ program
           c = { ...c, days: freshDays, lastComputedDate: latestFresh }
         }
 
+        // --- FORWARD GAP: fill from lastComputedDate through yesterday ---
         const oldestCachedDate = c.days.length > 0 ? c.days[0].date : null
         const effectiveGapStart = computeProgressiveBackfillStart({
           lastComputedDate: c.lastComputedDate,
@@ -420,6 +421,26 @@ program
           c = addNewDays(c, gapDays, yesterdayStr, coveredThrough ? { coveredThrough } : undefined)
           await saveDailyCache(c)
         }
+
+        // --- BACKWARD GAP: if the forward fill ran but the cache still doesn't reach
+        // far enough back for the requested period, fill backward now. Without this,
+        // the forward gap (yesterday re-eviction) blocks backward fills indefinitely. ---
+        const updatedOldest = c.days.length > 0 ? c.days[0].date : null
+        const neededStart = new Date(todayStart.getTime() - (selectedPeriodHistoryDays - 1) * MS_PER_DAY)
+        const fullBackfillStart = new Date(todayStart.getTime() - BACKFILL_DAYS * MS_PER_DAY)
+        const clampedNeeded = neededStart < fullBackfillStart ? fullBackfillStart : neededStart
+
+        if (updatedOldest && clampedNeeded.getTime() < new Date(updatedOldest).getTime()) {
+          const backEnd = new Date(new Date(updatedOldest).getTime() - MS_PER_DAY)
+          if (clampedNeeded.getTime() <= backEnd.getTime()) {
+            const backRange: DateRange = { start: clampedNeeded, end: backEnd }
+            const backProjects = filterProjectsByName(await parseAllSessions(backRange, 'all'), opts.project, opts.exclude)
+            const backDays = fillMissingDays(backRange.start, backRange.end, aggregateProjectsIntoDays(backProjects))
+            c = addNewDays(c, backDays, yesterdayStr)
+            await saveDailyCache(c)
+          }
+        }
+
         return c
       })
 
