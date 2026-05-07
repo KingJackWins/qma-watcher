@@ -27,6 +27,10 @@ let package = Package(
             name: "ExeWatcherMenubarTests",
             dependencies: ["ExeWatcherMenubar"],
             path: "Tests/ExeWatcherMenubarTests"
+        ),
+        .testTarget(
+            name: "ExeWatcherUITests",
+            path: "Tests/ExeWatcherUITests"
         )
     ]
 )
