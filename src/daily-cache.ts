@@ -5,7 +5,10 @@ import { join } from 'path'
 
 import { getCacheDir } from './cache-dir.js'
 
-export const DAILY_CACHE_VERSION = 5
+// v6: Codex pricing fixes (no reasoning double-count; long-context tiers use full prompt
+// input including cached tokens). Bump to evict historical day rows computed with v5 math so
+// report/CLI/menubar-json do not disagree across cached vs freshly parsed periods.
+export const DAILY_CACHE_VERSION = 6
 export const DEFAULT_DAILY_CACHE_SCOPE = 'global'
 const DAILY_CACHE_FILENAME = 'daily-cache.json'
 

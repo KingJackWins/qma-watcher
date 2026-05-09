@@ -213,6 +213,13 @@ describe('calculateCost - OMP names produce non-zero cost', () => {
     expect(calculateCost('gpt-5.4', 300_000, 100, 0, 0, 0)).toBeCloseTo(1.50225, 6)
   })
 
+  it('uses explicit tierInputTokens for cached long-context prompts', () => {
+    // 50K fresh + 250K cached should select the 300K long-context tier while still
+    // pricing the fresh/cache portions at their own rates.
+    expect(calculateCost('gpt-5.4', 50_000, 100, 0, 250_000, 0, 'standard', 300_000))
+      .toBeCloseTo(0.375 + 0.00225, 6)
+  })
+
   it('applies Gemini 2.5 Pro long-context pricing once prompts cross 200K tokens', () => {
     expect(calculateCost('gemini-2.5-pro', 250_000, 100, 0, 0, 0)).toBeCloseTo(0.6265, 6)
   })

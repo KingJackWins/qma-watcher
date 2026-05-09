@@ -4,6 +4,7 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 
 import { createCodexProvider } from '../../src/providers/codex.js'
+import { calculateCost } from '../../src/models.js'
 import type { ParsedProviderCall } from '../../src/providers/types.js'
 
 let tmpDir: string
@@ -173,6 +174,7 @@ describe('codex provider - JSONL parsing', () => {
     expect(call.userMessage).toBe('fix the bug')
     expect(call.sessionId).toBe('sess-parse')
     expect(call.costUSD).toBeGreaterThan(0)
+    expect(call.costUSD).toBeCloseTo(calculateCost('gpt-5.3-codex', 400, 200, 0, 100, 0, 'standard', 500))
     expect(call.deduplicationKey).toContain('codex:')
   })
 

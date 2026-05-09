@@ -246,13 +246,26 @@ function createParser(source: SessionSource, seenKeys: Set<string>): SessionPars
           if (seenKeys.has(dedupKey)) continue
           seenKeys.add(dedupKey)
 
+          // Codex/OpenAI reports cached_input_tokens as a subset of input_tokens.
+          // Store/report fresh input and cache reads separately, but choose long-context
+          // pricing tiers from the full prompt footprint. Otherwise a 300K-token prompt
+          // with a high cache hit rate would incorrectly stay on the sub-270K tier.
+          const totalPromptInputTokens = uncachedInputTokens + cachedInputTokens
+
+          // Codex token_count events expose reasoning_output_tokens for observability,
+          // but sampled events satisfy total_tokens = input_tokens + output_tokens.
+          // Billing output_tokens + reasoning_output_tokens double-counts reasoning.
+          const billableOutputTokens = outputTokens
+
           const costUSD = calculateCost(
             model,
             uncachedInputTokens,
-            outputTokens + reasoningTokens,
+            billableOutputTokens,
             0,
             cachedInputTokens,
             0,
+            'standard',
+            totalPromptInputTokens,
           )
 
           yield {

@@ -263,9 +263,10 @@ export function calculateCost(
   cacheReadTokens: number,
   webSearchRequests: number,
   speed: 'standard' | 'fast' = 'standard',
+  tierInputTokens?: number,
 ): number {
   const baseCosts = getModelCosts(model)
-  const costs = applyContextTier(baseCosts, inputTokens)
+  const costs = applyContextTier(baseCosts, tierInputTokens ?? inputTokens)
   if (!costs) return 0
 
   const multiplier = speed === 'fast' ? costs.fastMultiplier : 1
