@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/AskExe/exe-watcher@main/assets/owl-header.png" alt="Exe Watcher banner" width="520" />
+  <img src="assets/owl-header.png" alt="Exe Watcher banner" width="520" />
 </p>
 
 <p align="center"><strong>The owl watching your AI coding spend — tokens, cost, models, agents, and projects in one beautiful terminal + macOS menu bar.</strong></p>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AskExe/exe-watcher/main/assets/menubar-screenshot.png" alt="Exe Watcher macOS menu bar spend dashboard" width="401" />
+  <img src="assets/menubar-screenshot.png" alt="Exe Watcher macOS menu bar spend dashboard" width="401" />
 </p>
 
 Exe Watcher turns your local AI coding sessions into a live spend cockpit: today's burn, provider/model mix, activity breakdown, one-shot rate, token trends, optimization hints, and project cost — without API keys, cloud sync, or wrappers around your tools.
