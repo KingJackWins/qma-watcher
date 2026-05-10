@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/menubar-screenshot.png" alt="Exe Watcher macOS menu bar spend dashboard" width="401" />
+  <img src="assets/exe-watcher-screenshot.png" alt="Exe Watcher macOS menu bar spend dashboard" width="401" />
 </p>
 
 Exe Watcher turns your local AI coding sessions into a live spend cockpit: today's burn, provider/model mix, activity breakdown, one-shot rate, token trends, optimization hints, and project cost — without API keys, cloud sync, or wrappers around your tools.
