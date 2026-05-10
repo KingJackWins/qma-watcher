@@ -1,22 +1,22 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/AskExe/exe-watcher@main/assets/owl-header.png" alt="WATCHER" width="520" />
+  <img src="https://cdn.jsdelivr.net/gh/AskExe/exe-watcher@main/assets/owl-header.png" alt="Exe Watcher banner" width="520" />
 </p>
 
-<p align="center"><strong>Real-time AI spend tracker for developers — by <a href="https://github.com/AskExe">Exe AI</a>.</strong></p>
+<p align="center"><strong>The owl watching your AI coding spend — tokens, cost, models, agents, and projects in one beautiful terminal + macOS menu bar.</strong></p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/exe-watcher"><img src="https://img.shields.io/npm/v/exe-watcher.svg" alt="npm version" /></a>
   <a href="https://www.npmjs.com/package/exe-watcher"><img src="https://img.shields.io/npm/dt/exe-watcher.svg" alt="total downloads" /></a>
   <a href="https://github.com/AskExe/exe-watcher/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/exe-watcher.svg" alt="license" /></a>
-  <a href="https://github.com/AskExe/exe-watcher"><img src="https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg" alt="node version" /></a>
+  <a href="https://github.com/AskExe/exe-watcher"><img src="https://img.shields.io/badge/node-%3E%3D22.5-brightgreen.svg" alt="node version" /></a>
   <a href="https://discord.gg/pJ2DMWvtAx"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord" /></a>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AskExe/exe-watcher/main/assets/dashboard.jpg" alt="Watcher TUI dashboard" width="620" />
+  <img src="https://raw.githubusercontent.com/AskExe/exe-watcher/main/assets/menubar-screenshot.png" alt="Exe Watcher macOS menu bar spend dashboard" width="401" />
 </p>
 
-8 providers. 5 time periods. 17 currencies. Every dollar your AI coding tools spend, tracked automatically from local session data. No API keys, no cloud, no wrappers.
+Exe Watcher turns your local AI coding sessions into a live spend cockpit: today's burn, provider/model mix, activity breakdown, one-shot rate, token trends, optimization hints, and project cost — without API keys, cloud sync, or wrappers around your tools.
 
 ```bash
 npm install -g exe-watcher
@@ -24,9 +24,20 @@ npm install -g exe-watcher
 
 ---
 
+## What makes it cool
+
+- **Local-first spend tracking** — reads session data already on your machine; no telemetry service, no account, no proxy.
+- **Terminal + native macOS menu bar** — run the full TUI in your terminal or keep today's spend visible in the menu bar.
+- **Multi-provider view** — Claude Code, Codex, Cursor, Cursor Agent, Copilot, OpenCode, OMP, and Pi are auto-detected.
+- **Actually useful metrics** — cost, calls, sessions, tokens, cache hit %, one-shot rate, activity type, model split, tools, MCP servers, shell commands, and top sessions.
+- **Optimization built in** — finds token waste and gives copy-paste fixes for bloated prompts, repeated file reads, uncapped shell output, unused MCP servers, and ghost agents.
+- **Exe OS aware** — when Exe OS is present, Watcher adds AI employee memory growth and per-agent spend.
+
+---
+
 ## Features
 
-### Native macOS menubar app
+### Native macOS menu bar app
 
 ```bash
 exe-watcher menubar            # install + launch
@@ -35,18 +46,18 @@ exe-watcher menubar --force    # reinstall latest
 
 A Swift/SwiftUI popover that lives in your menu bar. Today's spend is always visible at a glance.
 
-- **Period switcher** — Today, 7 Days, 30 Days, Month, All Time. Each period shows comparison to prior period (e.g. "+12% vs last 7d").
-- **Provider tabs** — Switch between All, Claude, Codex, Cursor, etc. Only providers with actual spend appear. Cache prefetching makes tab switching instant.
-- **Project spend** — Per-project cost breakdown across 24h / 7d / 30d.
-- **Daily history heatmap** — 365 days of spend history, GitHub-contribution-style.
-- **Subscription tracking** — Claude Pro ($20/mo), Claude Max ($200/mo), Cursor Pro ($20/mo) — see how much of your quota you've used.
-- **Capacity estimation** — Derives your token limits from usage patterns when hard caps aren't published.
-- **Cache hit %** — Track prompt caching efficiency across providers.
-- **One-shot rate** — What percentage of edits land on the first try vs. retry loops.
-- **Token optimization** — Surfaces waste patterns with estimated savings.
-- **Multi-currency** — 17 currencies (USD, GBP, EUR, JPY, AUD, CAD, CHF, CNY, SEK, NOK, DKK, NZD, SGD, HKD, KRW, INR, BRL). ECB exchange rates, cached 24h.
+- **Period switcher** — Today, 7 Days, 30 Days, Month, All Time. Each period includes comparison to the previous window where available.
+- **Provider tabs** — Switch between All, Claude, Codex, Cursor, and any other detected provider with spend.
+- **Insight tabs** — Trend, Forecast, Pulse, and Stats summarize token/cost movement, projections, optimization wins, and usage streaks.
+- **Activity breakdown** — Research, Building, Debugging, DevOps, Testing, and Planning with cost, turns, and one-shot rate.
+- **Model breakdown** — See which models are driving spend and call volume.
+- **Project spend** — Per-project cost across today / 7d / 30d.
+- **Optimization findings** — Menubar links open the full optimizer or report directly in Terminal.
+- **Subscription tracking** — Claude Pro ($20/mo), Claude Max ($200/mo), Cursor Pro ($20/mo), or custom monthly budgets.
+- **Capacity estimation** — Derives likely token limits from usage patterns when hard caps aren't published.
+- **Multi-currency** — USD, GBP, EUR, JPY, AUD, CAD, CHF, CNY, SEK, NOK, DKK, NZD, SGD, HKD, KRW, INR, BRL.
 
-Silent background refresh every 30 seconds. Launches at login via macOS Login Items. No loading spinners — all periods are pre-fetched on launch.
+Silent background refresh runs every 30 seconds. Period/provider data is cached and prefetched so tab switching feels instant.
 
 ### Interactive TUI dashboard
 
@@ -198,7 +209,7 @@ Two components, loosely coupled via CLI output:
 │                                  │      │                                 │
 │  Reads provider session files    │ JSON │  Calls CLI with --format        │
 │  Computes cost via LiteLLM rates ├─────►│  menubar-json                   │
-│  Daily cache (v5, atomic writes) │      │  @Observable state management   │
+│  Daily cache (v6, atomic writes) │      │  @Observable state management   │
 │  365-day historical backfill     │      │  30s cache TTL, prefetch on     │
 │  Lock serialization for safety   │      │  launch, concurrent fetch       │
 │                                  │      │  guards                         │
@@ -207,7 +218,7 @@ Two components, loosely coupled via CLI output:
 
 **CLI pipeline:** Parse provider session files from disk → deduplicate by message ID → compute cost per token type (input, output, cache write, cache read, web search) → aggregate by period, project, model, activity → output as TUI, JSON, or CSV.
 
-**Menubar app:** Calls `exe-watcher status --format menubar-json --period <period> --provider <provider>` → decodes JSON → renders SwiftUI popover. All 5 periods are pre-fetched on launch for instant tab switching. Security: no shell injection — validated argv array passed directly, no `/bin/zsh -c`.
+**Menubar app:** Calls `exe-watcher status --format menubar-json --period <period> --provider <provider>` → decodes JSON → renders SwiftUI popover. All 5 periods are pre-fetched on launch for instant tab switching. Security: no shell injection — validated argv arrays are passed directly to child processes, not through a shell.
 
 **Deduplication** per provider: API message ID (Claude), cumulative token cross-check (Codex), conversation/timestamp (Cursor), session+message ID (OpenCode), responseId (Pi/OMP).
 
@@ -215,13 +226,13 @@ Two components, loosely coupled via CLI output:
 
 ## Test suite
 
-637 tests across 3 layers:
+638 tests across 3 layers:
 
 | Layer | Framework | Count | What it covers |
 |-------|-----------|-------|----------------|
-| **CLI data integrity** | Vitest | 594 | Schema validation, provider sum consistency, period monotonicity, project spend accuracy, 365-day history, token sanity checks |
-| **Swift state** | XCTest | 37 | Period windowing, cache isolation, prefetch logic, capacity estimation, CLI resolution, provider sum validation, JSON decode |
-| **UI smoke** | XCTest + Accessibility | 6 | App launch, status item presence, popover display, period switching via macOS Accessibility APIs |
+| **CLI data integrity** | Vitest | 595 | Schema validation, provider sum consistency, period monotonicity, project spend accuracy, 365-day history, token sanity checks |
+| **Swift state** | Swift Testing | 37 | Period windowing, cache isolation, prefetch logic, capacity estimation, CLI resolution, provider sum validation, JSON decode |
+| **UI smoke** | Swift Testing + Accessibility | 6 | App launch, status item presence, popover display, period switching via macOS Accessibility APIs |
 
 ```bash
 # Run CLI tests
@@ -312,10 +323,10 @@ Watcher is forked from [codeburn](https://github.com/getagentseal/codeburn) by [
 - 8 provider support (added Cursor Agent, Copilot, OMP, Pi, OpenCode)
 - Native macOS menubar app with multi-period views, provider tabs, project spend, and subscription tracking
 - Exe OS integration — per-agent spend and memory tracking for AI employee teams
-- Daily cache system (v5) with atomic writes and cold-start 365-day backfill
+- Daily cache system (v6) with atomic writes and cold-start/progressive 365-day backfill
 - Capacity estimation from usage patterns
 - Multi-currency support (17 currencies)
-- 637-test suite across CLI, Swift state, and UI smoke layers
+- 638-test suite across CLI, Swift state, and UI smoke layers
 - Consolidated activity categories from 13 to 6
 - Fixed double-counting bugs in the menubar JSON pipeline
 - Performance: 7-day and 30-day queries from 2-5s down to ~1s via daily cache
