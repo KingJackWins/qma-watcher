@@ -202,7 +202,7 @@ final class AppStore {
             errorsByKey[key] = nil
 
             if key.provider == .all {
-                await prefetchVisibleProviderPayloads(for: key.period)
+                scheduleVisibleProviderPrefetch(for: key.period)
             }
         } catch {
             errorsByKey[key] = Self.describe(error: error)
@@ -222,42 +222,57 @@ final class AppStore {
 
     /// Silent background refresh — does NOT toggle isLoading, so the popover loading overlay
     /// never flashes. Used by the timer loop and launch prefetch.
-    /// Always refreshes the .all-provider payload for the menubar badge, then preloads any
-    /// active provider payloads for that period so tab switches are instant.
+    /// Refreshes the .all-provider payload first and returns as soon as that visible aggregate
+    /// is ready. Provider-specific payloads warm in the background so period switches don't sit
+    /// behind N serial CLI scans (the 30-day view was doing all + Claude + Codex + ... before
+    /// rendering).
     func refreshQuietly(period: Period) async {
         let allKey = key(period: period, provider: .all, includeOptimize: false)
         await refreshIfNeeded(allKey, includeOptimize: false)
-        await prefetchVisibleProviderPayloads(for: period)
+        scheduleVisibleProviderPrefetch(for: period)
     }
 
-    /// Front-load all visible provider payloads for the period so tab switches can be immediate.
-    private func prefetchVisibleProviderPayloads(for period: Period) async {
-        guard let payload = mergedPayload(period: period, provider: .all) else { return }
+    private func visibleProviderKeys(for period: Period) -> [PayloadCacheKey] {
+        guard let payload = mergedPayload(period: period, provider: .all) else { return [] }
 
-        let providers = ProviderFilter.allCases
-            .filter { filter in
-                filter != .all
-            }
+        return ProviderFilter.allCases
+            .filter { $0 != .all }
             .compactMap { filter in
                 let hasSpend = payload.current.providers.contains { key, cost in
                     cost > 0 && key.lowercased() == filter.rawValue.lowercased()
                 }
-                return hasSpend ? filter : nil
+                return hasSpend ? key(period: period, provider: filter, includeOptimize: false) : nil
             }
+    }
 
-        for filter in providers {
-            let key = key(period: period, provider: filter, includeOptimize: false)
-            await refreshIfNeeded(key, includeOptimize: false)
+    /// Fire-and-forget provider prefetch. This is deliberately not awaited by selected-period
+    /// loads; it is an optimization for future tab switches, not a prerequisite for showing the
+    /// selected period's aggregate dashboard.
+    private func scheduleVisibleProviderPrefetch(for period: Period) {
+        let keys = visibleProviderKeys(for: period)
+        guard !keys.isEmpty else { return }
+        Task { @MainActor in
+            await withTaskGroup(of: Void.self) { group in
+                for key in keys {
+                    group.addTask { await self.refreshIfNeeded(key, includeOptimize: false) }
+                }
+            }
         }
     }
 
     /// Silent background refresh for the user-selected state that never blocks tab switching.
     private func refreshForSelectionInBackground(period: Period, provider: ProviderFilter) async {
-        let target = key(period: period, provider: provider == .all ? .all : provider, includeOptimize: false)
-        await refreshIfNeeded(target, includeOptimize: false)
+        // Header/provider tabs depend on the selected period's all-provider payload, so fetch it
+        // first. If the user selected .all, this is the only blocking fetch.
+        let allKey = key(period: period, provider: .all, includeOptimize: false)
+        await refreshIfNeeded(allKey, includeOptimize: false)
+
         if provider != .all {
-            await prefetchVisibleProviderPayloads(for: period)
+            let target = key(period: period, provider: provider, includeOptimize: false)
+            await refreshIfNeeded(target, includeOptimize: false)
         }
+
+        scheduleVisibleProviderPrefetch(for: period)
     }
 
     /// Fetch Claude subscription usage. Sets subscription = nil on missing creds (API users / unauthenticated).

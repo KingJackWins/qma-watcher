@@ -79,7 +79,7 @@ private actor CallCounter {
 
 @Suite("AppStore provider prefetch")
 struct AppStoreProviderPrefetchTests {
-    @Test("refreshQuietly front-loads visible provider payloads for today")
+    @Test("refreshQuietly renders aggregate first and warms visible providers")
     @MainActor
     func prefetchesVisibleProvidersOnInitialLoad() async throws {
         let allKey = PayloadCacheKey(period: .today, provider: .all)
@@ -98,9 +98,16 @@ struct AppStoreProviderPrefetchTests {
 
         await store.refreshQuietly(period: .today)
 
-        let keys = await recorder.recordedKeys()
-        #expect(keys == [allKey, claudeKey, codexKey])
+        // The aggregate all-provider payload should be available immediately; provider-specific
+        // payloads are now warmed asynchronously so selected-period views do not block behind
+        // multiple serial CLI scans.
         #expect(store.allProviderPayloadForPeriod?.current.cost == 18)
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+        let keys = await recorder.recordedKeys()
+        #expect(keys.contains(allKey))
+        #expect(keys.contains(claudeKey))
+        #expect(keys.contains(codexKey))
     }
 
     @Test("period switch prefetches that period's providers so tab switch is instant from cache")
