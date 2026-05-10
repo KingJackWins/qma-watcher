@@ -77,7 +77,7 @@ private struct InsightPillSwitcher: View {
     }
 }
 
-// MARK: - Trend (14-day bar chart with peak + average)
+// MARK: - Trend (period bar chart with 7-day average baseline)
 
 private struct TrendInsight: View {
     let days: [DailyHistoryEntry]
@@ -93,8 +93,18 @@ private struct TrendInsight: View {
         let totalTokens = bars.reduce(0.0) { $0 + $1.tokens }
         let useTokens = totalTokens > 0
         let metric: (TrendBar) -> Double = useTokens ? { $0.tokens } : { $0.cost }
-        let maxValue = max(bars.map(metric).max() ?? 1, 0.01)
-        let avgValue = bars.isEmpty ? 0 : bars.map(metric).reduce(0, +) / Double(bars.count)
+
+        // The dashed baseline should answer "am I above my recent normal?", not "where
+        // is the average of this exact chart?". For Today especially, averaging the
+        // selected one-day window makes the line identical to today's bar. Use the same
+        // 7-day lookback for every provider tab (All, Claude, Codex, OpenCode, etc.)
+        // because each tab receives provider-scoped history from the CLI.
+        let sevenDayWindow = makePeriodHistoryWindow(period: .sevenDays, history: days)
+        let sevenDayBars = buildTrendBars(from: sevenDayWindow.entries)
+        let sevenDayValues = sevenDayBars.map(metric)
+        let avgValue = sevenDayValues.isEmpty ? 0 : sevenDayValues.reduce(0, +) / Double(sevenDayValues.count)
+
+        let maxValue = max(bars.map(metric).max() ?? 1, avgValue, 0.01)
         let peakValue = bars.filter({ metric($0) > 0 }).max(by: { metric($0) < metric($1) })
         let latestValue = bars.last.map(metric)
 
@@ -132,7 +142,7 @@ private struct TrendInsight: View {
             .zIndex(1)
 
             HStack(spacing: 14) {
-                MiniStat(label: "Avg/day", value: formatValue(avgValue, useTokens: useTokens))
+                MiniStat(label: "Avg/7d", value: formatValue(avgValue, useTokens: useTokens))
                 MiniStat(label: "Peak", value: peakLabel(peakValue, metric: metric, useTokens: useTokens))
                 MiniStat(label: "Latest", value: latestValue.map { formatValue($0, useTokens: useTokens) } ?? "—")
             }
