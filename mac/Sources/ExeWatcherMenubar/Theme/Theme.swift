@@ -48,5 +48,15 @@ extension View {
             .buttonStyle(.borderedProminent)
             .tint(Theme.brandAccent)
             .foregroundStyle(Theme.brandPurpleDark)
+            .noFocusRing()
+    }
+
+    /// Menu bar popovers are pointer-first surfaces. macOS's blue keyboard focus ring
+    /// is visually loud against the Watcher dark UI, so controls that remain native
+    /// buttons/menus opt out of focus painting here.
+    func noFocusRing() -> some View {
+        self
+            .focusable(false)
+            .focusEffectDisabled()
     }
 }

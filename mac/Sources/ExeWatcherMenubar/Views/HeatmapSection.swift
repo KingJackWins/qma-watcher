@@ -643,27 +643,29 @@ private struct OptimizeSavingsBadge: View {
         if findingCount == 0 || savingsUSD <= 0 {
             EmptyView()
         } else {
-            Button { openOptimize() } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "lightbulb.fill")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Theme.brandAccent)
-                    Text(captionText(findingCount: findingCount, savingsUSD: savingsUSD))
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 8, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 7)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Theme.brandAccent.opacity(0.10))
-                )
+            HStack(spacing: 6) {
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Theme.brandAccent)
+                Text(captionText(findingCount: findingCount, savingsUSD: savingsUSD))
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundStyle(.tertiary)
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Theme.brandAccent.opacity(0.10))
+            )
+            .contentShape(Rectangle())
+            .onTapGesture { openOptimize() }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Open Optimize")
+            .accessibilityAddTraits(.isButton)
             .padding(.top, 2)
         }
     }

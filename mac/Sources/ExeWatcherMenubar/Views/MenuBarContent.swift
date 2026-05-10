@@ -398,6 +398,7 @@ struct StarBanner: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .noFocusRing()
 
                 Spacer()
 
@@ -411,6 +412,7 @@ struct StarBanner: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .noFocusRing()
                 .help("Hide this banner")
             }
             .padding(.horizontal, 12)
@@ -452,6 +454,7 @@ struct FooterBar: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             .fixedSize()
+            .noFocusRing()
 
             Button {
                 Task { await store.refresh(includeOptimize: true) }
@@ -461,6 +464,7 @@ struct FooterBar: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .noFocusRing()
 
             Menu {
                 Button("CSV (folder)") { runExport(format: .csv) }
@@ -475,6 +479,7 @@ struct FooterBar: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             .fixedSize()
+            .noFocusRing()
 
             Spacer()
 
@@ -492,6 +497,7 @@ struct FooterBar: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .noFocusRing()
             .help("Quit Watcher")
         }
         .padding(.horizontal, 12)

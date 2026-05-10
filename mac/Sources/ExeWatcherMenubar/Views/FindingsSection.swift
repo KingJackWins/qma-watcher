@@ -16,31 +16,32 @@ struct FindingsSection: View {
 
         return AnyView(
             VStack(alignment: .leading, spacing: 8) {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() }
-                } label: {
-                    HStack(alignment: .firstTextBaseline) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "lightbulb.fill")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Theme.brandAccent)
-                            Text("Tips for you")
-                                .font(.system(size: 12.5, weight: .semibold))
-                                .foregroundStyle(.primary)
-                        }
-                        Spacer()
-                        Text("\(groups.flatMap { $0.items }.count) signals")
-                            .font(.system(size: 10.5))
-                            .foregroundStyle(.secondary)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 9, weight: .semibold))
-                            .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                            .opacity(0.55)
-                            .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "lightbulb.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Theme.brandAccent)
+                        Text("Tips for you")
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(.primary)
                     }
-                    .contentShape(Rectangle())
+                    Spacer()
+                    Text("\(groups.flatMap { $0.items }.count) signals")
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 9, weight: .semibold))
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                        .opacity(0.55)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Tips for you")
+                .accessibilityAddTraits(.isButton)
 
                 if isExpanded {
                     VStack(alignment: .leading, spacing: 10) {
@@ -51,18 +52,18 @@ struct FindingsSection: View {
                         }
 
                         if store.payload.optimize.findingCount > 0 {
-                            Button {
-                                openOptimize()
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Text("Open Full Optimize")
-                                        .font(.system(size: 11.5, weight: .semibold))
-                                    Image(systemName: "arrow.forward")
-                                        .font(.system(size: 9, weight: .semibold))
-                                }
-                                .foregroundStyle(Theme.brandAccent)
+                            HStack(spacing: 4) {
+                                Text("Open Full Optimize")
+                                    .font(.system(size: 11.5, weight: .semibold))
+                                Image(systemName: "arrow.forward")
+                                    .font(.system(size: 9, weight: .semibold))
                             }
-                            .buttonStyle(.plain)
+                            .foregroundStyle(Theme.brandAccent)
+                            .contentShape(Rectangle())
+                            .onTapGesture { openOptimize() }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("Open Full Optimize")
+                            .accessibilityAddTraits(.isButton)
                         }
                     }
                     .transition(.opacity)
