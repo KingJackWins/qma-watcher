@@ -83,65 +83,85 @@ struct MenuBarContent: View {
     @Environment(AppStore.self) private var store
 
     var body: some View {
-        VStack(spacing: 0) {
-            Header()
+        GlassEffectContainer(spacing: 12) {
+            VStack(spacing: 0) {
+                Header()
 
-            Divider()
+                Divider().opacity(0.35)
 
-            if showAgentTabs {
-                AgentTabStrip()
-                Divider()
-            }
+                if showAgentTabs {
+                    AgentTabStrip()
+                    Divider().opacity(0.35)
+                }
 
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 0) {
-                    HeroSection()
-                    Divider().opacity(0.5)
-                    PeriodSegmentedControl()
-                    Divider().opacity(0.5)
-                    if isFilteredEmpty {
-                        EmptyProviderState(provider: store.selectedProvider, period: store.selectedPeriod)
-                    } else {
-                        HeatmapSection()
-                            .padding(.horizontal, 14)
-                            .padding(.top, 10)
-                            .padding(.bottom, 10)
-                            .zIndex(10)
-                        Divider().opacity(0.5)
-                        ActivitySection()
-                        Divider().opacity(0.5)
-                        ModelsSection()
-                        Divider().opacity(0.5)
-                        AgentsSection()
-                        Divider().opacity(0.5)
-                        ProjectSpendSection()
-                        Divider().opacity(0.5)
-                        FindingsSection()
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        HeroSection()
+                        Divider().opacity(0.3)
+                        PeriodSegmentedControl()
+                        Divider().opacity(0.3)
+                        if isFilteredEmpty {
+                            EmptyProviderState(provider: store.selectedProvider, period: store.selectedPeriod)
+                        } else {
+                            HeatmapSection()
+                                .padding(.horizontal, 14)
+                                .padding(.top, 10)
+                                .padding(.bottom, 10)
+                                .zIndex(10)
+                            Divider().opacity(0.3)
+                            ActivitySection()
+                            Divider().opacity(0.3)
+                            ModelsSection()
+                            Divider().opacity(0.3)
+                            AgentsSection()
+                            Divider().opacity(0.3)
+                            ProjectSpendSection()
+                            Divider().opacity(0.3)
+                            FindingsSection()
+                        }
                     }
                 }
-            }
-            .frame(height: 520)
-            .overlay {
-                if showFirstLoadError {
-                    FirstLoadErrorOverlay(
-                        periodLabel: store.selectedPeriod.rawValue,
-                        message: store.lastError ?? "Unknown error"
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if showInitialLoadingOverlay {
-                    BurnLoadingOverlay(periodLabel: store.selectedPeriod.rawValue)
+                .frame(height: 520)
+                .overlay {
+                    if showFirstLoadError {
+                        FirstLoadErrorOverlay(
+                            periodLabel: store.selectedPeriod.rawValue,
+                            message: store.lastError ?? "Unknown error"
+                        )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .allowsHitTesting(false)
+                    } else if showInitialLoadingOverlay {
+                        BurnLoadingOverlay(periodLabel: store.selectedPeriod.rawValue)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .allowsHitTesting(false)
+                    }
                 }
+
+                Divider().opacity(0.35)
+
+                FooterBar()
+
+                StarBanner()
             }
-
-            Divider()
-
-            FooterBar()
-
-            StarBanner()
         }
-        .background(Theme.warmSurfaceDark)
+        // Liquid Glass canvas: deep purple gradient + lavender halo painted edge-to-edge
+        // gives the glass surfaces above real chromatic content to refract.
+        .background(QMGlassCanvas())
+        // Subtle lilac wash on top of the canvas to push the QM mood through the glass.
+        .background(
+            Theme.brandGlassTint
+                .blendMode(.plusLighter)
+                .ignoresSafeArea()
+        )
+        // Top specular highlight — sells the "glass" character of the surface.
+        .overlay(alignment: .top) {
+            LinearGradient(
+                colors: [Theme.glassHighlight, .clear],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 60)
+            .allowsHitTesting(false)
+        }
     }
 
     /// True when a specific provider tab is selected and that provider has no spend in the

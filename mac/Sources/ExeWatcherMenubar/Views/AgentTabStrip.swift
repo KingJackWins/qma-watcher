@@ -87,20 +87,17 @@ private struct AgentTab: View {
             Text(filter.rawValue)
                 .font(.system(size: 11.5, weight: .semibold))
                 .tracking(-0.05)
-                .foregroundStyle(isActive ? Self.activeTextColor : .secondary)
+                .foregroundStyle(isActive ? AnyShapeStyle(Color.white) : AnyShapeStyle(.secondary))
             if filter != .all, let cost, cost > 0 {
                 Text(cost.asCompactCurrency())
                     .font(.codeMono(size: 10.5, weight: .medium))
-                    .foregroundStyle(isActive ? Self.activeTextColor : .secondary)
+                    .foregroundStyle(isActive ? AnyShapeStyle(Color.white.opacity(0.85)) : AnyShapeStyle(.secondary))
                     .tracking(-0.2)
             }
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(isActive ? AnyShapeStyle(Theme.brandAccent) : AnyShapeStyle(Color.secondary.opacity(0.08)))
-        )
+        .padding(.vertical, 5)
+        .qmGlassPill(cornerRadius: 7, tinted: isActive)
         .contentShape(Rectangle())
     }
 }

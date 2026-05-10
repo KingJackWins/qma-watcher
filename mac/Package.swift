@@ -1,10 +1,11 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
     name: "ExeWatcherMenubar",
     platforms: [
-        .macOS(.v14)
+        // macOS 26 (Tahoe) — required for native Liquid Glass APIs.
+        .macOS(.v26)
     ],
     products: [
         .executable(name: "ExeWatcherMenubar", targets: ["ExeWatcherMenubar"])

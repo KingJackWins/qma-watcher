@@ -9,10 +9,11 @@
 set -euo pipefail
 
 VERSION="${1:-dev}"
-BUNDLE_NAME="Watcher by EXE.app"
-BUNDLE_ID="com.askexe.exe-watcher-menubar"
+BUNDLE_NAME="Watcher by Quantum Memory.app"
+BUNDLE_ID="com.quantummemory.watcher"
 EXECUTABLE_NAME="ExeWatcherMenubar"
-MIN_MACOS="14.0"
+# Liquid Glass UI requires macOS 26 (Tahoe).
+MIN_MACOS="26.0"
 
 repo_root() {
   git rev-parse --show-toplevel 2>/dev/null || (cd "$(dirname "$0")/../.." && pwd)
@@ -52,7 +53,7 @@ cat > "${BUNDLE}/Contents/Info.plist" <<PLIST
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleDisplayName</key>
-    <string>Watcher by EXE</string>
+    <string>Watcher by Quantum Memory</string>
     <key>CFBundleExecutable</key>
     <string>${EXECUTABLE_NAME}</string>
     <key>CFBundleIconFile</key>
@@ -62,7 +63,7 @@ cat > "${BUNDLE}/Contents/Info.plist" <<PLIST
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Watcher by EXE</string>
+    <string>Watcher by Quantum Memory</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -76,7 +77,7 @@ cat > "${BUNDLE}/Contents/Info.plist" <<PLIST
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
-    <string>© Exe AI</string>
+    <string>© Quantum Memory AI</string>
 </dict>
 </plist>
 PLIST
@@ -109,7 +110,7 @@ echo "▸ Ad-hoc signing..."
 codesign --force --sign - --timestamp=none --deep "${BUNDLE}" 2>/dev/null || true
 codesign --verify --deep --strict "${BUNDLE}" 2>/dev/null || echo "  (signature verify skipped)"
 
-ZIP_NAME="ExeWatcherMenubar-${VERSION}.zip"
+ZIP_NAME="WatcherByQuantumMemory-${VERSION}.zip"
 ZIP_PATH="${DIST_DIR}/${ZIP_NAME}"
 echo "▸ Packaging ${ZIP_NAME}..."
 (cd "${DIST_DIR}" && /usr/bin/ditto -c -k --keepParent "${BUNDLE_NAME}" "${ZIP_NAME}")
