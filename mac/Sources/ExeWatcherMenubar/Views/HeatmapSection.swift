@@ -58,20 +58,23 @@ private struct InsightPillSwitcher: View {
     var body: some View {
         HStack(spacing: 4) {
             ForEach(visibleModes) { mode in
-                Button {
-                    selected = mode
-                } label: {
-                    Text(mode.rawValue)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(selected == mode ? AnyShapeStyle(Theme.brandPurpleDark) : AnyShapeStyle(.secondary))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(selected == mode ? AnyShapeStyle(Theme.brandAccent) : AnyShapeStyle(Color.secondary.opacity(0.10)))
-                        )
-                }
-                .buttonStyle(.plain)
+                let isActive = selected == mode
+
+                Text(mode.rawValue)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(isActive ? AnyShapeStyle(Theme.brandPurpleDark) : AnyShapeStyle(.secondary))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(isActive ? AnyShapeStyle(Theme.brandAccent) : AnyShapeStyle(Color.secondary.opacity(0.10)))
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture { selected = mode }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(mode.rawValue)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAddTraits(isActive ? .isSelected : [])
             }
         }
     }
