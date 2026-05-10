@@ -1,7 +1,5 @@
 import SwiftUI
 
-private let trendDays = 19
-private let trendBarWidth: CGFloat = 13
 private let trendBarGap: CGFloat = 4
 private let trendChartHeight: CGFloat = 90
 
@@ -43,10 +41,10 @@ struct HeatmapSection: View {
     private var content: some View {
         switch store.selectedInsight {
         case .plan: PlanInsight(usage: store.subscription)
-        case .trend: TrendInsight(days: store.payload.history.daily)
-        case .forecast: ForecastInsight(days: store.payload.history.daily)
+        case .trend: TrendInsight(days: store.payload.history.daily, period: store.selectedPeriod)
+        case .forecast: ForecastInsight(days: store.payload.history.daily, period: store.selectedPeriod)
         case .pulse: PulseInsight(payload: store.payload)
-        case .stats: StatsInsight(payload: store.payload)
+        case .stats: StatsInsight(payload: store.payload, period: store.selectedPeriod)
         }
     }
 }
@@ -60,47 +58,63 @@ private struct InsightPillSwitcher: View {
     var body: some View {
         HStack(spacing: 4) {
             ForEach(visibleModes) { mode in
-                Button {
-                    selected = mode
-                } label: {
-                    Text(mode.rawValue)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(selected == mode ? AnyShapeStyle(Theme.brandPurpleDark) : AnyShapeStyle(.secondary))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(selected == mode ? AnyShapeStyle(Theme.brandAccent) : AnyShapeStyle(Color.secondary.opacity(0.10)))
-                        )
-                }
-                .buttonStyle(.plain)
+                let isActive = selected == mode
+
+                Text(mode.rawValue)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(isActive ? AnyShapeStyle(Theme.brandPurpleDark) : AnyShapeStyle(.secondary))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(isActive ? AnyShapeStyle(Theme.brandAccent) : AnyShapeStyle(Color.secondary.opacity(0.10)))
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture { selected = mode }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(mode.rawValue)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAddTraits(isActive ? .isSelected : [])
             }
         }
     }
 }
 
-// MARK: - Trend (14-day bar chart with peak + average)
+// MARK: - Trend (period bar chart with 7-day average baseline)
 
 private struct TrendInsight: View {
     let days: [DailyHistoryEntry]
+    let period: Period
 
     var body: some View {
-        let bars = buildTrendBars(from: days)
-        let stats = computeTrendStats(bars: bars, allDays: days)
+        let window = makePeriodHistoryWindow(period: period, history: days)
+        let bars = buildTrendBars(from: window.entries)
+        let comparisonBars = buildTrendBars(from: window.comparisonEntries)
+        let stats = computeTrendStats(bars: bars, comparisonBars: comparisonBars)
         // Tokens are real for the .all-providers view; per-provider history doesn't carry
         // token breakdown yet, so fall back to $ when no tokens are present.
         let totalTokens = bars.reduce(0.0) { $0 + $1.tokens }
         let useTokens = totalTokens > 0
         let metric: (TrendBar) -> Double = useTokens ? { $0.tokens } : { $0.cost }
-        let maxValue = max(bars.map(metric).max() ?? 1, 0.01)
-        let avgValue = bars.isEmpty ? 0 : bars.map(metric).reduce(0, +) / Double(bars.count)
+
+        // The dashed baseline should answer "am I above my recent normal?", not "where
+        // is the average of this exact chart?". For Today especially, averaging the
+        // selected one-day window makes the line identical to today's bar. Use the same
+        // 7-day lookback for every provider tab (All, Claude, Codex, OpenCode, etc.)
+        // because each tab receives provider-scoped history from the CLI.
+        let sevenDayWindow = makePeriodHistoryWindow(period: .sevenDays, history: days)
+        let sevenDayBars = buildTrendBars(from: sevenDayWindow.entries)
+        let sevenDayValues = sevenDayBars.map(metric)
+        let avgValue = sevenDayValues.isEmpty ? 0 : sevenDayValues.reduce(0, +) / Double(sevenDayValues.count)
+
+        let maxValue = max(bars.map(metric).max() ?? 1, avgValue, 0.01)
         let peakValue = bars.filter({ metric($0) > 0 }).max(by: { metric($0) < metric($1) })
-        let yesterdayValue = stats.yesterdayBar.map(metric)
+        let latestValue = bars.last.map(metric)
 
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Last \(trendDays) days")
+                    Text(window.label)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.tertiary)
                     Text(formatHero(useTokens: useTokens, tokens: totalTokens, dollars: stats.totalThisWindow))
@@ -109,11 +123,11 @@ private struct TrendInsight: View {
                         .foregroundStyle(.primary)
                 }
                 Spacer()
-                if let delta = stats.deltaPercent {
+                if let delta = stats.deltaPercent, let comparisonLabel = window.comparisonLabel {
                     HStack(spacing: 3) {
                         Image(systemName: delta >= 0 ? "arrow.up.right" : "arrow.down.right")
                             .font(.system(size: 9, weight: .bold))
-                        Text("\(delta >= 0 ? "+" : "")\(String(format: "%.0f", delta))% vs prior \(trendDays)d")
+                        Text("\(delta >= 0 ? "+" : "")\(String(format: "%.0f", delta))% vs \(comparisonLabel)")
                             .font(.system(size: 10.5))
                             .monospacedDigit()
                     }
@@ -131,9 +145,9 @@ private struct TrendInsight: View {
             .zIndex(1)
 
             HStack(spacing: 14) {
-                MiniStat(label: "Avg/day", value: formatValue(avgValue, useTokens: useTokens))
+                MiniStat(label: "Avg/7d", value: formatValue(avgValue, useTokens: useTokens))
                 MiniStat(label: "Peak", value: peakLabel(peakValue, metric: metric, useTokens: useTokens))
-                MiniStat(label: "Yesterday", value: yesterdayValue.map { formatValue($0, useTokens: useTokens) } ?? "—")
+                MiniStat(label: "Latest", value: latestValue.map { formatValue($0, useTokens: useTokens) } ?? "—")
             }
         }
     }
@@ -177,21 +191,25 @@ private struct TrendChart: View {
         let avgFraction = maxValue > 0 ? CGFloat(min(avgValue / maxValue, 1.0)) : 0
 
         ZStack(alignment: .bottomLeading) {
-            HStack(alignment: .bottom, spacing: trendBarGap) {
-                ForEach(bars) { bar in
-                    BarColumn(
-                        bar: bar,
-                        value: metric(bar),
-                        maxValue: maxValue,
-                        isHovered: hoveredBarID == bar.id
-                    )
-                    .onHover { hovering in
-                        hoveredBarID = hovering ? bar.id : (hoveredBarID == bar.id ? nil : hoveredBarID)
+            GeometryReader { geo in
+                let barWidth = computedBarWidth(containerWidth: geo.size.width)
+                HStack(alignment: .bottom, spacing: trendBarGap) {
+                    ForEach(bars) { bar in
+                        BarColumn(
+                            bar: bar,
+                            value: metric(bar),
+                            maxValue: maxValue,
+                            width: barWidth,
+                            isHovered: hoveredBarID == bar.id
+                        )
+                        .onHover { hovering in
+                            hoveredBarID = hovering ? bar.id : (hoveredBarID == bar.id ? nil : hoveredBarID)
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: trendChartHeight, alignment: .bottom)
+            .frame(height: trendChartHeight)
 
             GeometryReader { geo in
                 Path { p in
@@ -224,12 +242,20 @@ private struct TrendChart: View {
         guard let id = hoveredBarID else { return nil }
         return bars.first { $0.id == id }
     }
+
+    private func computedBarWidth(containerWidth: CGFloat) -> CGFloat {
+        guard !bars.isEmpty else { return 2 }
+        let gapWidth = CGFloat(max(bars.count - 1, 0)) * trendBarGap
+        let available = max(containerWidth - gapWidth, CGFloat(bars.count))
+        return max(1, available / CGFloat(bars.count))
+    }
 }
 
 private struct BarColumn: View {
     let bar: TrendBar
     let value: Double
     let maxValue: Double
+    let width: CGFloat
     let isHovered: Bool
 
     var body: some View {
@@ -240,7 +266,7 @@ private struct BarColumn: View {
             Spacer(minLength: 0)
             RoundedRectangle(cornerRadius: 2)
                 .fill(barColor)
-                .frame(width: trendBarWidth, height: height)
+                .frame(width: width, height: height)
                 .overlay(
                     RoundedRectangle(cornerRadius: 2)
                         .stroke(Theme.brandAccent.opacity(isHovered ? 0.9 : 0), lineWidth: 1)
@@ -387,79 +413,40 @@ private struct TrendStats {
     let peak: TrendBar?
     let activeDays: Int
     let deltaPercent: Double?
-    let yesterdayBar: TrendBar?
 }
 
 private func buildTrendBars(from days: [DailyHistoryEntry]) -> [TrendBar] {
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = .current
-    let formatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = .current
-        return f
-    }()
-    let entryByDate = Dictionary(days.map { ($0.date, $0) }, uniquingKeysWith: { _, new in new })
-    let today = calendar.startOfDay(for: Date())
-    let todayKey = formatter.string(from: today)
-
-    var bars: [TrendBar] = []
-    for offset in (0..<trendDays).reversed() {
-        guard let d = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
-        let key = formatter.string(from: d)
-        let entry = entryByDate[key]
-        bars.append(TrendBar(
-            date: key,
-            cost: entry?.cost ?? 0,
-            inputTokens: Double(entry?.inputTokens ?? 0),
-            outputTokens: Double(entry?.outputTokens ?? 0),
-            isToday: key == todayKey,
-            topModels: entry?.topModels ?? []
-        ))
+    let formatter = periodHistoryFormatter()
+    let todayKey = formatter.string(from: Calendar(identifier: .gregorian).startOfDay(for: Date()))
+    return days.map { entry in
+        TrendBar(
+            date: entry.date,
+            cost: entry.cost,
+            inputTokens: Double(entry.inputTokens),
+            outputTokens: Double(entry.outputTokens),
+            isToday: entry.date == todayKey,
+            topModels: entry.topModels
+        )
     }
-    return bars
 }
 
-private func computeTrendStats(bars: [TrendBar], allDays: [DailyHistoryEntry]) -> TrendStats {
+private func computeTrendStats(bars: [TrendBar], comparisonBars: [TrendBar]) -> TrendStats {
     let total = bars.reduce(0.0) { $0 + $1.cost }
     let active = bars.filter { $0.cost > 0 }.count
     let avg = bars.isEmpty ? 0 : total / Double(bars.count)
     let peak = bars.filter { $0.cost > 0 }.max(by: { $0.cost < $1.cost })
-
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = .current
-    let formatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = .current
-        return f
-    }()
-    let today = calendar.startOfDay(for: Date())
-    let priorWindowStart = calendar.date(byAdding: .day, value: -(2 * trendDays - 1), to: today)
-    let thisWindowStart = calendar.date(byAdding: .day, value: -(trendDays - 1), to: today)
     var deltaPercent: Double? = nil
-    if let priorStart = priorWindowStart, let thisStart = thisWindowStart {
-        let priorStartStr = formatter.string(from: priorStart)
-        let thisStartStr = formatter.string(from: thisStart)
-        let priorTotal = allDays
-            .filter { $0.date >= priorStartStr && $0.date < thisStartStr }
-            .reduce(0.0) { $0 + $1.cost }
-        if priorTotal > 0 {
-            deltaPercent = ((total - priorTotal) / priorTotal) * 100
-        }
+    let priorTotal = comparisonBars.reduce(0.0) { $0 + $1.cost }
+    if priorTotal > 0 {
+        deltaPercent = ((total - priorTotal) / priorTotal) * 100
     }
-
-    let yesterdayDate = calendar.date(byAdding: .day, value: -1, to: today)
-    let yesterdayKey = yesterdayDate.map { formatter.string(from: $0) }
-    let yesterdayBar = bars.first(where: { $0.date == yesterdayKey })
 
     return TrendStats(
         totalThisWindow: total,
         avgPerDay: avg,
         peak: peak,
         activeDays: active,
-        deltaPercent: deltaPercent,
-        yesterdayBar: yesterdayBar
+        deltaPercent: deltaPercent
     )
 }
 
@@ -467,23 +454,25 @@ private func computeTrendStats(bars: [TrendBar], allDays: [DailyHistoryEntry]) -
 
 private struct ForecastInsight: View {
     let days: [DailyHistoryEntry]
+    let period: Period
 
     var body: some View {
-        let stats = computeForecast(days: days)
+        let window = makePeriodHistoryWindow(period: period, history: days)
+        let stats = computeForecast(window: window, period: period)
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Month-to-date")
+                    Text(window.label)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.tertiary)
-                    Text(stats.mtd.asCurrency())
+                    Text(stats.total.asCurrency())
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Theme.brandAccent)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("On pace for")
+                    Text(stats.projectionLabel)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.tertiary)
                     Text(stats.projection.asCurrency())
@@ -493,16 +482,18 @@ private struct ForecastInsight: View {
             }
 
             HStack(spacing: 14) {
-                ForecastStat(label: "Avg/day (this wk)", value: stats.weekAvg.asCompactCurrency())
-                ForecastStat(label: "Yesterday", value: stats.yesterday.asCompactCurrency())
-                ForecastStat(label: "Last 7d", value: stats.weekTotal.asCompactCurrency())
+                ForecastStat(label: "Avg/day", value: stats.avgPerDay.asCompactCurrency())
+                ForecastStat(label: "Latest day", value: stats.latestDay.asCompactCurrency())
+                if let previousTotal = stats.previousTotal, let comparisonLabel = stats.comparisonLabel {
+                    ForecastStat(label: comparisonLabel.capitalized, value: previousTotal.asCompactCurrency())
+                }
             }
 
-            if let prevTotal = stats.previousMonthTotal {
+            if let previousTotal = stats.previousTotal, let comparisonLabel = stats.comparisonLabel {
                 HStack(spacing: 4) {
-                    Image(systemName: stats.projection > prevTotal ? "arrow.up.right" : "arrow.down.right")
+                    Image(systemName: stats.total > previousTotal ? "arrow.up.right" : "arrow.down.right")
                         .font(.system(size: 9, weight: .bold))
-                    Text(comparisonText(projection: stats.projection, previous: prevTotal))
+                    Text(comparisonText(current: stats.total, previous: previousTotal, label: comparisonLabel))
                         .font(.system(size: 10.5))
                         .monospacedDigit()
                 }
@@ -511,11 +502,11 @@ private struct ForecastInsight: View {
         }
     }
 
-    private func comparisonText(projection: Double, previous: Double) -> String {
-        guard previous > 0 else { return "no prior month" }
-        let diff = ((projection - previous) / previous) * 100
+    private func comparisonText(current: Double, previous: Double, label: String) -> String {
+        guard previous > 0 else { return "no prior baseline" }
+        let diff = ((current - previous) / previous) * 100
         let sign = diff >= 0 ? "+" : ""
-        return "\(sign)\(String(format: "%.0f", diff))% vs last month ($\(String(format: "%.0f", previous)))"
+        return "\(sign)\(String(format: "%.0f", diff))% vs \(label) (\(previous.asCompactCurrency()))"
     }
 }
 
@@ -537,73 +528,47 @@ private struct ForecastStat: View {
 }
 
 private struct ForecastStats {
-    let mtd: Double
+    let total: Double
     let projection: Double
-    let weekAvg: Double
-    let weekTotal: Double
-    let yesterday: Double
-    let previousMonthTotal: Double?
+    let projectionLabel: String
+    let avgPerDay: Double
+    let latestDay: Double
+    let previousTotal: Double?
+    let comparisonLabel: String?
 }
 
-private func computeForecast(days: [DailyHistoryEntry]) -> ForecastStats {
+private func computeForecast(window: PeriodHistoryWindow, period: Period, now: Date = Date()) -> ForecastStats {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = .current
-    let formatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = .current
-        return f
-    }()
-    let now = Date()
-    let comps = calendar.dateComponents([.year, .month, .day], from: now)
-    guard
-        let firstOfMonth = calendar.date(from: DateComponents(year: comps.year, month: comps.month, day: 1)),
-        let rangeOfMonth = calendar.range(of: .day, in: .month, for: firstOfMonth)
-    else {
-        return ForecastStats(mtd: 0, projection: 0, weekAvg: 0, weekTotal: 0, yesterday: 0, previousMonthTotal: nil)
-    }
+    let total = window.entries.reduce(0.0) { $0 + $1.cost }
+    let avgPerDay = window.entries.isEmpty ? 0 : total / Double(window.entries.count)
+    let latestDay = window.entries.last?.cost ?? 0
+    let previousTotal = window.comparisonEntries.isEmpty
+        ? nil
+        : window.comparisonEntries.reduce(0.0) { $0 + $1.cost }
 
-    let firstStr = formatter.string(from: firstOfMonth)
-    let totalDays = rangeOfMonth.count
-    let dayOfMonth = comps.day ?? 1
-
-    let mtdEntries = days.filter { $0.date >= firstStr }
-    let mtd = mtdEntries.reduce(0.0) { $0 + $1.cost }
-    let avgPerElapsedDay = dayOfMonth > 0 ? mtd / Double(dayOfMonth) : 0
-    let projection = avgPerElapsedDay * Double(totalDays)
-
-    let weekStart = calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: now))
-    let weekStartStr = weekStart.map { formatter.string(from: $0) } ?? ""
-    let weekEntries = days.filter { $0.date >= weekStartStr }
-    let weekTotal = weekEntries.reduce(0.0) { $0 + $1.cost }
-    let weekAvg = weekTotal / 7.0
-
-    let yesterdayDate = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: now))
-    let yesterdayStr = yesterdayDate.map { formatter.string(from: $0) } ?? ""
-    let yesterday = days.first(where: { $0.date == yesterdayStr })?.cost ?? 0
-
-    var previousMonthTotal: Double? = nil
-    if
-        let prevMonthDate = calendar.date(byAdding: .month, value: -1, to: firstOfMonth),
-        let prevRange = calendar.range(of: .day, in: .month, for: prevMonthDate),
-        let prevFirst = calendar.date(from: DateComponents(year: calendar.component(.year, from: prevMonthDate), month: calendar.component(.month, from: prevMonthDate), day: 1)),
-        let prevLast = calendar.date(byAdding: .day, value: prevRange.count - 1, to: prevFirst)
-    {
-        let prevFirstStr = formatter.string(from: prevFirst)
-        let prevLastStr = formatter.string(from: prevLast)
-        let prevEntries = days.filter { $0.date >= prevFirstStr && $0.date <= prevLastStr }
-        if !prevEntries.isEmpty {
-            previousMonthTotal = prevEntries.reduce(0.0) { $0 + $1.cost }
-        }
+    let projection: Double
+    let projectionLabel: String
+    switch period {
+    case .month:
+        let comps = calendar.dateComponents([.year, .month, .day], from: now)
+        let firstOfMonth = calendar.date(from: DateComponents(year: comps.year, month: comps.month, day: 1)) ?? now
+        let daysInMonth = calendar.range(of: .day, in: .month, for: firstOfMonth)?.count ?? window.entries.count
+        projection = avgPerDay * Double(daysInMonth)
+        projectionLabel = "Month-end pace"
+    default:
+        projection = avgPerDay * 30.0
+        projectionLabel = "30-day pace"
     }
 
     return ForecastStats(
-        mtd: mtd,
+        total: total,
         projection: projection,
-        weekAvg: weekAvg,
-        weekTotal: weekTotal,
-        yesterday: yesterday,
-        previousMonthTotal: previousMonthTotal
+        projectionLabel: projectionLabel,
+        avgPerDay: avgPerDay,
+        latestDay: latestDay,
+        previousTotal: previousTotal,
+        comparisonLabel: window.comparisonLabel
     )
 }
 
@@ -678,27 +643,29 @@ private struct OptimizeSavingsBadge: View {
         if findingCount == 0 || savingsUSD <= 0 {
             EmptyView()
         } else {
-            Button { openOptimize() } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "lightbulb.fill")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Theme.brandAccent)
-                    Text(captionText(findingCount: findingCount, savingsUSD: savingsUSD))
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 8, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 7)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Theme.brandAccent.opacity(0.10))
-                )
+            HStack(spacing: 6) {
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Theme.brandAccent)
+                Text(captionText(findingCount: findingCount, savingsUSD: savingsUSD))
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundStyle(.tertiary)
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Theme.brandAccent.opacity(0.10))
+            )
+            .contentShape(Rectangle())
+            .onTapGesture { openOptimize() }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Open Optimize")
+            .accessibilityAddTraits(.isButton)
             .padding(.top, 2)
         }
     }
@@ -725,42 +692,43 @@ private struct OptimizeSavingsBadge: View {
 
 private struct StatsInsight: View {
     let payload: MenubarPayload
+    let period: Period
 
     var body: some View {
-        let stats = computeAllStats(payload: payload)
+        let stats = computeAllStats(payload: payload, period: period)
 
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 14) {
                 VStack(alignment: .leading, spacing: 8) {
                     StatRow(label: "Favorite model", value: stats.favoriteModel)
-                    StatRow(label: "Active days (month)", value: stats.activeDaysFraction)
+                    StatRow(label: periodMetricLabel("Active days", for: period), value: stats.activeDaysFraction)
                     StatRow(label: "Most active day", value: stats.mostActiveDay)
                     StatRow(label: "Peak day spend", value: stats.peakDaySpend)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    StatRow(label: "Sessions today", value: "\(payload.current.sessions)")
-                    StatRow(label: "Calls today", value: payload.current.calls.asThousandsSeparated())
+                    StatRow(label: periodMetricLabel("Sessions", for: period), value: "\(payload.current.sessions)")
+                    StatRow(label: periodMetricLabel("Calls", for: period), value: payload.current.calls.asThousandsSeparated())
                     StatRow(label: "Current streak", value: stats.currentStreak)
                     StatRow(label: "Longest streak", value: stats.longestStreak)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            if let lifetime = stats.lifetimeTotal {
+            if let total = stats.windowTotal {
                 Divider().opacity(0.5)
                 HStack {
-                    Text("Tracked spend (last \(stats.historyDayCount) days)")
+                    Text("Tracked spend (\(stats.windowLabel.lowercased()))")
                         .font(.system(size: 10.5, weight: .medium))
                         .foregroundStyle(.tertiary)
                     Spacer()
-                    Text(lifetime.asCurrency())
+                    Text(total.asCurrency())
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(Theme.brandAccent)
+                    }
                 }
-            }
         }
     }
 }
@@ -789,22 +757,16 @@ private struct AllStats {
     let peakDaySpend: String
     let currentStreak: String
     let longestStreak: String
-    let lifetimeTotal: Double?
-    let historyDayCount: Int
+    let windowTotal: Double?
+    let windowLabel: String
 }
 
-private func computeAllStats(payload: MenubarPayload) -> AllStats {
-    let history = payload.history.daily
+private func computeAllStats(payload: MenubarPayload, period: Period, now: Date = Date()) -> AllStats {
+    let window = makePeriodHistoryWindow(period: period, history: payload.history.daily, now: now)
+    let history = window.entries
     let favoriteModel = payload.current.topModels.first?.name ?? "—"
 
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = .current
-    let formatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = .current
-        return f
-    }()
+    let formatter = periodHistoryFormatter()
     let displayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "MMM d"
@@ -812,19 +774,8 @@ private func computeAllStats(payload: MenubarPayload) -> AllStats {
         return f
     }()
 
-    let now = Date()
-    let today = calendar.startOfDay(for: now)
-    let comps = calendar.dateComponents([.year, .month, .day], from: now)
-
-    var activeDaysFraction = "—"
-    if
-        let firstOfMonth = calendar.date(from: DateComponents(year: comps.year, month: comps.month, day: 1)),
-        let rangeOfMonth = calendar.range(of: .day, in: .month, for: firstOfMonth)
-    {
-        let firstStr = formatter.string(from: firstOfMonth)
-        let mtdActive = history.filter { $0.date >= firstStr && $0.cost > 0 }.count
-        activeDaysFraction = "\(mtdActive)/\(rangeOfMonth.count)"
-    }
+    let activeDays = history.filter { $0.cost > 0 }.count
+    let activeDaysFraction = history.isEmpty ? "—" : "\(activeDays)/\(history.count)"
 
     let peak = history.max(by: { $0.cost < $1.cost })
     let mostActiveDay: String
@@ -840,10 +791,8 @@ private func computeAllStats(payload: MenubarPayload) -> AllStats {
     let costByDate = Dictionary(history.map { ($0.date, $0.cost) }, uniquingKeysWith: +)
 
     var currentStreak = 0
-    for offset in 0..<400 {
-        guard let d = calendar.date(byAdding: .day, value: -offset, to: today) else { break }
-        let key = formatter.string(from: d)
-        if (costByDate[key] ?? 0) > 0 { currentStreak += 1 } else { break }
+    for entry in history.reversed() {
+        if (costByDate[entry.date] ?? 0) > 0 { currentStreak += 1 } else { break }
     }
 
     var longestStreak = 0
@@ -858,7 +807,7 @@ private func computeAllStats(payload: MenubarPayload) -> AllStats {
         }
     }
 
-    let lifetimeTotal: Double? = history.isEmpty ? nil : history.reduce(0.0) { $0 + $1.cost }
+    let windowTotal: Double? = history.isEmpty ? nil : history.reduce(0.0) { $0 + $1.cost }
 
     return AllStats(
         favoriteModel: favoriteModel,
@@ -867,8 +816,8 @@ private func computeAllStats(payload: MenubarPayload) -> AllStats {
         peakDaySpend: peakDaySpend,
         currentStreak: currentStreak == 0 ? "—" : "\(currentStreak) days",
         longestStreak: longestStreak == 0 ? "—" : "\(longestStreak) days",
-        lifetimeTotal: lifetimeTotal,
-        historyDayCount: history.count
+        windowTotal: windowTotal,
+        windowLabel: window.label
     )
 }
 
@@ -1012,14 +961,9 @@ private struct PlanIdleView: View {
             Image(systemName: "person.crop.circle.dashed")
                 .font(.system(size: 22))
                 .foregroundStyle(.tertiary)
-            Text("Loading your plan...")
+            Text("Loading usage data...")
                 .font(.system(size: 11.5, weight: .medium))
                 .foregroundStyle(.secondary)
-            Text("macOS may ask permission to read your Claude Code credentials.")
-                .font(.system(size: 10))
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 260)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
@@ -1030,7 +974,7 @@ private struct PlanLoadingView: View {
     var body: some View {
         VStack(spacing: 8) {
             ProgressView().scaleEffect(0.8)
-            Text("Reading Claude credentials...")
+            Text("Fetching usage limits...")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
         }
@@ -1047,15 +991,15 @@ private struct PlanNoCredentialsView: View {
             Image(systemName: "key.slash")
                 .font(.system(size: 20))
                 .foregroundStyle(.tertiary)
-            Text("No Claude subscription connected")
+            Text("Connect your Claude account")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.primary)
-            Text("Sign in with Claude Code, then click Retry.")
+            Text("Click below to see your 5-hour and weekly usage limits. macOS will ask for Keychain access once — click \"Always Allow\".")
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 260)
-            Button("Retry") {
+            Button("Load Usage") {
                 Task { await store.refreshSubscription() }
             }
             .controlSize(.small)
@@ -1141,7 +1085,7 @@ private struct UtilizationRow: View {
     /// Single-color brand palette decision (see session notes): the number is the signal, not
     /// the color. Keeping this as a computed property so a future threshold-based palette
     /// reintroduction stays scoped to one place.
-    private var barColor: Color { Theme.brandAccent }
+    private var barColor: Color { Color(red: 0xD4/255.0, green: 0x61/255.0, blue: 0x9C/255.0) }
 }
 
 private struct ProjectionCaption: View {
@@ -1218,4 +1162,3 @@ private func relativeReset(_ date: Date) -> String {
     let days = Int(ceil(hours / 24))
     return "in \(days)d"
 }
-

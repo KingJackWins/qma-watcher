@@ -32,6 +32,7 @@ function parseJsonlLine(line: string): JournalEntry | null {
   }
 }
 
+
 function extractToolNames(content: ContentBlock[]): string[] {
   return content
     .filter((b): b is ToolUseBlock => b.type === 'tool_use')
@@ -342,18 +343,14 @@ async function scanProjectDirs(dirs: Array<{ path: string; name: string }>, seen
     }
   }
 
-  const projects: ProjectSummary[] = []
-  for (const [dirName, sessions] of projectMap) {
-    projects.push({
+  return Array.from(projectMap.entries())
+    .map(([dirName, sessions]) => ({
       project: dirName,
       projectPath: unsanitizePath(dirName),
       sessions,
       totalCostUSD: sessions.reduce((s, sess) => s + sess.totalCostUSD, 0),
       totalApiCalls: sessions.reduce((s, sess) => s + sess.apiCalls, 0),
-    })
-  }
-
-  return projects
+    }))
 }
 
 function providerCallToTurn(call: ParsedProviderCall): ParsedTurn {
@@ -462,10 +459,66 @@ async function parseProviderSources(
 const CACHE_TTL_MS = 60_000
 const MAX_CACHE_ENTRIES = 10
 const sessionCache = new Map<string, { data: ProjectSummary[]; ts: number }>()
+const inFlightSourceContexts = new Map<string, Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }>>()
 
-function cacheKey(dateRange?: DateRange, providerFilter?: string): string {
+function sourceContextCacheKey(providerFilter?: string): string {
+  return JSON.stringify({
+    provider: providerFilter ?? 'all',
+    claudeConfigDir: process.env['CLAUDE_CONFIG_DIR'] ?? '',
+    codexHome: process.env['CODEX_HOME'] ?? '',
+    xdgDataHome: process.env['XDG_DATA_HOME'] ?? '',
+    home: process.env['HOME'] ?? '',
+  })
+}
+
+function cacheKey(dateRange?: DateRange, providerFilter?: string, sourceFingerprint = 'static'): string {
   const s = dateRange ? `${dateRange.start.getTime()}:${dateRange.end.getTime()}` : 'none'
-  return `${s}:${providerFilter ?? 'all'}`
+  return `${s}:${providerFilter ?? 'all'}:${sourceFingerprint}`
+}
+
+/**
+ * Cheap fingerprint: source count + newest source path hash.
+ * The old approach stat()'d every source file (2000+ calls) which added 15-18s overhead.
+ * Since we already have a 60s TTL on the session cache, a lightweight fingerprint that
+ * detects new/removed sessions is sufficient — file content changes within the TTL
+ * are caught on the next cache miss.
+ */
+function buildCacheFingerprint(sources: Array<{ provider: string; project: string; path: string }>): string {
+  // Use count + sorted paths hash. New sessions change the count or the path list.
+  let hash = sources.length
+  for (const s of sources) {
+    // djb2-style fast string hash — enough to detect path set changes
+    for (let i = 0; i < s.path.length; i++) {
+      hash = ((hash << 5) + hash + s.path.charCodeAt(i)) | 0
+    }
+  }
+  return `${sources.length}:${hash >>> 0}`
+}
+
+async function getSourceContext(providerFilter?: string): Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }> {
+  const key = sourceContextCacheKey(providerFilter)
+  const cached = inFlightSourceContexts.get(key)
+  if (cached) {
+    return cached
+  }
+
+  const promise = (async () => {
+    const sources = await discoverAllSessions(providerFilter)
+    const fingerprint = buildCacheFingerprint(sources)
+    return { sources, fingerprint }
+  })()
+
+  inFlightSourceContexts.set(key, promise)
+
+  try {
+    return await promise
+  } catch (err) {
+    throw err
+  } finally {
+    if (inFlightSourceContexts.get(key) === promise) {
+      inFlightSourceContexts.delete(key)
+    }
+  }
 }
 
 function cachePut(key: string, data: ProjectSummary[]) {
@@ -506,13 +559,14 @@ export function filterProjectsByName(
 }
 
 export async function parseAllSessions(dateRange?: DateRange, providerFilter?: string): Promise<ProjectSummary[]> {
-  const key = cacheKey(dateRange, providerFilter)
+  const sourceContext = await getSourceContext(providerFilter)
+  const allSources = sourceContext.sources
+  const key = cacheKey(dateRange, providerFilter, sourceContext.fingerprint)
   const cached = sessionCache.get(key)
   if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data
 
   const seenMsgIds = new Set<string>()
   const seenKeys = new Set<string>()
-  const allSources = await discoverAllSessions(providerFilter)
 
   const claudeSources = allSources.filter(s => s.provider === 'claude')
   const nonClaudeSources = allSources.filter(s => s.provider !== 'claude')

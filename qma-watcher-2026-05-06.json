@@ -1,0 +1,4487 @@
+{
+  "schema": "qma-watcher.export.v2",
+  "generated": "2026-05-06T06:22:25.055Z",
+  "currency": {
+    "code": "USD",
+    "rate": 1,
+    "symbol": "$"
+  },
+  "summary": [
+    {
+      "Period": "Today",
+      "Cost (USD)": 144.58,
+      "API Calls": 230,
+      "Sessions": 4,
+      "Projects": 1
+    },
+    {
+      "Period": "7 Days",
+      "Cost (USD)": 7122.26,
+      "API Calls": 12762,
+      "Sessions": 153,
+      "Projects": 4
+    },
+    {
+      "Period": "30 Days",
+      "Cost (USD)": 19474.22,
+      "API Calls": 30179,
+      "Sessions": 382,
+      "Projects": 9
+    }
+  ],
+  "periods": [
+    {
+      "label": "Today",
+      "daily": [
+        {
+          "Period": "Today",
+          "Date": "2026-05-06",
+          "Cost (USD)": 144.58,
+          "API Calls": 230,
+          "Sessions": 4,
+          "Input Tokens": 2950,
+          "Output Tokens": 97438,
+          "Cache Read Tokens": 41002294,
+          "Cache Write Tokens": 758560
+        }
+      ],
+      "activity": [
+        {
+          "Period": "Today",
+          "Activity": "Building",
+          "Cost (USD)": 87.7,
+          "Share (%)": 60.66,
+          "Turns": 13
+        },
+        {
+          "Period": "Today",
+          "Activity": "Debugging",
+          "Cost (USD)": 44.32,
+          "Share (%)": 30.65,
+          "Turns": 6
+        },
+        {
+          "Period": "Today",
+          "Activity": "Research",
+          "Cost (USD)": 12.56,
+          "Share (%)": 8.69,
+          "Turns": 9
+        }
+      ],
+      "models": [
+        {
+          "Period": "Today",
+          "Model": "Opus 4.6",
+          "Cost (USD)": 144.58,
+          "Share (%)": 100,
+          "API Calls": 230,
+          "Input Tokens": 2950,
+          "Output Tokens": 97438,
+          "Cache Read Tokens": 41002294,
+          "Cache Write Tokens": 758560
+        }
+      ]
+    },
+    {
+      "label": "7 Days",
+      "daily": [
+        {
+          "Period": "7 Days",
+          "Date": "2026-04-29",
+          "Cost (USD)": 2371.2,
+          "API Calls": 3137,
+          "Sessions": 38,
+          "Input Tokens": 24080,
+          "Output Tokens": 1225747,
+          "Cache Read Tokens": 685323773,
+          "Cache Write Tokens": 12706504
+        },
+        {
+          "Period": "7 Days",
+          "Date": "2026-04-30",
+          "Cost (USD)": 95.45,
+          "API Calls": 84,
+          "Sessions": 4,
+          "Input Tokens": 424,
+          "Output Tokens": 39163,
+          "Cache Read Tokens": 17514442,
+          "Cache Write Tokens": 2482033
+        },
+        {
+          "Period": "7 Days",
+          "Date": "2026-05-01",
+          "Cost (USD)": 109.87,
+          "API Calls": 110,
+          "Sessions": 4,
+          "Input Tokens": 3769,
+          "Output Tokens": 54453,
+          "Cache Read Tokens": 30162370,
+          "Cache Write Tokens": 812763
+        },
+        {
+          "Period": "7 Days",
+          "Date": "2026-05-02",
+          "Cost (USD)": 292.6,
+          "API Calls": 1127,
+          "Sessions": 29,
+          "Input Tokens": 25446,
+          "Output Tokens": 184659,
+          "Cache Read Tokens": 85675893,
+          "Cache Write Tokens": 3406501
+        },
+        {
+          "Period": "7 Days",
+          "Date": "2026-05-03",
+          "Cost (USD)": 2365,
+          "API Calls": 4407,
+          "Sessions": 35,
+          "Input Tokens": 38504,
+          "Output Tokens": 557016,
+          "Cache Read Tokens": 737037506,
+          "Cache Write Tokens": 6224567
+        },
+        {
+          "Period": "7 Days",
+          "Date": "2026-05-04",
+          "Cost (USD)": 1462.56,
+          "API Calls": 3103,
+          "Sessions": 39,
+          "Input Tokens": 31326,
+          "Output Tokens": 457795,
+          "Cache Read Tokens": 439530106,
+          "Cache Write Tokens": 6637926
+        },
+        {
+          "Period": "7 Days",
+          "Date": "2026-05-05",
+          "Cost (USD)": 281.01,
+          "API Calls": 564,
+          "Sessions": 11,
+          "Input Tokens": 6375,
+          "Output Tokens": 225610,
+          "Cache Read Tokens": 77623161,
+          "Cache Write Tokens": 1831585
+        },
+        {
+          "Period": "7 Days",
+          "Date": "2026-05-06",
+          "Cost (USD)": 144.58,
+          "API Calls": 230,
+          "Sessions": 4,
+          "Input Tokens": 2950,
+          "Output Tokens": 97438,
+          "Cache Read Tokens": 41002294,
+          "Cache Write Tokens": 758560
+        }
+      ],
+      "activity": [
+        {
+          "Period": "7 Days",
+          "Activity": "Research",
+          "Cost (USD)": 5961.39,
+          "Share (%)": 83.7,
+          "Turns": 5967
+        },
+        {
+          "Period": "7 Days",
+          "Activity": "Building",
+          "Cost (USD)": 824.52,
+          "Share (%)": 11.58,
+          "Turns": 203
+        },
+        {
+          "Period": "7 Days",
+          "Activity": "Debugging",
+          "Cost (USD)": 226.8,
+          "Share (%)": 3.18,
+          "Turns": 48
+        },
+        {
+          "Period": "7 Days",
+          "Activity": "DevOps",
+          "Cost (USD)": 73.9,
+          "Share (%)": 1.04,
+          "Turns": 36
+        },
+        {
+          "Period": "7 Days",
+          "Activity": "Testing",
+          "Cost (USD)": 20.07,
+          "Share (%)": 0.28,
+          "Turns": 3
+        },
+        {
+          "Period": "7 Days",
+          "Activity": "Planning",
+          "Cost (USD)": 15.58,
+          "Share (%)": 0.22,
+          "Turns": 4
+        }
+      ],
+      "models": [
+        {
+          "Period": "7 Days",
+          "Model": "Opus 4.6",
+          "Cost (USD)": 5614.95,
+          "Share (%)": 78.84,
+          "API Calls": 10030,
+          "Input Tokens": 102789,
+          "Output Tokens": 1883485,
+          "Cache Read Tokens": 1667321731,
+          "Cache Write Tokens": 25076498
+        },
+        {
+          "Period": "7 Days",
+          "Model": "Opus 4.7",
+          "Cost (USD)": 1502.45,
+          "Share (%)": 21.1,
+          "API Calls": 1813,
+          "Input Tokens": 9438,
+          "Output Tokens": 937244,
+          "Cache Read Tokens": 427905522,
+          "Cache Write Tokens": 7909069
+        },
+        {
+          "Period": "7 Days",
+          "Model": "Haiku 4.5",
+          "Cost (USD)": 4.07,
+          "Share (%)": 0.06,
+          "API Calls": 257,
+          "Input Tokens": 19813,
+          "Output Tokens": 17934,
+          "Cache Read Tokens": 17468659,
+          "Cache Write Tokens": 1771395
+        },
+        {
+          "Period": "7 Days",
+          "Model": "Sonnet 4.6",
+          "Cost (USD)": 0.79,
+          "Share (%)": 0.01,
+          "API Calls": 46,
+          "Input Tokens": 834,
+          "Output Tokens": 3218,
+          "Cache Read Tokens": 1173633,
+          "Cache Write Tokens": 103477
+        }
+      ]
+    },
+    {
+      "label": "30 Days",
+      "daily": [
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-06",
+          "Cost (USD)": 16.32,
+          "API Calls": 392,
+          "Sessions": 7,
+          "Input Tokens": 25225,
+          "Output Tokens": 63164,
+          "Cache Read Tokens": 36232324,
+          "Cache Write Tokens": 1179818
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-07",
+          "Cost (USD)": 1.12,
+          "API Calls": 13,
+          "Sessions": 1,
+          "Input Tokens": 15,
+          "Output Tokens": 4158,
+          "Cache Read Tokens": 1766017,
+          "Cache Write Tokens": 140199
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-09",
+          "Cost (USD)": 0.23,
+          "API Calls": 3,
+          "Sessions": 1,
+          "Input Tokens": 7,
+          "Output Tokens": 28,
+          "Cache Read Tokens": 105505,
+          "Cache Write Tokens": 53268
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-16",
+          "Cost (USD)": 0.13,
+          "API Calls": 8,
+          "Sessions": 1,
+          "Input Tokens": 16,
+          "Output Tokens": 405,
+          "Cache Read Tokens": 150005,
+          "Cache Write Tokens": 22013
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-19",
+          "Cost (USD)": 4.02,
+          "API Calls": 81,
+          "Sessions": 3,
+          "Input Tokens": 1418,
+          "Output Tokens": 24469,
+          "Cache Read Tokens": 6168684,
+          "Cache Write Tokens": 480761
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-20",
+          "Cost (USD)": 8.83,
+          "API Calls": 295,
+          "Sessions": 22,
+          "Input Tokens": 4131,
+          "Output Tokens": 112476,
+          "Cache Read Tokens": 10670913,
+          "Cache Write Tokens": 961071
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-21",
+          "Cost (USD)": 35.96,
+          "API Calls": 643,
+          "Sessions": 7,
+          "Input Tokens": 16274,
+          "Output Tokens": 385553,
+          "Cache Read Tokens": 56157306,
+          "Cache Write Tokens": 3589060
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-22",
+          "Cost (USD)": 39.61,
+          "API Calls": 944,
+          "Sessions": 11,
+          "Input Tokens": 9087,
+          "Output Tokens": 382127,
+          "Cache Read Tokens": 75905532,
+          "Cache Write Tokens": 2953928
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-23",
+          "Cost (USD)": 421.56,
+          "API Calls": 885,
+          "Sessions": 30,
+          "Input Tokens": 4622,
+          "Output Tokens": 570237,
+          "Cache Read Tokens": 107578113,
+          "Cache Write Tokens": 4388338
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-24",
+          "Cost (USD)": 1836.31,
+          "API Calls": 2255,
+          "Sessions": 41,
+          "Input Tokens": 61730,
+          "Output Tokens": 1639295,
+          "Cache Read Tokens": 472636574,
+          "Cache Write Tokens": 15761894
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-25",
+          "Cost (USD)": 2558.63,
+          "API Calls": 2676,
+          "Sessions": 26,
+          "Input Tokens": 53032,
+          "Output Tokens": 1830323,
+          "Cache Read Tokens": 715963871,
+          "Cache Write Tokens": 14542569
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-26",
+          "Cost (USD)": 2603.47,
+          "API Calls": 3156,
+          "Sessions": 28,
+          "Input Tokens": 22277,
+          "Output Tokens": 1649481,
+          "Cache Read Tokens": 745159194,
+          "Cache Write Tokens": 13293757
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-27",
+          "Cost (USD)": 2505.99,
+          "API Calls": 3620,
+          "Sessions": 48,
+          "Input Tokens": 32162,
+          "Output Tokens": 2204366,
+          "Cache Read Tokens": 657108694,
+          "Cache Write Tokens": 20076343
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-28",
+          "Cost (USD)": 2319.76,
+          "API Calls": 2446,
+          "Sessions": 28,
+          "Input Tokens": 27994,
+          "Output Tokens": 1610206,
+          "Cache Read Tokens": 656415303,
+          "Cache Write Tokens": 13011436
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-29",
+          "Cost (USD)": 2371.2,
+          "API Calls": 3137,
+          "Sessions": 38,
+          "Input Tokens": 24080,
+          "Output Tokens": 1225747,
+          "Cache Read Tokens": 685323773,
+          "Cache Write Tokens": 12706504
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-04-30",
+          "Cost (USD)": 95.45,
+          "API Calls": 84,
+          "Sessions": 4,
+          "Input Tokens": 424,
+          "Output Tokens": 39163,
+          "Cache Read Tokens": 17514442,
+          "Cache Write Tokens": 2482033
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-05-01",
+          "Cost (USD)": 109.87,
+          "API Calls": 110,
+          "Sessions": 4,
+          "Input Tokens": 3769,
+          "Output Tokens": 54453,
+          "Cache Read Tokens": 30162370,
+          "Cache Write Tokens": 812763
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-05-02",
+          "Cost (USD)": 292.6,
+          "API Calls": 1127,
+          "Sessions": 29,
+          "Input Tokens": 25446,
+          "Output Tokens": 184659,
+          "Cache Read Tokens": 85675893,
+          "Cache Write Tokens": 3406501
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-05-03",
+          "Cost (USD)": 2365,
+          "API Calls": 4407,
+          "Sessions": 35,
+          "Input Tokens": 38504,
+          "Output Tokens": 557016,
+          "Cache Read Tokens": 737037506,
+          "Cache Write Tokens": 6224567
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-05-04",
+          "Cost (USD)": 1462.56,
+          "API Calls": 3103,
+          "Sessions": 39,
+          "Input Tokens": 31326,
+          "Output Tokens": 457795,
+          "Cache Read Tokens": 439530106,
+          "Cache Write Tokens": 6637926
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-05-05",
+          "Cost (USD)": 281.01,
+          "API Calls": 564,
+          "Sessions": 11,
+          "Input Tokens": 6375,
+          "Output Tokens": 225610,
+          "Cache Read Tokens": 77623161,
+          "Cache Write Tokens": 1831585
+        },
+        {
+          "Period": "30 Days",
+          "Date": "2026-05-06",
+          "Cost (USD)": 144.58,
+          "API Calls": 230,
+          "Sessions": 4,
+          "Input Tokens": 2950,
+          "Output Tokens": 97438,
+          "Cache Read Tokens": 41002294,
+          "Cache Write Tokens": 758560
+        }
+      ],
+      "activity": [
+        {
+          "Period": "30 Days",
+          "Activity": "Research",
+          "Cost (USD)": 14846.78,
+          "Share (%)": 76.24,
+          "Turns": 10771
+        },
+        {
+          "Period": "30 Days",
+          "Activity": "Building",
+          "Cost (USD)": 3394.94,
+          "Share (%)": 17.43,
+          "Turns": 1105
+        },
+        {
+          "Period": "30 Days",
+          "Activity": "Debugging",
+          "Cost (USD)": 731.75,
+          "Share (%)": 3.76,
+          "Turns": 125
+        },
+        {
+          "Period": "30 Days",
+          "Activity": "DevOps",
+          "Cost (USD)": 402.78,
+          "Share (%)": 2.07,
+          "Turns": 108
+        },
+        {
+          "Period": "30 Days",
+          "Activity": "Testing",
+          "Cost (USD)": 79.07,
+          "Share (%)": 0.41,
+          "Turns": 14
+        },
+        {
+          "Period": "30 Days",
+          "Activity": "Planning",
+          "Cost (USD)": 18.91,
+          "Share (%)": 0.1,
+          "Turns": 6
+        }
+      ],
+      "models": [
+        {
+          "Period": "30 Days",
+          "Model": "Opus 4.7",
+          "Cost (USD)": 13742.44,
+          "Share (%)": 70.57,
+          "API Calls": 16310,
+          "Input Tokens": 199796,
+          "Output Tokens": 10372264,
+          "Cache Read Tokens": 3772605502,
+          "Cache Write Tokens": 87664507
+        },
+        {
+          "Period": "30 Days",
+          "Model": "Opus 4.6",
+          "Cost (USD)": 5614.95,
+          "Share (%)": 28.83,
+          "API Calls": 10030,
+          "Input Tokens": 102789,
+          "Output Tokens": 1883485,
+          "Cache Read Tokens": 1667321731,
+          "Cache Write Tokens": 25076498
+        },
+        {
+          "Period": "30 Days",
+          "Model": "Sonnet 4.6",
+          "Cost (USD)": 111.17,
+          "Share (%)": 0.57,
+          "API Calls": 2491,
+          "Input Tokens": 56976,
+          "Output Tokens": 1037852,
+          "Cache Read Tokens": 193023871,
+          "Cache Write Tokens": 10006088
+        },
+        {
+          "Period": "30 Days",
+          "Model": "Haiku 4.5",
+          "Cost (USD)": 5.66,
+          "Share (%)": 0.03,
+          "API Calls": 297,
+          "Input Tokens": 31303,
+          "Output Tokens": 24568,
+          "Cache Read Tokens": 22936476,
+          "Cache Write Tokens": 2567801
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "Project": "/Users/jack/Yoda",
+      "Cost (USD)": 17853.4,
+      "Avg/Session (USD)": 65.88,
+      "Share (%)": 91.68,
+      "API Calls": 24299,
+      "Sessions": 271
+    },
+    {
+      "Project": "/Users/jack",
+      "Cost (USD)": 486.86,
+      "Avg/Session (USD)": 7.06,
+      "Share (%)": 2.5,
+      "API Calls": 3155,
+      "Sessions": 69
+    },
+    {
+      "Project": "/Users/jack/Yoda/integrations/qma/watcher",
+      "Cost (USD)": 386.61,
+      "Avg/Session (USD)": 128.87,
+      "Share (%)": 1.99,
+      "API Calls": 744,
+      "Sessions": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/voxtral",
+      "Cost (USD)": 281.45,
+      "Avg/Session (USD)": 281.45,
+      "Share (%)": 1.45,
+      "API Calls": 283,
+      "Sessions": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Cost (USD)": 232.31,
+      "Avg/Session (USD)": 21.12,
+      "Share (%)": 1.19,
+      "API Calls": 598,
+      "Sessions": 11
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Cost (USD)": 169.41,
+      "Avg/Session (USD)": 8.07,
+      "Share (%)": 0.87,
+      "API Calls": 911,
+      "Sessions": 21
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/davinci2/kindle",
+      "Cost (USD)": 39.89,
+      "Avg/Session (USD)": 9.97,
+      "Share (%)": 0.2,
+      "API Calls": 107,
+      "Sessions": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/davinci3/fallback",
+      "Cost (USD)": 23.88,
+      "Avg/Session (USD)": 23.88,
+      "Share (%)": 0.12,
+      "API Calls": 81,
+      "Sessions": 1
+    },
+    {
+      "Project": "/sessions/funny/charming/volta",
+      "Cost (USD)": 0.4,
+      "Avg/Session (USD)": 0.4,
+      "Share (%)": 0,
+      "API Calls": 1,
+      "Sessions": 1
+    }
+  ],
+  "sessions": [
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1290d4ad-af4f-4b69-8554-5b421a501a40",
+      "Started At": "2026-04-24T07:38:23.728Z",
+      "Cost (USD)": 649.91,
+      "API Calls": 528,
+      "Turns": 149
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "8727c163-bf53-4eb2-b911-e71f2777d45d",
+      "Started At": "2026-04-26T12:42:20.776Z",
+      "Cost (USD)": 566.13,
+      "API Calls": 498,
+      "Turns": 230
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "62204cd0-db49-428a-a00b-accc43de10d5",
+      "Started At": "2026-04-27T23:44:51.247Z",
+      "Cost (USD)": 467.3,
+      "API Calls": 424,
+      "Turns": 145
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "64cb4954-3178-46cd-99f9-ce1f5b9d7ea9",
+      "Started At": "2026-04-26T13:17:00.032Z",
+      "Cost (USD)": 456.05,
+      "API Calls": 407,
+      "Turns": 193
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7a941a3b-ddb5-48d9-a990-139abe762e90",
+      "Started At": "2026-04-24T12:41:12.790Z",
+      "Cost (USD)": 403.14,
+      "API Calls": 289,
+      "Turns": 72
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "13fff33e-137f-4fb8-8488-53c091deba8c",
+      "Started At": "2026-04-25T07:58:24.986Z",
+      "Cost (USD)": 396.35,
+      "API Calls": 403,
+      "Turns": 198
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e0624049-af90-4e9c-8e48-8cc9d8df8c61",
+      "Started At": "2026-04-25T07:58:45.007Z",
+      "Cost (USD)": 393.13,
+      "API Calls": 400,
+      "Turns": 195
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7f68e7c1-f2a7-420b-94c8-7bb1de24b82d",
+      "Started At": "2026-04-29T08:07:39.241Z",
+      "Cost (USD)": 359.41,
+      "API Calls": 410,
+      "Turns": 160
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7b3bacf1-d658-4890-90ac-cb661a591ffa",
+      "Started At": "2026-04-27T13:04:21.398Z",
+      "Cost (USD)": 350.9,
+      "API Calls": 346,
+      "Turns": 151
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7f4b01aa-3a0c-47f0-9063-50116b064378",
+      "Started At": "2026-05-03T03:30:06.833Z",
+      "Cost (USD)": 346.92,
+      "API Calls": 472,
+      "Turns": 189
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "4fec2d42-e94f-4971-ac9f-9ca5db7ce843",
+      "Started At": "2026-04-29T07:50:07.035Z",
+      "Cost (USD)": 328.62,
+      "API Calls": 345,
+      "Turns": 74
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "3bfb630d-5bd2-4107-bf6a-5a52f64015d5",
+      "Started At": "2026-04-29T00:26:14.875Z",
+      "Cost (USD)": 328.43,
+      "API Calls": 323,
+      "Turns": 135
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e7ab6974-0e83-46eb-84f0-97b81f51f394",
+      "Started At": "2026-05-03T04:56:08.867Z",
+      "Cost (USD)": 325.87,
+      "API Calls": 446,
+      "Turns": 193
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "3af4cd5d-1941-4358-9451-d86df86a6d68",
+      "Started At": "2026-04-29T02:27:59.094Z",
+      "Cost (USD)": 321.62,
+      "API Calls": 353,
+      "Turns": 161
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "29dd6285-4232-4e4e-a3ce-d75d80b503bb",
+      "Started At": "2026-04-27T23:45:34.111Z",
+      "Cost (USD)": 321.57,
+      "API Calls": 297,
+      "Turns": 60
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "98169d99-0332-42fa-90f5-f85313b444f9",
+      "Started At": "2026-04-25T12:07:55.172Z",
+      "Cost (USD)": 317,
+      "API Calls": 227,
+      "Turns": 81
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "f2c6bf6b-dc81-4cd0-a78a-eb0961503702",
+      "Started At": "2026-04-25T12:07:53.216Z",
+      "Cost (USD)": 299.33,
+      "API Calls": 279,
+      "Turns": 77
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1d5c1211-b174-4be4-8ee8-f1de436cbcd2",
+      "Started At": "2026-04-26T04:18:00.536Z",
+      "Cost (USD)": 288.55,
+      "API Calls": 321,
+      "Turns": 121
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6148c045-95af-448c-85f3-c65b78bede4d",
+      "Started At": "2026-04-29T03:53:44.964Z",
+      "Cost (USD)": 284.99,
+      "API Calls": 336,
+      "Turns": 165
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1c859971-14fb-46cc-b110-8ee0f56a1d62",
+      "Started At": "2026-04-25T02:20:23.325Z",
+      "Cost (USD)": 283.07,
+      "API Calls": 343,
+      "Turns": 169
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "25a85665-87aa-4475-8510-0328c3d1be16",
+      "Started At": "2026-04-28T05:13:43.716Z",
+      "Cost (USD)": 281.84,
+      "API Calls": 269,
+      "Turns": 88
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/voxtral",
+      "Session ID": "c7d7a0a3-6d5c-416c-a6f0-012b46975f3c",
+      "Started At": "2026-04-25T15:08:07.585Z",
+      "Cost (USD)": 281.45,
+      "API Calls": 283,
+      "Turns": 115
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7a03354c-aa5b-4121-9aa1-933c28e1b053",
+      "Started At": "2026-04-27T14:00:04.129Z",
+      "Cost (USD)": 280.72,
+      "API Calls": 335,
+      "Turns": 167
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "047e0d3a-eed0-41ff-8696-29e34c3779c5",
+      "Started At": "2026-04-26T04:48:50.430Z",
+      "Cost (USD)": 280.2,
+      "API Calls": 157,
+      "Turns": 43
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7c98327a-e892-4c6c-b96e-6aff7f536af1",
+      "Started At": "2026-04-26T23:52:57.177Z",
+      "Cost (USD)": 276.8,
+      "API Calls": 222,
+      "Turns": 52
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "ca401857-faaf-4d73-a64f-ceec44a3d022",
+      "Started At": "2026-04-27T07:03:25.595Z",
+      "Cost (USD)": 276.32,
+      "API Calls": 226,
+      "Turns": 51
+    },
+    {
+      "Project": "/Users/jack/Yoda/integrations/qma/watcher",
+      "Session ID": "e0d0e227-d190-4a3f-8d5b-bee0a01e2232",
+      "Started At": "2026-05-04T04:32:34.640Z",
+      "Cost (USD)": 269.1,
+      "API Calls": 442,
+      "Turns": 248
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "75f7c08e-4420-4a65-b9cb-1c017f1421b8",
+      "Started At": "2026-04-28T03:32:45.573Z",
+      "Cost (USD)": 249.08,
+      "API Calls": 259,
+      "Turns": 115
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "d1c56409-5469-4c39-8483-26e04ee6e275",
+      "Started At": "2026-04-29T08:07:47.897Z",
+      "Cost (USD)": 242.49,
+      "API Calls": 366,
+      "Turns": 167
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "3caa2b0e-d79f-4220-a814-8b01e8297ff6",
+      "Started At": "2026-04-26T03:47:39.271Z",
+      "Cost (USD)": 240.51,
+      "API Calls": 265,
+      "Turns": 107
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "aadf2089-d57e-4f70-9950-884cbc5936fb",
+      "Started At": "2026-04-23T10:40:12.883Z",
+      "Cost (USD)": 235.94,
+      "API Calls": 293,
+      "Turns": 114
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "899e2e29-d21a-4b2e-8283-06a3556538ef",
+      "Started At": "2026-04-25T10:45:58.852Z",
+      "Cost (USD)": 228.67,
+      "API Calls": 124,
+      "Turns": 40
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "51c34d4a-f948-48e8-bcb6-5ea4c0be7c48",
+      "Started At": "2026-04-29T01:06:41.394Z",
+      "Cost (USD)": 227.78,
+      "API Calls": 267,
+      "Turns": 118
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "630cc750-b03d-4076-b620-49f97ae3e485",
+      "Started At": "2026-05-04T01:43:05.143Z",
+      "Cost (USD)": 223.67,
+      "API Calls": 354,
+      "Turns": 206
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "d7fffac0-28c4-49ee-9f22-3ad7478e028a",
+      "Started At": "2026-04-27T05:55:07.473Z",
+      "Cost (USD)": 207.18,
+      "API Calls": 286,
+      "Turns": 141
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6413c87a-cc8d-46be-9154-f8ff21dc6aa4",
+      "Started At": "2026-04-28T04:13:38.144Z",
+      "Cost (USD)": 206.38,
+      "API Calls": 163,
+      "Turns": 35
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9620d35a-6929-4564-ba42-5326d8384dce",
+      "Started At": "2026-05-02T14:21:11.154Z",
+      "Cost (USD)": 201.52,
+      "API Calls": 291,
+      "Turns": 84
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "b18c5133-7f6c-4798-8054-d37c855dee69",
+      "Started At": "2026-05-03T07:40:48.080Z",
+      "Cost (USD)": 201.37,
+      "API Calls": 357,
+      "Turns": 175
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "43e44f0d-59e4-41d5-b5c7-d65e42c6b222",
+      "Started At": "2026-05-03T09:00:43.580Z",
+      "Cost (USD)": 199.81,
+      "API Calls": 351,
+      "Turns": 175
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "cefa1dc5-7176-431e-89c9-99b934d245f7",
+      "Started At": "2026-05-05T06:14:28.058Z",
+      "Cost (USD)": 199.41,
+      "API Calls": 331,
+      "Turns": 41
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "8dd7b7bb-4b59-4c21-9b1c-7cbb5bb81bcc",
+      "Started At": "2026-04-24T13:44:01.715Z",
+      "Cost (USD)": 198.42,
+      "API Calls": 234,
+      "Turns": 31
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "0c3e083f-6b9b-42c0-b1d9-7e6ff123429a",
+      "Started At": "2026-04-27T06:30:23.134Z",
+      "Cost (USD)": 197.81,
+      "API Calls": 259,
+      "Turns": 118
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "801fd6f7-a400-4fb4-8203-e3d706593918",
+      "Started At": "2026-05-03T09:00:39.655Z",
+      "Cost (USD)": 189.43,
+      "API Calls": 321,
+      "Turns": 146
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "4874c3dc-45ae-4000-9685-4fa9c3663afe",
+      "Started At": "2026-05-04T13:55:08.893Z",
+      "Cost (USD)": 189.27,
+      "API Calls": 293,
+      "Turns": 42
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "c79bbdee-2ccd-490f-b16a-f5cd9bd28e20",
+      "Started At": "2026-04-26T07:36:39.938Z",
+      "Cost (USD)": 188,
+      "API Calls": 223,
+      "Turns": 79
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6800d1bc-9ba6-43a5-b509-8e18f79f6f99",
+      "Started At": "2026-04-24T03:25:02.622Z",
+      "Cost (USD)": 186.89,
+      "API Calls": 259,
+      "Turns": 102
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "70192bff-fe86-4229-bf99-2fc8863dadb5",
+      "Started At": "2026-04-26T07:07:42.480Z",
+      "Cost (USD)": 175.18,
+      "API Calls": 238,
+      "Turns": 111
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "39599e47-0a58-41a7-a214-d7a653c7fbcd",
+      "Started At": "2026-04-29T08:07:21.827Z",
+      "Cost (USD)": 171.21,
+      "API Calls": 221,
+      "Turns": 166
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "81b61f21-5259-4cf6-b403-1c28bb934508",
+      "Started At": "2026-04-24T07:35:16.713Z",
+      "Cost (USD)": 169.69,
+      "API Calls": 162,
+      "Turns": 29
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1146feb4-0d55-49a4-ad58-fc2d827c8cc9",
+      "Started At": "2026-05-03T07:40:39.360Z",
+      "Cost (USD)": 169.42,
+      "API Calls": 323,
+      "Turns": 156
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "72bd127f-e7ed-4ef4-8785-83b216cc32b6",
+      "Started At": "2026-04-26T14:02:03.553Z",
+      "Cost (USD)": 166.35,
+      "API Calls": 218,
+      "Turns": 88
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "577c6eea-1949-4353-aa00-5d3f72723bb5",
+      "Started At": "2026-05-03T03:40:14.409Z",
+      "Cost (USD)": 165,
+      "API Calls": 310,
+      "Turns": 144
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "a53886f8-dd03-4982-b63d-861878c81fa7",
+      "Started At": "2026-04-23T12:45:04.182Z",
+      "Cost (USD)": 164.13,
+      "API Calls": 85,
+      "Turns": 23
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "879a54f0-ca67-456e-8a51-0725a8bbf532",
+      "Started At": "2026-05-04T04:12:23.828Z",
+      "Cost (USD)": 157.42,
+      "API Calls": 282,
+      "Turns": 247
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "3f34fcd9-76b7-4d7d-9464-77e5433dc0c0",
+      "Started At": "2026-05-04T04:28:31.410Z",
+      "Cost (USD)": 155.58,
+      "API Calls": 273,
+      "Turns": 213
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "19631732-c4f5-4f75-9af7-d131d2b81b27",
+      "Started At": "2026-05-03T04:56:10.681Z",
+      "Cost (USD)": 146.23,
+      "API Calls": 242,
+      "Turns": 228
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "00d020f7-ef01-4e7a-a7dc-84ce60116464",
+      "Started At": "2026-05-03T03:40:08.918Z",
+      "Cost (USD)": 137.3,
+      "API Calls": 228,
+      "Turns": 220
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e921c84a-27e6-4dc6-b7bb-7633852978e5",
+      "Started At": "2026-04-26T23:52:57.508Z",
+      "Cost (USD)": 136.93,
+      "API Calls": 164,
+      "Turns": 39
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e8fad310-e5db-40e0-ac60-dee6dea3de64",
+      "Started At": "2026-05-04T02:44:10.194Z",
+      "Cost (USD)": 135.18,
+      "API Calls": 226,
+      "Turns": 198
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "a8423bb2-a0c5-4eab-a275-8d00e2b4e059",
+      "Started At": "2026-05-03T08:28:39.247Z",
+      "Cost (USD)": 131.03,
+      "API Calls": 278,
+      "Turns": 159
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "af707a40-d3b5-4969-8d2e-41ee182b4fcb",
+      "Started At": "2026-04-25T14:05:18.066Z",
+      "Cost (USD)": 122.67,
+      "API Calls": 198,
+      "Turns": 67
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "206b0bed-47eb-4ceb-a67f-5bb47e1a5562",
+      "Started At": "2026-04-25T12:27:17.772Z",
+      "Cost (USD)": 120.25,
+      "API Calls": 149,
+      "Turns": 43
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9fc59ea4-0ef2-4ffc-96e7-705f50731d7a",
+      "Started At": "2026-04-29T01:27:57.600Z",
+      "Cost (USD)": 118.53,
+      "API Calls": 118,
+      "Turns": 21
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "ee4cc205-5fd7-4232-b062-d3812d3d73e3",
+      "Started At": "2026-04-27T13:24:14.334Z",
+      "Cost (USD)": 117.69,
+      "API Calls": 172,
+      "Turns": 164
+    },
+    {
+      "Project": "/Users/jack/Yoda/integrations/qma/watcher",
+      "Session ID": "f5e4488e-45a6-4431-8feb-be3e7ac9caaf",
+      "Started At": "2026-05-04T05:49:03.946Z",
+      "Cost (USD)": 108.25,
+      "API Calls": 245,
+      "Turns": 225
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7a7bcc1b-8918-4d89-8843-a0b5955465fb",
+      "Started At": "2026-04-25T15:47:26.990Z",
+      "Cost (USD)": 106.03,
+      "API Calls": 172,
+      "Turns": 67
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "a1c414ed-1fd9-4cdd-8fe8-de1f97f8db13",
+      "Started At": "2026-05-04T00:57:39.847Z",
+      "Cost (USD)": 96.69,
+      "API Calls": 215,
+      "Turns": 200
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "bf989973-bd4b-4031-b472-db42042abee8",
+      "Started At": "2026-05-03T08:01:23.833Z",
+      "Cost (USD)": 92.53,
+      "API Calls": 217,
+      "Turns": 78
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6b28e39e-e25d-4350-9ec2-ce6c273ee54f",
+      "Started At": "2026-04-27T23:45:04.305Z",
+      "Cost (USD)": 92.01,
+      "API Calls": 125,
+      "Turns": 45
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "0f6be710-e216-4000-88c6-e5277350250c",
+      "Started At": "2026-04-24T03:25:02.341Z",
+      "Cost (USD)": 85.57,
+      "API Calls": 126,
+      "Turns": 47
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9c71cfb6-a1bd-4cd5-8824-081c1a7e04d2",
+      "Started At": "2026-04-26T07:54:27.604Z",
+      "Cost (USD)": 78.84,
+      "API Calls": 160,
+      "Turns": 78
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9b9439fd-b447-4dec-ae39-3532dcf6d804",
+      "Started At": "2026-04-27T00:30:03.297Z",
+      "Cost (USD)": 62.78,
+      "API Calls": 92,
+      "Turns": 9
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "f0b9f258-70b9-4687-abff-5f8e15cde8a5",
+      "Started At": "2026-04-26T09:42:23.407Z",
+      "Cost (USD)": 61.81,
+      "API Calls": 85,
+      "Turns": 28
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6c6efbd0-be60-445d-9a81-9a67a35e968b",
+      "Started At": "2026-04-24T15:33:41.924Z",
+      "Cost (USD)": 52.82,
+      "API Calls": 130,
+      "Turns": 63
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "54ce368b-78cb-482c-99e1-2d7dd3671baa",
+      "Started At": "2026-04-27T09:58:01.827Z",
+      "Cost (USD)": 52.11,
+      "API Calls": 99,
+      "Turns": 29
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "40805dfb-5960-4764-9ee8-7076c0a56056",
+      "Started At": "2026-04-27T12:44:22.579Z",
+      "Cost (USD)": 51.92,
+      "API Calls": 116,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "0a2eba64-7cac-49af-861e-eae4b3949255",
+      "Started At": "2026-04-27T02:03:13.018Z",
+      "Cost (USD)": 51.02,
+      "API Calls": 131,
+      "Turns": 35
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "4ff0a5e6-29af-4d1f-90a9-a249438022ae",
+      "Started At": "2026-05-03T12:02:02.494Z",
+      "Cost (USD)": 47.53,
+      "API Calls": 141,
+      "Turns": 91
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5e73d352-da6f-4a73-b590-54fdbfeada2c",
+      "Started At": "2026-04-26T07:52:10.097Z",
+      "Cost (USD)": 47.29,
+      "API Calls": 91,
+      "Turns": 79
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "84c747c3-6194-48fd-a2c6-3014210b149f",
+      "Started At": "2026-04-24T04:55:27.689Z",
+      "Cost (USD)": 46.81,
+      "API Calls": 48,
+      "Turns": 13
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "320da9f7-8838-4c62-b565-c4be0ecb98b6",
+      "Started At": "2026-04-27T01:25:52.881Z",
+      "Cost (USD)": 46.05,
+      "API Calls": 94,
+      "Turns": 15
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "3231e6f5-0ce7-4dc1-a844-a48c610c6a74",
+      "Started At": "2026-05-03T12:31:54.478Z",
+      "Cost (USD)": 45.3,
+      "API Calls": 145,
+      "Turns": 69
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "14b58724-ba26-4c4f-8f80-735dcf904815",
+      "Started At": "2026-04-24T12:53:50.097Z",
+      "Cost (USD)": 41.45,
+      "API Calls": 100,
+      "Turns": 21
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "2093b9bb-8415-4045-b4ef-4ce575da2e69",
+      "Started At": "2026-04-24T11:42:29.514Z",
+      "Cost (USD)": 40.91,
+      "API Calls": 90,
+      "Turns": 29
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "ad706689-9c47-439d-9988-1080cac0199d",
+      "Started At": "2026-04-26T06:50:50.310Z",
+      "Cost (USD)": 38.8,
+      "API Calls": 78,
+      "Turns": 21
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "8712ec91-18ae-4f82-9ddf-af3e482f09fe",
+      "Started At": "2026-04-24T09:28:57.571Z",
+      "Cost (USD)": 37.67,
+      "API Calls": 94,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e996a6ab-fd7d-4125-9411-939b58de801d",
+      "Started At": "2026-04-27T06:30:21.666Z",
+      "Cost (USD)": 36.99,
+      "API Calls": 73,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "a252a879-941e-4957-887b-8a45566e74d1",
+      "Started At": "2026-04-27T02:00:29.642Z",
+      "Cost (USD)": 36.93,
+      "API Calls": 75,
+      "Turns": 30
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "6253f2dd-0815-46f5-957a-9ac905fdbe16",
+      "Started At": "2026-05-04T08:10:55.858Z",
+      "Cost (USD)": 34.83,
+      "API Calls": 138,
+      "Turns": 77
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "68331c06-62bf-4f03-a279-4f78bb298e38",
+      "Started At": "2026-05-02T07:17:45.485Z",
+      "Cost (USD)": 34.45,
+      "API Calls": 106,
+      "Turns": 81
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "54c5cb0d-de78-457c-bccb-fc7a35d11368",
+      "Started At": "2026-04-27T01:32:30.582Z",
+      "Cost (USD)": 34.24,
+      "API Calls": 105,
+      "Turns": 54
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "f09086d7-9110-4e6c-bfaa-d6fa67526479",
+      "Started At": "2026-04-27T12:39:04.323Z",
+      "Cost (USD)": 34.16,
+      "API Calls": 48,
+      "Turns": 11
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e1247047-6123-4d37-83cb-e9caf63b6cdb",
+      "Started At": "2026-04-27T01:13:36.058Z",
+      "Cost (USD)": 34.14,
+      "API Calls": 75,
+      "Turns": 16
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "cc916d8e-0f37-4712-80f1-e1067e39a743",
+      "Started At": "2026-04-27T08:33:29.483Z",
+      "Cost (USD)": 33.58,
+      "API Calls": 96,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "49ef939e-01a7-430d-8b2a-b31e202d9bd7",
+      "Started At": "2026-04-27T01:14:11.357Z",
+      "Cost (USD)": 33.36,
+      "API Calls": 69,
+      "Turns": 18
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "3ffc9331-389e-406e-8f05-bf0d6682edb6",
+      "Started At": "2026-04-27T01:13:56.643Z",
+      "Cost (USD)": 33.11,
+      "API Calls": 82,
+      "Turns": 20
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "56626977-7c95-4cd8-9ff9-b8ae867c07c4",
+      "Started At": "2026-04-23T07:29:40.822Z",
+      "Cost (USD)": 32.77,
+      "API Calls": 93,
+      "Turns": 43
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/davinci2/kindle",
+      "Session ID": "aeaaef9c-eea1-4b29-a71b-87ff0d9959c4",
+      "Started At": "2026-04-27T02:05:01.908Z",
+      "Cost (USD)": 32.63,
+      "API Calls": 79,
+      "Turns": 39
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7ccf119f-4be9-48b9-81a2-8dd64c6e6a78",
+      "Started At": "2026-05-03T07:30:36.586Z",
+      "Cost (USD)": 32.3,
+      "API Calls": 118,
+      "Turns": 55
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "b45255ca-c238-404c-8f7a-b5285c322fd3",
+      "Started At": "2026-04-28T04:20:39.146Z",
+      "Cost (USD)": 30.9,
+      "API Calls": 50,
+      "Turns": 16
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "bd14c8af-2801-4c42-8ed0-00a8dc9cf377",
+      "Started At": "2026-04-29T05:51:49.903Z",
+      "Cost (USD)": 28.91,
+      "API Calls": 68,
+      "Turns": 22
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "24118987-e102-440b-ae46-5add60521448",
+      "Started At": "2026-04-28T03:33:12.099Z",
+      "Cost (USD)": 27.74,
+      "API Calls": 39,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "b86e2157-40d6-47e9-9631-e1d3db25a3ba",
+      "Started At": "2026-05-04T08:13:53.367Z",
+      "Cost (USD)": 27.64,
+      "API Calls": 99,
+      "Turns": 67
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "8b653729-9129-48bd-9f8b-9a943d8d1ab2",
+      "Started At": "2026-04-28T05:13:20.129Z",
+      "Cost (USD)": 27.45,
+      "API Calls": 48,
+      "Turns": 14
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "2bc8b0f0-2ad9-4c8d-99ae-51ecae3af46d",
+      "Started At": "2026-05-04T04:24:32.367Z",
+      "Cost (USD)": 26.94,
+      "API Calls": 91,
+      "Turns": 33
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "92b69089-3843-46c1-ae32-1eedaa09574f",
+      "Started At": "2026-04-25T02:17:49.271Z",
+      "Cost (USD)": 25.34,
+      "API Calls": 43,
+      "Turns": 13
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "31ffb7fe-c14b-4fc6-aed5-1ee5d65fe8e9",
+      "Started At": "2026-04-26T06:51:41.528Z",
+      "Cost (USD)": 24.8,
+      "API Calls": 69,
+      "Turns": 29
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "9b18bd4c-8e89-4595-b7c1-b9fc3c8cf48f",
+      "Started At": "2026-05-02T07:17:31.810Z",
+      "Cost (USD)": 24.29,
+      "API Calls": 86,
+      "Turns": 78
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "ba2dade2-3823-4c60-aabc-798de6ee8e25",
+      "Started At": "2026-04-25T13:27:40.634Z",
+      "Cost (USD)": 24.22,
+      "API Calls": 44,
+      "Turns": 10
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/davinci3/fallback",
+      "Session ID": "0e2d11d6-ea30-4b81-bcc9-e1fb5c3c7c13",
+      "Started At": "2026-04-27T02:05:03.621Z",
+      "Cost (USD)": 23.88,
+      "API Calls": 81,
+      "Turns": 44
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e9f48ef2-ab0e-41ae-aded-7303f64e8dba",
+      "Started At": "2026-04-26T06:51:17.125Z",
+      "Cost (USD)": 23.41,
+      "API Calls": 66,
+      "Turns": 30
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "41715edf-591f-45a2-9576-19400e4bfb7d",
+      "Started At": "2026-04-28T07:29:34.720Z",
+      "Cost (USD)": 23.15,
+      "API Calls": 47,
+      "Turns": 9
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5a37b42a-2d1a-4dde-80bf-1e33add4f99d",
+      "Started At": "2026-05-03T13:01:53.979Z",
+      "Cost (USD)": 23.13,
+      "API Calls": 94,
+      "Turns": 47
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "68e29cc1-8b8c-4a57-bc50-06dbe115eaf4",
+      "Started At": "2026-04-28T04:48:50.412Z",
+      "Cost (USD)": 22.33,
+      "API Calls": 42,
+      "Turns": 11
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9caf4a7e-12bb-4897-b5f3-224d57908d76",
+      "Started At": "2026-04-28T06:47:06.565Z",
+      "Cost (USD)": 22.27,
+      "API Calls": 59,
+      "Turns": 10
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "8cc5341e-321a-498f-bb11-21e6db1946b2",
+      "Started At": "2026-05-02T05:59:02.199Z",
+      "Cost (USD)": 22.13,
+      "API Calls": 76,
+      "Turns": 23
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "b5b74462-bb53-43cf-9f59-54c1b4159e86",
+      "Started At": "2026-04-29T07:04:27.554Z",
+      "Cost (USD)": 22.12,
+      "API Calls": 46,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "93520ec0-cd09-49a0-ba6c-18ace711a403",
+      "Started At": "2026-04-27T01:05:08.883Z",
+      "Cost (USD)": 21.63,
+      "API Calls": 51,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9cecf8e6-f642-4cfd-9fe7-3d2a431180d6",
+      "Started At": "2026-04-24T07:54:37.362Z",
+      "Cost (USD)": 20.48,
+      "API Calls": 49,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "97825d5e-b0e3-49e6-850b-d1ebf2c06a10",
+      "Started At": "2026-05-04T12:38:42.558Z",
+      "Cost (USD)": 20.32,
+      "API Calls": 87,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "c5e445a8-ff0b-4490-b11c-dfeded139854",
+      "Started At": "2026-05-06T04:20:52.223Z",
+      "Cost (USD)": 20.19,
+      "API Calls": 79,
+      "Turns": 12
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "c8341263-954b-4b11-9411-7819202d443b",
+      "Started At": "2026-04-23T05:02:52.257Z",
+      "Cost (USD)": 20.03,
+      "API Calls": 37,
+      "Turns": 9
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "dde61e76-b59b-4c63-9eb8-f21e7b5a5597",
+      "Started At": "2026-04-23T07:29:42.014Z",
+      "Cost (USD)": 19.67,
+      "API Calls": 59,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "0c984b6f-6fde-496d-8cc7-e312c6901730",
+      "Started At": "2026-05-02T03:15:20.837Z",
+      "Cost (USD)": 18.7,
+      "API Calls": 74,
+      "Turns": 61
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5c1711a1-5719-4264-8baa-8d74dddf7d6d",
+      "Started At": "2026-05-02T23:35:29.219Z",
+      "Cost (USD)": 18.51,
+      "API Calls": 64,
+      "Turns": 51
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1f8d12d9-ee05-49e3-aee6-7efc1646d2fb",
+      "Started At": "2026-04-27T11:22:18.113Z",
+      "Cost (USD)": 18.23,
+      "API Calls": 50,
+      "Turns": 12
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "b0d82cb8-861e-4372-9b6b-597c0e5df5ca",
+      "Started At": "2026-04-23T10:40:08.934Z",
+      "Cost (USD)": 18.13,
+      "API Calls": 33,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "ee169990-45ce-41ac-a8b9-e1d1953644d9",
+      "Started At": "2026-05-02T14:14:48.025Z",
+      "Cost (USD)": 18.04,
+      "API Calls": 68,
+      "Turns": 17
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "c92d9b53-2a20-40c7-aedc-d80730283690",
+      "Started At": "2026-05-02T03:15:16.944Z",
+      "Cost (USD)": 17.82,
+      "API Calls": 67,
+      "Turns": 57
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "42c5e975-9464-49dd-9873-4a7b1de4d90d",
+      "Started At": "2026-04-27T00:30:09.267Z",
+      "Cost (USD)": 17.76,
+      "API Calls": 45,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "55e26034-931d-4bc9-b90a-d6ca70c7db30",
+      "Started At": "2026-04-24T14:27:48.849Z",
+      "Cost (USD)": 17.5,
+      "API Calls": 56,
+      "Turns": 14
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "8a4dcc0b-cfe8-49c5-b402-f6bd99bfab9a",
+      "Started At": "2026-04-23T13:49:13.532Z",
+      "Cost (USD)": 16.49,
+      "API Calls": 60,
+      "Turns": 10
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "fd1fded4-a2e1-4795-981e-7c1b48b4a790",
+      "Started At": "2026-04-29T06:49:09.851Z",
+      "Cost (USD)": 16.36,
+      "API Calls": 76,
+      "Turns": 37
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "b16bcddb-3081-4350-8a18-119553b54173",
+      "Started At": "2026-04-29T01:50:21.184Z",
+      "Cost (USD)": 16.13,
+      "API Calls": 53,
+      "Turns": 26
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6f0194f5-3fd6-40ab-b0ef-84a556ddd906",
+      "Started At": "2026-04-29T07:01:23.970Z",
+      "Cost (USD)": 16.06,
+      "API Calls": 70,
+      "Turns": 30
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6855d806-bdd2-402e-9c7d-2164989c4923",
+      "Started At": "2026-04-29T02:27:23.733Z",
+      "Cost (USD)": 15.68,
+      "API Calls": 40,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "ae7c7559-55f7-4c20-b059-0107c4b593bb",
+      "Started At": "2026-04-24T13:53:22.139Z",
+      "Cost (USD)": 14.83,
+      "API Calls": 27,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "fcb73d78-45a3-44b5-acbb-d0dfb7249c86",
+      "Started At": "2026-04-20T07:47:44.231Z",
+      "Cost (USD)": 14.09,
+      "API Calls": 218,
+      "Turns": 55
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9ffff9b0-4baf-45f2-8e56-d6105140e514",
+      "Started At": "2026-05-03T11:42:04.079Z",
+      "Cost (USD)": 14.06,
+      "API Calls": 58,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "3d3e1452-5d8e-4651-a3f8-cac5dc75d218",
+      "Started At": "2026-04-25T13:51:49.020Z",
+      "Cost (USD)": 13.79,
+      "API Calls": 32,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7d37a669-e353-44a1-83d7-e92265b3c546",
+      "Started At": "2026-04-27T09:53:23.241Z",
+      "Cost (USD)": 13.65,
+      "API Calls": 31,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7f28eba4-b8cc-435c-a203-28bcc3028eb2",
+      "Started At": "2026-04-28T06:11:22.663Z",
+      "Cost (USD)": 13.57,
+      "API Calls": 20,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "def651ac-fdcd-4b39-b472-1f8824918ff3",
+      "Started At": "2026-04-29T06:17:20.136Z",
+      "Cost (USD)": 13.37,
+      "API Calls": 25,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9c9a4ee5-83fb-4a65-9360-c4c5fefd3a10",
+      "Started At": "2026-05-03T00:45:33.812Z",
+      "Cost (USD)": 13,
+      "API Calls": 58,
+      "Turns": 51
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6cc6a584-4fc1-40d6-824d-5a1af2054584",
+      "Started At": "2026-05-01T03:12:07.409Z",
+      "Cost (USD)": 12.72,
+      "API Calls": 26,
+      "Turns": 15
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "9542ef64-b319-459d-9429-d20ccfe29ca0",
+      "Started At": "2026-04-21T10:10:46.996Z",
+      "Cost (USD)": 12.58,
+      "API Calls": 249,
+      "Turns": 23
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "41a2d593-69ad-468e-a8f1-47b50ee3871b",
+      "Started At": "2026-04-29T00:25:24.582Z",
+      "Cost (USD)": 12.28,
+      "API Calls": 29,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e43c818a-7e6c-44c7-a7b9-b2a502777a75",
+      "Started At": "2026-04-26T10:06:12.641Z",
+      "Cost (USD)": 12.18,
+      "API Calls": 28,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "a7000b84-520c-4f8c-a69b-2a82d9b9ab24",
+      "Started At": "2026-04-23T10:05:44.633Z",
+      "Cost (USD)": 12.17,
+      "API Calls": 33,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "549b3e47-6a4c-49f9-9f00-371a901a5fa9",
+      "Started At": "2026-05-02T08:47:43.770Z",
+      "Cost (USD)": 12.17,
+      "API Calls": 65,
+      "Turns": 6
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "645e4f44-05e7-43b7-9f7b-30f7ef79e444",
+      "Started At": "2026-04-27T00:07:58.694Z",
+      "Cost (USD)": 11.79,
+      "API Calls": 33,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "764385a2-4bc3-4421-942b-f9e2827ef849",
+      "Started At": "2026-04-22T04:17:44.712Z",
+      "Cost (USD)": 11.76,
+      "API Calls": 287,
+      "Turns": 124
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "7c1c6e96-707e-435b-9ba2-e3de92a63947",
+      "Started At": "2026-04-27T13:39:25.762Z",
+      "Cost (USD)": 11.6,
+      "API Calls": 22,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "a6cb4857-6469-4d81-8045-d53dad8f7cd0",
+      "Started At": "2026-04-22T04:54:12.684Z",
+      "Cost (USD)": 11.57,
+      "API Calls": 165,
+      "Turns": 26
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5b24f5c3-4899-46de-85ec-d5c1683366c5",
+      "Started At": "2026-04-27T01:22:46.493Z",
+      "Cost (USD)": 11.31,
+      "API Calls": 36,
+      "Turns": 15
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "36a0e958-d67d-4dca-aa10-ac9804cd0e31",
+      "Started At": "2026-04-22T00:45:30.545Z",
+      "Cost (USD)": 11.3,
+      "API Calls": 297,
+      "Turns": 107
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "8831578a-78f6-4ccd-8dd9-7a171dda3ca9",
+      "Started At": "2026-04-25T01:46:57.856Z",
+      "Cost (USD)": 11.08,
+      "API Calls": 28,
+      "Turns": 6
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6ed3afe6-3852-49e8-b9a3-a361af18e0f3",
+      "Started At": "2026-05-02T14:14:40.988Z",
+      "Cost (USD)": 10.74,
+      "API Calls": 46,
+      "Turns": 28
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5b986411-b1f7-4ff7-a7f3-8b3808e67d64",
+      "Started At": "2026-04-26T13:17:03.979Z",
+      "Cost (USD)": 10.34,
+      "API Calls": 33,
+      "Turns": 12
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "9bf1fa72-0641-4956-b239-215854ea898a",
+      "Started At": "2026-04-23T11:36:10.510Z",
+      "Cost (USD)": 10.24,
+      "API Calls": 42,
+      "Turns": 6
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1e396ea0-4a80-41cf-91fa-07743a8d92f2",
+      "Started At": "2026-05-04T08:33:49.815Z",
+      "Cost (USD)": 9.99,
+      "API Calls": 55,
+      "Turns": 40
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a50d125ab70467c81",
+      "Started At": "2026-04-24T11:23:59.588Z",
+      "Cost (USD)": 9.81,
+      "API Calls": 27,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "4a63b8f2-1625-4658-be03-80e01f8eae51",
+      "Started At": "2026-05-02T08:47:29.354Z",
+      "Cost (USD)": 9.29,
+      "API Calls": 52,
+      "Turns": 27
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a7d087d1d262ea4a6",
+      "Started At": "2026-04-29T00:39:30.906Z",
+      "Cost (USD)": 9.28,
+      "API Calls": 17,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda/integrations/qma/watcher",
+      "Session ID": "c7851a84-27eb-4e5c-b676-c07859dcda87",
+      "Started At": "2026-05-04T08:34:10.711Z",
+      "Cost (USD)": 9.27,
+      "API Calls": 57,
+      "Turns": 35
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ac66bdd0320f1dd04",
+      "Started At": "2026-04-26T07:04:59.233Z",
+      "Cost (USD)": 8.89,
+      "API Calls": 38,
+      "Turns": 27
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6de0d3c0-dafe-44ae-ae96-cdf6380f7f9c",
+      "Started At": "2026-05-04T08:34:05.311Z",
+      "Cost (USD)": 8.16,
+      "API Calls": 52,
+      "Turns": 34
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "d8ebb2bd-deb9-4725-90d9-80ef415db79c",
+      "Started At": "2026-04-23T09:41:24.901Z",
+      "Cost (USD)": 7.87,
+      "API Calls": 31,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "3ac757fb-d6c9-45b9-9c82-4fce0bcf335f",
+      "Started At": "2026-04-06T08:49:42.945Z",
+      "Cost (USD)": 7.79,
+      "API Calls": 167,
+      "Turns": 11
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a9c4db5107bc95033",
+      "Started At": "2026-04-24T00:28:48.330Z",
+      "Cost (USD)": 7.75,
+      "API Calls": 22,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9b3c05ca-922a-4900-a6a7-772525a98546",
+      "Started At": "2026-04-27T14:50:28.395Z",
+      "Cost (USD)": 7.73,
+      "API Calls": 211,
+      "Turns": 186
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "bcad750d-414e-4586-a508-27e2e7795dbf",
+      "Started At": "2026-05-05T00:40:48.934Z",
+      "Cost (USD)": 7.69,
+      "API Calls": 32,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "c40853b7-ab65-42db-bf5d-d00123e4c052",
+      "Started At": "2026-05-02T03:57:17.918Z",
+      "Cost (USD)": 7.59,
+      "API Calls": 41,
+      "Turns": 10
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "1f6d2c67-f6d0-45e9-af18-97777572f04b",
+      "Started At": "2026-05-04T12:38:31.866Z",
+      "Cost (USD)": 7.47,
+      "API Calls": 39,
+      "Turns": 33
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "df4e2262-5b3c-48be-bd71-4d79ea57d558",
+      "Started At": "2026-05-02T08:47:45.267Z",
+      "Cost (USD)": 7.43,
+      "API Calls": 42,
+      "Turns": 31
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "f1007778-a7ac-4b52-819d-38198bd0d5da",
+      "Started At": "2026-04-28T11:08:08.780Z",
+      "Cost (USD)": 7.13,
+      "API Calls": 23,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a95e6bafb451f6ee1",
+      "Started At": "2026-04-29T02:44:34.668Z",
+      "Cost (USD)": 6.81,
+      "API Calls": 18,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "57f05ab0-8f8b-4378-a4ee-b4e75f211cb6",
+      "Started At": "2026-05-02T14:15:17.708Z",
+      "Cost (USD)": 6.76,
+      "API Calls": 34,
+      "Turns": 25
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a9d227ac4308bd9f8",
+      "Started At": "2026-04-27T00:53:27.881Z",
+      "Cost (USD)": 5.99,
+      "API Calls": 25,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-af442de61d2628904",
+      "Started At": "2026-04-24T09:28:57.633Z",
+      "Cost (USD)": 5.71,
+      "API Calls": 11,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "e672b2fa-a6ce-4f65-bdd8-46b5846d6ce7",
+      "Started At": "2026-04-21T05:09:56.904Z",
+      "Cost (USD)": 5.6,
+      "API Calls": 87,
+      "Turns": 9
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "ee17a895-031b-4d99-87fe-ca1084f30f81",
+      "Started At": "2026-04-06T08:25:38.774Z",
+      "Cost (USD)": 5.52,
+      "API Calls": 121,
+      "Turns": 12
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a7dfcd9c2e0b77466",
+      "Started At": "2026-04-29T02:49:12.871Z",
+      "Cost (USD)": 5.19,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-abc0c5f82a921e5ed",
+      "Started At": "2026-05-04T05:47:49.406Z",
+      "Cost (USD)": 5.17,
+      "API Calls": 19,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "d9bf066e-84d6-4f8a-9c4e-701d601e673a",
+      "Started At": "2026-05-04T13:53:35.931Z",
+      "Cost (USD)": 5.06,
+      "API Calls": 20,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a0585f54a5885a09b",
+      "Started At": "2026-04-26T06:57:15.325Z",
+      "Cost (USD)": 4.95,
+      "API Calls": 20,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "92fcecb2-4022-4fad-91c3-8a66e162ff64",
+      "Started At": "2026-05-05T00:40:55.176Z",
+      "Cost (USD)": 4.89,
+      "API Calls": 20,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a93ae664f5d37c24d",
+      "Started At": "2026-04-26T06:56:56.072Z",
+      "Cost (USD)": 4.62,
+      "API Calls": 18,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "5d47491c-94ef-4b56-ab3c-cb8e855362d2",
+      "Started At": "2026-04-21T03:38:54.539Z",
+      "Cost (USD)": 4.61,
+      "API Calls": 83,
+      "Turns": 25
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ae180c1e678a1418d",
+      "Started At": "2026-04-25T15:44:15.718Z",
+      "Cost (USD)": 4.35,
+      "API Calls": 20,
+      "Turns": 6
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "a0aa2e9b-1033-45d5-953e-3d8901674d8b",
+      "Started At": "2026-04-22T00:44:05.291Z",
+      "Cost (USD)": 4.18,
+      "API Calls": 77,
+      "Turns": 16
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aab1a50658e6354f9",
+      "Started At": "2026-04-24T09:04:36.298Z",
+      "Cost (USD)": 4.01,
+      "API Calls": 15,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aa6b76448322df60c",
+      "Started At": "2026-04-24T15:34:06.607Z",
+      "Cost (USD)": 3.98,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "adeab322-8de7-4e76-90fa-e0938c9f4766",
+      "Started At": "2026-04-26T12:36:31.127Z",
+      "Cost (USD)": 3.82,
+      "API Calls": 17,
+      "Turns": 8
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "90587395-cd55-4596-bc29-a0215a7fc7c9",
+      "Started At": "2026-04-27T01:45:56.237Z",
+      "Cost (USD)": 3.81,
+      "API Calls": 17,
+      "Turns": 6
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a16c6713d35a0eb4b",
+      "Started At": "2026-04-29T02:48:38.997Z",
+      "Cost (USD)": 3.65,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-a138dd27a7ab50e93",
+      "Started At": "2026-05-04T05:48:32.944Z",
+      "Cost (USD)": 3.65,
+      "API Calls": 20,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/davinci2/kindle",
+      "Session ID": "agent-af8857af1ea9aa741",
+      "Started At": "2026-04-27T02:06:51.667Z",
+      "Cost (USD)": 3.61,
+      "API Calls": 11,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "70b8293e-024f-40f2-8401-2dfda0755401",
+      "Started At": "2026-04-06T08:57:34.757Z",
+      "Cost (USD)": 3.54,
+      "API Calls": 104,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a320eeea6797c6f85",
+      "Started At": "2026-04-24T09:28:55.859Z",
+      "Cost (USD)": 3.45,
+      "API Calls": 13,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1b7b4678-6873-4514-95b4-0cf8eaf24b76",
+      "Started At": "2026-04-29T09:42:09.416Z",
+      "Cost (USD)": 3.41,
+      "API Calls": 17,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5254de5d-c379-463a-9d1b-3ee9d314256d",
+      "Started At": "2026-04-26T14:01:31.702Z",
+      "Cost (USD)": 3.38,
+      "API Calls": 9,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "116851ee-fd5d-42f3-8e19-f0fbbf3f5643",
+      "Started At": "2026-04-23T08:57:01.142Z",
+      "Cost (USD)": 3.32,
+      "API Calls": 13,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a3fefe8158dda9087",
+      "Started At": "2026-05-01T03:12:37.161Z",
+      "Cost (USD)": 3.15,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "5910eb69-6664-44ec-bbf6-41fd4b6774a3",
+      "Started At": "2026-04-06T00:01:24.055Z",
+      "Cost (USD)": 3.15,
+      "API Calls": 37,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a2bdbadc53adaf2aa",
+      "Started At": "2026-04-24T11:23:36.454Z",
+      "Cost (USD)": 3.12,
+      "API Calls": 11,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5887b06d-47ff-418f-a8ce-a9008a9b8579",
+      "Started At": "2026-04-27T01:05:12.563Z",
+      "Cost (USD)": 3.05,
+      "API Calls": 8,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a1573011c02890169",
+      "Started At": "2026-04-24T13:52:56.743Z",
+      "Cost (USD)": 2.96,
+      "API Calls": 17,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-afc80fb8526e4fb5c",
+      "Started At": "2026-04-29T00:41:58.202Z",
+      "Cost (USD)": 2.93,
+      "API Calls": 14,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a6dc6834d6879e0e0",
+      "Started At": "2026-04-25T02:52:21.069Z",
+      "Cost (USD)": 2.91,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5d1a138c-7970-489f-a12a-66e241c83aad",
+      "Started At": "2026-04-26T04:30:38.717Z",
+      "Cost (USD)": 2.88,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "6b33d737-fe77-4c16-98a5-d75396d2eaa1",
+      "Started At": "2026-05-02T04:33:06.904Z",
+      "Cost (USD)": 2.84,
+      "API Calls": 16,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "bbb1c2a9-12d9-4e06-93b5-10b017053446",
+      "Started At": "2026-05-02T08:47:41.887Z",
+      "Cost (USD)": 2.82,
+      "API Calls": 49,
+      "Turns": 33
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "34ad66f0-5085-4e1d-8828-df57042f0e96",
+      "Started At": "2026-04-29T04:30:13.228Z",
+      "Cost (USD)": 2.79,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-abe0e7cced93d46eb",
+      "Started At": "2026-04-24T08:30:05.780Z",
+      "Cost (USD)": 2.72,
+      "API Calls": 12,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aec25428900de05aa",
+      "Started At": "2026-04-29T02:49:01.827Z",
+      "Cost (USD)": 2.63,
+      "API Calls": 12,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-af1d02b972f9dd272",
+      "Started At": "2026-04-24T11:47:36.240Z",
+      "Cost (USD)": 2.61,
+      "API Calls": 11,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "2ec58941-8159-4eb0-a6bb-2b5b788af130",
+      "Started At": "2026-05-02T04:43:06.909Z",
+      "Cost (USD)": 2.59,
+      "API Calls": 16,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ae8a35bf033ba7223",
+      "Started At": "2026-04-29T02:48:52.242Z",
+      "Cost (USD)": 2.56,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a9962eb141ca91872",
+      "Started At": "2026-04-26T04:14:18.467Z",
+      "Cost (USD)": 2.56,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "868d672d-bd5c-4028-93a9-9c79994053d0",
+      "Started At": "2026-04-28T04:30:10.154Z",
+      "Cost (USD)": 2.46,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "467b7335-a4e3-43d0-b814-4cd12dbf3d1a",
+      "Started At": "2026-05-02T04:43:08.315Z",
+      "Cost (USD)": 2.46,
+      "API Calls": 16,
+      "Turns": 6
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a9ea9de82df4c7bdc",
+      "Started At": "2026-04-29T00:40:40.174Z",
+      "Cost (USD)": 2.45,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1fe59153-79b6-476f-92c8-628cd3543c20",
+      "Started At": "2026-04-24T05:34:27.237Z",
+      "Cost (USD)": 2.36,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "a8f068f1-ebc8-4aec-95d2-32873aace081",
+      "Started At": "2026-04-24T07:47:38.055Z",
+      "Cost (USD)": 2.3,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "df838016-8098-4bbb-8ee7-b48f1fa94c83",
+      "Started At": "2026-04-26T23:58:16.361Z",
+      "Cost (USD)": 2.3,
+      "API Calls": 10,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "1cca5bc8-1e72-4a77-81b5-e2fe7bcec8c0",
+      "Started At": "2026-04-25T04:30:08.358Z",
+      "Cost (USD)": 2.29,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a02562b1b674ea1b1",
+      "Started At": "2026-04-25T08:29:55.986Z",
+      "Cost (USD)": 2.29,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9050adb9-b7d3-4684-8f1a-d0e7d4d27c17",
+      "Started At": "2026-05-06T04:30:19.711Z",
+      "Cost (USD)": 2.26,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/davinci2/kindle",
+      "Session ID": "agent-a97662a28231b944d",
+      "Started At": "2026-04-27T02:07:14.902Z",
+      "Cost (USD)": 2.2,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "82e3d530-a5a6-4e4b-96b7-369e893ea3c6",
+      "Started At": "2026-04-24T11:51:21.456Z",
+      "Cost (USD)": 2.19,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e1baa71b-7a4e-4a90-9c11-a676b65adbb2",
+      "Started At": "2026-04-24T08:52:53.774Z",
+      "Cost (USD)": 2.19,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "04c9e3d2-50b9-423b-a334-b0dcbc1191ef",
+      "Started At": "2026-04-29T07:42:31.361Z",
+      "Cost (USD)": 2.18,
+      "API Calls": 8,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a0d63f24fedb38f1f",
+      "Started At": "2026-04-25T02:17:02.771Z",
+      "Cost (USD)": 2.14,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "2df05ca8-0df3-4fd7-8e97-4940b4ada4b2",
+      "Started At": "2026-04-27T05:40:54.212Z",
+      "Cost (USD)": 2.12,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ad94ec7072460c657",
+      "Started At": "2026-04-24T05:56:15.751Z",
+      "Cost (USD)": 2.11,
+      "API Calls": 5,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a2fd6fd58a8f15448",
+      "Started At": "2026-04-25T06:35:40.539Z",
+      "Cost (USD)": 2.1,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "fe3d7947-8653-4e46-92c4-fc3bd5a6e70d",
+      "Started At": "2026-04-23T09:58:03.174Z",
+      "Cost (USD)": 2.09,
+      "API Calls": 13,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "139ea26b-860f-4ef1-9124-e9290f6f1096",
+      "Started At": "2026-05-04T04:30:23.378Z",
+      "Cost (USD)": 2.04,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "3a9e479e-74ca-4d46-98c6-e0b3ac9b93b0",
+      "Started At": "2026-04-23T08:14:34.287Z",
+      "Cost (USD)": 2.03,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "dd453b51-124a-4859-8eb3-9a1ff559683b",
+      "Started At": "2026-04-27T01:05:13.391Z",
+      "Cost (USD)": 1.97,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "0b111f03-34d3-43cf-9daa-a434c0ae9572",
+      "Started At": "2026-04-24T04:11:51.333Z",
+      "Cost (USD)": 1.89,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "df06f8e5-4dc3-43ce-95b3-6010ee58c94d",
+      "Started At": "2026-05-03T04:30:19.592Z",
+      "Cost (USD)": 1.84,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "4bb93d11-f8f4-407a-bd98-015581c3f484",
+      "Started At": "2026-04-27T01:45:57.598Z",
+      "Cost (USD)": 1.81,
+      "API Calls": 5,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-abe648259dc01d28a",
+      "Started At": "2026-05-04T05:46:48.022Z",
+      "Cost (USD)": 1.81,
+      "API Calls": 13,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "f7005155-8aa8-4f7a-9bff-cd131a5cd435",
+      "Started At": "2026-04-23T12:29:24.787Z",
+      "Cost (USD)": 1.8,
+      "API Calls": 9,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a749d2224ff502dba",
+      "Started At": "2026-04-25T07:55:25.532Z",
+      "Cost (USD)": 1.8,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "edd90760-d907-4ef9-b6b9-0d6ef35f5094",
+      "Started At": "2026-05-02T04:43:55.171Z",
+      "Cost (USD)": 1.79,
+      "API Calls": 15,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "009d2e67-2ec4-468c-b706-90c4b2087184",
+      "Started At": "2026-04-23T09:33:54.206Z",
+      "Cost (USD)": 1.76,
+      "API Calls": 7,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "882811e3-e8c8-4f91-aa69-2b910c58001e",
+      "Started At": "2026-04-26T23:52:58.627Z",
+      "Cost (USD)": 1.75,
+      "API Calls": 5,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "a12ccc4f-7a0c-4c26-b77c-4c74b713688c",
+      "Started At": "2026-04-23T11:15:51.775Z",
+      "Cost (USD)": 1.75,
+      "API Calls": 8,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "0f0ab97d-ff3f-4e83-8187-34559df544c1",
+      "Started At": "2026-04-23T09:15:18.244Z",
+      "Cost (USD)": 1.69,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "16aee1a9-1086-48ca-bb8c-5ee1293c8b73",
+      "Started At": "2026-05-05T04:30:22.047Z",
+      "Cost (USD)": 1.67,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a432978c7e3e9a95e",
+      "Started At": "2026-04-24T14:25:56.104Z",
+      "Cost (USD)": 1.65,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "fc7a6d70-95e0-496c-84ac-f16146852301",
+      "Started At": "2026-05-02T14:15:20.969Z",
+      "Cost (USD)": 1.63,
+      "API Calls": 10,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ad59923fb87fee56d",
+      "Started At": "2026-04-25T02:40:21.615Z",
+      "Cost (USD)": 1.63,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-ab34ac8c6dae9d786",
+      "Started At": "2026-05-04T05:04:45.379Z",
+      "Cost (USD)": 1.61,
+      "API Calls": 11,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "0a645fe6-2f10-4233-9f78-8b12f8ed26a5",
+      "Started At": "2026-04-30T04:30:15.795Z",
+      "Cost (USD)": 1.55,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "81bcf1fa-e638-4db5-b25a-db06304add69",
+      "Started At": "2026-05-03T00:45:33.812Z",
+      "Cost (USD)": 1.55,
+      "API Calls": 9,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "7f8dc1f6-0d5e-48d0-8e71-0788bcb86cac",
+      "Started At": "2026-04-23T09:05:35.299Z",
+      "Cost (USD)": 1.55,
+      "API Calls": 8,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "b1c28027-dead-4534-8bfe-b68cd3f6a57b",
+      "Started At": "2026-04-22T07:35:39.115Z",
+      "Cost (USD)": 1.55,
+      "API Calls": 41,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "93c88d85-9586-422b-965b-5bbe8411cc6a",
+      "Started At": "2026-05-01T04:30:13.258Z",
+      "Cost (USD)": 1.53,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "04426ebf-69b3-49d2-98a3-724e52d2e53e",
+      "Started At": "2026-04-06T13:17:18.771Z",
+      "Cost (USD)": 1.48,
+      "API Calls": 47,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda//worktrees/davinci2/kindle",
+      "Session ID": "agent-a4b72d14b93837b47",
+      "Started At": "2026-04-27T02:08:17.663Z",
+      "Cost (USD)": 1.44,
+      "API Calls": 9,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "d9ee6944-709f-4204-b3e1-d3aab715f934",
+      "Started At": "2026-04-23T12:11:13.392Z",
+      "Cost (USD)": 1.41,
+      "API Calls": 6,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-af2e364356779f7e3",
+      "Started At": "2026-05-05T13:24:46.665Z",
+      "Cost (USD)": 1.4,
+      "API Calls": 10,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-ae4a678ee63ca7552",
+      "Started At": "2026-05-04T05:04:02.275Z",
+      "Cost (USD)": 1.34,
+      "API Calls": 12,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "4314d8fa-8c80-47e4-be0a-cd10bd6e788b",
+      "Started At": "2026-04-22T00:56:21.957Z",
+      "Cost (USD)": 1.31,
+      "API Calls": 41,
+      "Turns": 18
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a90bb1dbddd2007e7",
+      "Started At": "2026-04-24T13:54:48.863Z",
+      "Cost (USD)": 1.3,
+      "API Calls": 8,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "d62a70c0-516b-4300-a0fe-65760a0c1275",
+      "Started At": "2026-04-24T11:46:56.391Z",
+      "Cost (USD)": 1.29,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "84db243c-7140-459c-8435-3aa5a0c793ca",
+      "Started At": "2026-04-23T08:38:41.674Z",
+      "Cost (USD)": 1.27,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aa58b7fcfc918deea",
+      "Started At": "2026-04-29T06:18:42.608Z",
+      "Cost (USD)": 1.26,
+      "API Calls": 9,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a71a6293aec50682d",
+      "Started At": "2026-05-05T07:14:06.155Z",
+      "Cost (USD)": 1.26,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "dc8d2111-b6ee-4609-a1e6-fbfb7f13b525",
+      "Started At": "2026-04-23T09:19:39.680Z",
+      "Cost (USD)": 1.26,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-a3a616c7d8b51a01c",
+      "Started At": "2026-05-04T05:03:17.919Z",
+      "Cost (USD)": 1.26,
+      "API Calls": 11,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "981d93d9-6a3d-4471-80d3-23edadf86bd2",
+      "Started At": "2026-04-21T10:33:10.301Z",
+      "Cost (USD)": 1.18,
+      "API Calls": 35,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a032bfef4f4ecdddf",
+      "Started At": "2026-04-28T07:58:52.901Z",
+      "Cost (USD)": 1.11,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-abf48be7fde3e49b6",
+      "Started At": "2026-04-25T15:08:37.073Z",
+      "Cost (USD)": 1.1,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a03435575277b991d",
+      "Started At": "2026-04-28T11:07:31.868Z",
+      "Cost (USD)": 1.09,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "369a5577-3e4c-4620-b86b-a54b36f9b707",
+      "Started At": "2026-04-22T02:10:43.422Z",
+      "Cost (USD)": 1.05,
+      "API Calls": 33,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "75f49b62-540e-4680-9f16-a061609b7257",
+      "Started At": "2026-05-02T04:44:54.610Z",
+      "Cost (USD)": 1.05,
+      "API Calls": 9,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ae8e67f0e8a01161d",
+      "Started At": "2026-04-24T06:14:08.860Z",
+      "Cost (USD)": 1,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "228c65b7-12e1-42e5-8e3b-d0ff9bf8593a",
+      "Started At": "2026-05-05T08:21:22.413Z",
+      "Cost (USD)": 0.99,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "85bbc69d-e443-446d-a3a5-6770b009c25b",
+      "Started At": "2026-04-24T06:46:56.655Z",
+      "Cost (USD)": 0.98,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "a35705f6-e739-4a1d-9be5-4cc4203014ff",
+      "Started At": "2026-04-23T09:13:29.908Z",
+      "Cost (USD)": 0.94,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "cdbd3d14-2a26-43f9-8a46-e22603960bfa",
+      "Started At": "2026-04-23T10:15:23.639Z",
+      "Cost (USD)": 0.89,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "58154fee-a92f-49b1-8836-07a0140cc5cf",
+      "Started At": "2026-04-20T04:08:42.279Z",
+      "Cost (USD)": 0.84,
+      "API Calls": 47,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "b9247acf-0fb7-4d47-aea2-0a70a2009a95",
+      "Started At": "2026-04-20T02:59:07.262Z",
+      "Cost (USD)": 0.79,
+      "API Calls": 33,
+      "Turns": 9
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "04bc0672-573b-4d82-b0a6-bf59c779e22d",
+      "Started At": "2026-04-20T03:42:07.107Z",
+      "Cost (USD)": 0.78,
+      "API Calls": 28,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ab33abef9f3c3cc6e",
+      "Started At": "2026-04-24T13:54:58.089Z",
+      "Cost (USD)": 0.77,
+      "API Calls": 5,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "30434e4e-3097-4084-932f-79fd8763724a",
+      "Started At": "2026-04-29T07:49:09.371Z",
+      "Cost (USD)": 0.76,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a2f005f8272bba8f2",
+      "Started At": "2026-05-06T01:37:47.426Z",
+      "Cost (USD)": 0.76,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a3470ae5611cb2ab4",
+      "Started At": "2026-04-29T01:04:15.573Z",
+      "Cost (USD)": 0.72,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "e903d17c-25f9-40eb-8b54-b8b273b7f820",
+      "Started At": "2026-05-02T20:34:02.200Z",
+      "Cost (USD)": 0.71,
+      "API Calls": 4,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "981204c9-7d97-4254-b729-e5cd92a6acf5",
+      "Started At": "2026-04-20T06:13:49.574Z",
+      "Cost (USD)": 0.71,
+      "API Calls": 37,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a168c226a9e4a24d0",
+      "Started At": "2026-05-04T05:55:43.181Z",
+      "Cost (USD)": 0.7,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "65b065b9-06e4-4b74-a313-2cb38c34baa1",
+      "Started At": "2026-04-29T07:41:26.434Z",
+      "Cost (USD)": 0.68,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-abe47e82955e2dfe5",
+      "Started At": "2026-05-03T08:01:02.899Z",
+      "Cost (USD)": 0.68,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "ee835232-a316-4687-8d4e-d325d5375233",
+      "Started At": "2026-04-19T13:12:50.287Z",
+      "Cost (USD)": 0.68,
+      "API Calls": 17,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aabd4613572e0f158",
+      "Started At": "2026-05-03T06:29:28.574Z",
+      "Cost (USD)": 0.67,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "804d8cee-c9c0-454e-a876-244980a0ef7d",
+      "Started At": "2026-04-23T10:27:41.911Z",
+      "Cost (USD)": 0.67,
+      "API Calls": 4,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "0cc10342-a03a-4a73-8828-d70a40d0abc5",
+      "Started At": "2026-04-23T10:33:32.087Z",
+      "Cost (USD)": 0.66,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a79185f7b0a7f2b5f",
+      "Started At": "2026-04-24T13:55:05.287Z",
+      "Cost (USD)": 0.64,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "72740cf1-a709-4073-a520-c0494825d4e7",
+      "Started At": "2026-04-20T07:05:11.128Z",
+      "Cost (USD)": 0.63,
+      "API Calls": 20,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aa89f206230c21113",
+      "Started At": "2026-05-03T09:02:20.279Z",
+      "Cost (USD)": 0.62,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "5880ed67-7bab-48a5-af1a-3d62dfc52604",
+      "Started At": "2026-04-25T12:43:17.358Z",
+      "Cost (USD)": 0.61,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a8931f41504b64b25",
+      "Started At": "2026-05-03T06:29:51.481Z",
+      "Cost (USD)": 0.59,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a5ae99847df453599",
+      "Started At": "2026-05-02T14:16:00.821Z",
+      "Cost (USD)": 0.59,
+      "API Calls": 61,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "354b94d9-e6ae-43d4-9195-8ec3d68b110e",
+      "Started At": "2026-05-05T00:40:58.168Z",
+      "Cost (USD)": 0.58,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "agent-a7a15c09910721b30",
+      "Started At": "2026-05-02T07:26:11.794Z",
+      "Cost (USD)": 0.56,
+      "API Calls": 71,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "agent-af7aa8fcf8f37b9ea",
+      "Started At": "2026-05-04T14:15:41.505Z",
+      "Cost (USD)": 0.55,
+      "API Calls": 61,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a861c9e5856d86267",
+      "Started At": "2026-05-03T06:29:53.133Z",
+      "Cost (USD)": 0.53,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a15af3ba36bf7c697",
+      "Started At": "2026-05-04T06:16:26.289Z",
+      "Cost (USD)": 0.52,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "e548ca45-1d31-464b-8196-5e136a34fb60",
+      "Started At": "2026-04-20T07:20:58.343Z",
+      "Cost (USD)": 0.49,
+      "API Calls": 29,
+      "Turns": 7
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "376eb209-f9a0-4367-969b-1f0c45bd508e",
+      "Started At": "2026-05-04T00:57:38.722Z",
+      "Cost (USD)": 0.47,
+      "API Calls": 4,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a1458695821a41347",
+      "Started At": "2026-05-05T00:43:03.446Z",
+      "Cost (USD)": 0.47,
+      "API Calls": 30,
+      "Turns": 3
+    },
+    {
+      "Project": "/sessions/funny/charming/volta",
+      "Session ID": "5cf332f3-19e4-4b2b-8a94-846673bffc9a",
+      "Started At": "2026-04-20T05:19:44.782Z",
+      "Cost (USD)": 0.4,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "bd865f90-eaf1-488a-ab9f-58ec64a1bcde",
+      "Started At": "2026-04-26T04:57:04.272Z",
+      "Cost (USD)": 0.39,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "cd70b7c4-b8f7-41f0-a5da-f7e105223b06",
+      "Started At": "2026-05-02T20:34:02.179Z",
+      "Cost (USD)": 0.36,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "d49ebab9-9f85-4d5d-b6c6-c94ceee95e77",
+      "Started At": "2026-05-03T17:39:18.637Z",
+      "Cost (USD)": 0.35,
+      "API Calls": 7,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a30672c0bde523d1f",
+      "Started At": "2026-04-26T14:03:30.528Z",
+      "Cost (USD)": 0.32,
+      "API Calls": 5,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "4b432b0b-c8f7-4c6d-ad32-b46b30d1355f",
+      "Started At": "2026-04-22T08:30:27.415Z",
+      "Cost (USD)": 0.32,
+      "API Calls": 18,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a4091b18e6e9afef7",
+      "Started At": "2026-04-27T23:56:22.493Z",
+      "Cost (USD)": 0.31,
+      "API Calls": 4,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ab4b06d6515f9d4ef",
+      "Started At": "2026-04-27T10:32:05.325Z",
+      "Cost (USD)": 0.31,
+      "API Calls": 5,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a09a7b73ea3d67e23",
+      "Started At": "2026-04-29T08:21:00.326Z",
+      "Cost (USD)": 0.31,
+      "API Calls": 5,
+      "Turns": 5
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "agent-a93dadb38911c51f1",
+      "Started At": "2026-05-02T07:26:08.392Z",
+      "Cost (USD)": 0.31,
+      "API Calls": 26,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "a589f3ea-01c5-4e66-a4d5-364a10eaa35f",
+      "Started At": "2026-04-22T07:39:14.610Z",
+      "Cost (USD)": 0.3,
+      "API Calls": 15,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "agent-ad958987d6a94f3ac",
+      "Started At": "2026-05-02T04:45:07.526Z",
+      "Cost (USD)": 0.3,
+      "API Calls": 8,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "2748fa09-9b7b-4a62-b8c1-a6e5bbfcc1fe",
+      "Started At": "2026-04-22T04:22:38.390Z",
+      "Cost (USD)": 0.29,
+      "API Calls": 14,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "98493c09-4c22-45e4-85dd-e84545966ae4",
+      "Started At": "2026-04-22T07:20:57.987Z",
+      "Cost (USD)": 0.27,
+      "API Calls": 13,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "ba47030b-ca83-4f3e-a033-afb560994e4a",
+      "Started At": "2026-05-03T16:02:23.192Z",
+      "Cost (USD)": 0.26,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a7b3114ffe0753807",
+      "Started At": "2026-04-30T07:34:47.918Z",
+      "Cost (USD)": 0.23,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a6480d8715e60455f",
+      "Started At": "2026-05-03T00:51:24.374Z",
+      "Cost (USD)": 0.23,
+      "API Calls": 5,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a79f09bf9c079542b",
+      "Started At": "2026-04-29T11:51:40.147Z",
+      "Cost (USD)": 0.22,
+      "API Calls": 2,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ae07917b175b57d2c",
+      "Started At": "2026-04-29T10:50:59.917Z",
+      "Cost (USD)": 0.22,
+      "API Calls": 2,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a32b8284eccd2b266",
+      "Started At": "2026-04-30T01:48:29.115Z",
+      "Cost (USD)": 0.21,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a2763a24e5ec2f143",
+      "Started At": "2026-05-03T06:30:14.460Z",
+      "Cost (USD)": 0.21,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-accb5961e569bfcb1",
+      "Started At": "2026-04-29T09:59:55.604Z",
+      "Cost (USD)": 0.2,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ab32d902d2d2a11e0",
+      "Started At": "2026-05-03T12:03:52.043Z",
+      "Cost (USD)": 0.2,
+      "API Calls": 13,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "agent-acompact-1a6b4b6c525b2732",
+      "Started At": "2026-04-06T13:24:20.822Z",
+      "Cost (USD)": 0.2,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "agent-a2c191f3ccaed783a",
+      "Started At": "2026-04-21T11:26:00.995Z",
+      "Cost (USD)": 0.18,
+      "API Calls": 9,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "agent-acompact-8b11803e17f86cdd",
+      "Started At": "2026-04-19T12:18:46.173Z",
+      "Cost (USD)": 0.17,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "f983b33f-cf2d-4701-94ab-b23bd510a9c8",
+      "Started At": "2026-04-20T02:16:54.746Z",
+      "Cost (USD)": 0.14,
+      "API Calls": 9,
+      "Turns": 6
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "agent-a1ba0558004c54e44",
+      "Started At": "2026-04-23T02:59:35.310Z",
+      "Cost (USD)": 0.14,
+      "API Calls": 7,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "ae7c8f0b-908a-48bc-8dc8-cf1bccf77c00",
+      "Started At": "2026-04-16T08:05:40.538Z",
+      "Cost (USD)": 0.13,
+      "API Calls": 8,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-ae2e11cd1403515b4",
+      "Started At": "2026-04-29T09:59:16.287Z",
+      "Cost (USD)": 0.12,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "b97ee54b-418e-44ef-a194-105fdeae1d61",
+      "Started At": "2026-04-20T02:49:38.842Z",
+      "Cost (USD)": 0.12,
+      "API Calls": 11,
+      "Turns": 8
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "9a50ea60-e84d-4b04-8e0d-7d0dcf8e92bb",
+      "Started At": "2026-04-20T05:19:11.789Z",
+      "Cost (USD)": 0.11,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a7da7c76027a78e33",
+      "Started At": "2026-04-28T00:01:34.606Z",
+      "Cost (USD)": 0.1,
+      "API Calls": 5,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a13293eed7c96e03d",
+      "Started At": "2026-04-27T23:56:45.132Z",
+      "Cost (USD)": 0.09,
+      "API Calls": 5,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a9b826e1205f53eb2",
+      "Started At": "2026-04-28T00:01:44.297Z",
+      "Cost (USD)": 0.09,
+      "API Calls": 5,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a24df88267ffe7cfe",
+      "Started At": "2026-04-27T10:32:22.274Z",
+      "Cost (USD)": 0.09,
+      "API Calls": 5,
+      "Turns": 4
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "71233de8-1ca6-4b7c-9cee-72dfb2e0165d",
+      "Started At": "2026-04-20T06:55:00.486Z",
+      "Cost (USD)": 0.09,
+      "API Calls": 6,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "agent-a316397481dd3d0e4",
+      "Started At": "2026-04-21T09:55:17.970Z",
+      "Cost (USD)": 0.09,
+      "API Calls": 2,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-a27075ecbe81b266b",
+      "Started At": "2026-05-04T04:26:03.772Z",
+      "Cost (USD)": 0.09,
+      "API Calls": 6,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "324537d3-8fd9-4296-87d3-a1b12393bb0a",
+      "Started At": "2026-04-20T06:46:26.529Z",
+      "Cost (USD)": 0.08,
+      "API Calls": 7,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a1f110a76a4bd6ca5",
+      "Started At": "2026-04-24T04:18:07.076Z",
+      "Cost (USD)": 0.07,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "14d521d2-97e4-4e2b-ae49-1f9cf60793f4",
+      "Started At": "2026-04-20T06:24:37.271Z",
+      "Cost (USD)": 0.07,
+      "API Calls": 6,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "c2968fae-aaa8-495a-88b0-c93ff9e22d22",
+      "Started At": "2026-04-06T00:19:43.615Z",
+      "Cost (USD)": 0.07,
+      "API Calls": 2,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "e506bd56-96b8-43da-9197-2f5376224873",
+      "Started At": "2026-04-20T05:08:08.531Z",
+      "Cost (USD)": 0.07,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "fa30fa2d-3b44-45b7-881d-5d4939285a11",
+      "Started At": "2026-04-20T07:01:21.081Z",
+      "Cost (USD)": 0.07,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "4e73d70a-581c-4bcb-b91f-b48b748163aa",
+      "Started At": "2026-04-20T06:07:02.036Z",
+      "Cost (USD)": 0.06,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "abb6b361-3c8e-4b01-8457-22c9c6897848",
+      "Started At": "2026-04-20T06:30:58.651Z",
+      "Cost (USD)": 0.06,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a8a54a531ec7ee40e",
+      "Started At": "2026-04-27T23:56:32.667Z",
+      "Cost (USD)": 0.04,
+      "API Calls": 3,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aab0957878102bc57",
+      "Started At": "2026-04-28T00:01:39.256Z",
+      "Cost (USD)": 0.04,
+      "API Calls": 3,
+      "Turns": 3
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "agent-ade4242d3cb71961e",
+      "Started At": "2026-04-23T08:57:05.666Z",
+      "Cost (USD)": 0.04,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-aa9ebaa57d609468c",
+      "Started At": "2026-05-02T06:52:46.534Z",
+      "Cost (USD)": 0.03,
+      "API Calls": 3,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "6a3785df-6231-4c1d-9bf5-1fad56e767d6",
+      "Started At": "2026-04-20T06:54:17.012Z",
+      "Cost (USD)": 0.03,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "c9c4211f-6f16-47fe-87d5-dad040906c30",
+      "Started At": "2026-04-20T05:14:44.819Z",
+      "Cost (USD)": 0.03,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda/projects/quantum/memory/ai",
+      "Session ID": "agent-a06dcd7072a72694f",
+      "Started At": "2026-05-04T04:26:04.964Z",
+      "Cost (USD)": 0.03,
+      "API Calls": 4,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "14aa00e3-1436-4493-bdd7-07ffbecbbf95",
+      "Started At": "2026-05-03T20:12:32.322Z",
+      "Cost (USD)": 0,
+      "API Calls": 10,
+      "Turns": 10
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "3808fc97-63a4-4eb6-9f7b-d406e834582c",
+      "Started At": "2026-05-03T22:52:39.719Z",
+      "Cost (USD)": 0,
+      "API Calls": 34,
+      "Turns": 34
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "42cdf63a-4ae6-4890-b6ef-8f3e416f739f",
+      "Started At": "2026-05-03T18:45:56.947Z",
+      "Cost (USD)": 0,
+      "API Calls": 2,
+      "Turns": 2
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "432318bb-ad83-4829-aaa0-e4d7c9f6da69",
+      "Started At": "2026-05-03T20:12:27.835Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "a99c048a-92d3-412e-8e4a-bb8e8109a5e0",
+      "Started At": "2026-04-24T03:58:29.512Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a5ecfa1c852833c5c",
+      "Started At": "2026-05-03T06:56:43.456Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a2a569d69872c8774",
+      "Started At": "2026-05-02T05:59:27.955Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-affe0028d2e499601",
+      "Started At": "2026-05-02T03:57:33.301Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/Yoda",
+      "Session ID": "agent-a99d5371198daeb7e",
+      "Started At": "2026-05-05T06:14:36.787Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack",
+      "Session ID": "3dc4a039-46fd-4217-9caa-17f5ecf0f0c5",
+      "Started At": "2026-04-23T09:15:53.409Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "682c1b88-b7a5-4b71-a274-ecb71e717f23",
+      "Started At": "2026-05-04T12:16:32.484Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    },
+    {
+      "Project": "/Users/jack/node/lib/node/modules//askexenow/exe/os",
+      "Session ID": "b1194c49-cf22-4bb4-add0-f25667850780",
+      "Started At": "2026-05-04T09:49:42.479Z",
+      "Cost (USD)": 0,
+      "API Calls": 1,
+      "Turns": 1
+    }
+  ],
+  "tools": [
+    {
+      "Tool": "Bash",
+      "Calls": 1873,
+      "Share (%)": 65.01
+    },
+    {
+      "Tool": "Read",
+      "Calls": 332,
+      "Share (%)": 11.52
+    },
+    {
+      "Tool": "Edit",
+      "Calls": 201,
+      "Share (%)": 6.98
+    },
+    {
+      "Tool": "ToolSearch",
+      "Calls": 125,
+      "Share (%)": 4.34
+    },
+    {
+      "Tool": "Write",
+      "Calls": 112,
+      "Share (%)": 3.89
+    },
+    {
+      "Tool": "WebSearch",
+      "Calls": 61,
+      "Share (%)": 2.12
+    },
+    {
+      "Tool": "WebFetch",
+      "Calls": 53,
+      "Share (%)": 1.84
+    },
+    {
+      "Tool": "TaskUpdate",
+      "Calls": 40,
+      "Share (%)": 1.39
+    },
+    {
+      "Tool": "Grep",
+      "Calls": 32,
+      "Share (%)": 1.11
+    },
+    {
+      "Tool": "TaskCreate",
+      "Calls": 22,
+      "Share (%)": 0.76
+    },
+    {
+      "Tool": "Glob",
+      "Calls": 10,
+      "Share (%)": 0.35
+    },
+    {
+      "Tool": "TaskOutput",
+      "Calls": 4,
+      "Share (%)": 0.14
+    },
+    {
+      "Tool": "ReadMcpResourceTool",
+      "Calls": 4,
+      "Share (%)": 0.14
+    },
+    {
+      "Tool": "Agent",
+      "Calls": 4,
+      "Share (%)": 0.14
+    },
+    {
+      "Tool": "Skill",
+      "Calls": 3,
+      "Share (%)": 0.1
+    },
+    {
+      "Tool": "TaskStop",
+      "Calls": 2,
+      "Share (%)": 0.07
+    },
+    {
+      "Tool": "ScheduleWakeup",
+      "Calls": 1,
+      "Share (%)": 0.03
+    },
+    {
+      "Tool": "TaskList",
+      "Calls": 1,
+      "Share (%)": 0.03
+    },
+    {
+      "Tool": "Monitor",
+      "Calls": 1,
+      "Share (%)": 0.03
+    }
+  ],
+  "shellCommands": [
+    {
+      "Command": "then",
+      "Calls": 1586,
+      "Share (%)": 22.28
+    },
+    {
+      "Command": "sed",
+      "Calls": 1102,
+      "Share (%)": 15.48
+    },
+    {
+      "Command": "echo",
+      "Calls": 654,
+      "Share (%)": 9.19
+    },
+    {
+      "Command": "head",
+      "Calls": 497,
+      "Share (%)": 6.98
+    },
+    {
+      "Command": "if",
+      "Calls": 448,
+      "Share (%)": 6.29
+    },
+    {
+      "Command": "[",
+      "Calls": 349,
+      "Share (%)": 4.9
+    },
+    {
+      "Command": "ls",
+      "Calls": 273,
+      "Share (%)": 3.83
+    },
+    {
+      "Command": "grep",
+      "Calls": 267,
+      "Share (%)": 3.75
+    },
+    {
+      "Command": "display-message",
+      "Calls": 187,
+      "Share (%)": 2.63
+    },
+    {
+      "Command": "cat",
+      "Calls": 182,
+      "Share (%)": 2.56
+    },
+    {
+      "Command": "node",
+      "Calls": 162,
+      "Share (%)": 2.28
+    },
+    {
+      "Command": "python3",
+      "Calls": 150,
+      "Share (%)": 2.11
+    },
+    {
+      "Command": "tail",
+      "Calls": 130,
+      "Share (%)": 1.83
+    },
+    {
+      "Command": "find",
+      "Calls": 102,
+      "Share (%)": 1.43
+    },
+    {
+      "Command": "#",
+      "Calls": 99,
+      "Share (%)": 1.39
+    },
+    {
+      "Command": "git",
+      "Calls": 88,
+      "Share (%)": 1.24
+    },
+    {
+      "Command": "fi",
+      "Calls": 67,
+      "Share (%)": 0.94
+    },
+    {
+      "Command": "mkdir",
+      "Calls": 63,
+      "Share (%)": 0.88
+    },
+    {
+      "Command": "-e",
+      "Calls": 55,
+      "Share (%)": 0.77
+    },
+    {
+      "Command": "curl",
+      "Calls": 48,
+      "Share (%)": 0.67
+    },
+    {
+      "Command": "exit",
+      "Calls": 36,
+      "Share (%)": 0.51
+    },
+    {
+      "Command": "tmux",
+      "Calls": 34,
+      "Share (%)": 0.48
+    },
+    {
+      "Command": "npx",
+      "Calls": 30,
+      "Share (%)": 0.42
+    },
+    {
+      "Command": "swift",
+      "Calls": 30,
+      "Share (%)": 0.42
+    },
+    {
+      "Command": "do",
+      "Calls": 24,
+      "Share (%)": 0.34
+    },
+    {
+      "Command": "gh",
+      "Calls": 24,
+      "Share (%)": 0.34
+    },
+    {
+      "Command": "npm",
+      "Calls": 22,
+      "Share (%)": 0.31
+    },
+    {
+      "Command": "printf",
+      "Calls": 21,
+      "Share (%)": 0.29
+    },
+    {
+      "Command": "sort",
+      "Calls": 17,
+      "Share (%)": 0.24
+    },
+    {
+      "Command": "sleep",
+      "Calls": 17,
+      "Share (%)": 0.24
+    },
+    {
+      "Command": "wc",
+      "Calls": 16,
+      "Share (%)": 0.22
+    },
+    {
+      "Command": "\\",
+      "Calls": 15,
+      "Share (%)": 0.21
+    },
+    {
+      "Command": "done",
+      "Calls": 13,
+      "Share (%)": 0.18
+    },
+    {
+      "Command": "Sundown",
+      "Calls": 13,
+      "Share (%)": 0.18
+    },
+    {
+      "Command": "exe-gateway-token)",
+      "Calls": 12,
+      "Share (%)": 0.17
+    },
+    {
+      "Command": "launchctl",
+      "Calls": 11,
+      "Share (%)": 0.15
+    },
+    {
+      "Command": "ps",
+      "Calls": 11,
+      "Share (%)": 0.15
+    },
+    {
+      "Command": "kill",
+      "Calls": 11,
+      "Share (%)": 0.15
+    },
+    {
+      "Command": "cp",
+      "Calls": 11,
+      "Share (%)": 0.15
+    },
+    {
+      "Command": "xargs",
+      "Calls": 11,
+      "Share (%)": 0.15
+    },
+    {
+      "Command": "\"$(npm",
+      "Calls": 10,
+      "Share (%)": 0.14
+    },
+    {
+      "Command": "vercel",
+      "Calls": 9,
+      "Share (%)": 0.13
+    },
+    {
+      "Command": "{",
+      "Calls": 8,
+      "Share (%)": 0.11
+    },
+    {
+      "Command": "}",
+      "Calls": 8,
+      "Share (%)": 0.11
+    },
+    {
+      "Command": "which",
+      "Calls": 7,
+      "Share (%)": 0.1
+    },
+    {
+      "Command": "until",
+      "Calls": 7,
+      "Share (%)": 0.1
+    },
+    {
+      "Command": "awk",
+      "Calls": 7,
+      "Share (%)": 0.1
+    },
+    {
+      "Command": "rm",
+      "Calls": 7,
+      "Share (%)": 0.1
+    },
+    {
+      "Command": "exe-os",
+      "Calls": 7,
+      "Share (%)": 0.1
+    },
+    {
+      "Command": "[[",
+      "Calls": 7,
+      "Share (%)": 0.1
+    },
+    {
+      "Command": "source",
+      "Calls": 6,
+      "Share (%)": 0.08
+    },
+    {
+      "Command": "sqlite3",
+      "Calls": 6,
+      "Share (%)": 0.08
+    },
+    {
+      "Command": "while",
+      "Calls": 6,
+      "Share (%)": 0.08
+    },
+    {
+      "Command": "qma-watcher",
+      "Calls": 6,
+      "Share (%)": 0.08
+    },
+    {
+      "Command": "for",
+      "Calls": 5,
+      "Share (%)": 0.07
+    },
+    {
+      "Command": "strings",
+      "Calls": 5,
+      "Share (%)": 0.07
+    },
+    {
+      "Command": "brew",
+      "Calls": 4,
+      "Share (%)": 0.06
+    },
+    {
+      "Command": "tr",
+      "Calls": 4,
+      "Share (%)": 0.06
+    },
+    {
+      "Command": "file",
+      "Calls": 4,
+      "Share (%)": 0.06
+    },
+    {
+      "Command": "-c",
+      "Calls": 4,
+      "Share (%)": 0.06
+    },
+    {
+      "Command": "open",
+      "Calls": 4,
+      "Share (%)": 0.06
+    },
+    {
+      "Command": "else",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "null",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "python",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "-E",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "cut",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "exe-watcher",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "([",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "pip3",
+      "Calls": 3,
+      "Share (%)": 0.04
+    },
+    {
+      "Command": "pytest",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "base64",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "flow-sync",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "pgrep",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "lsof",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "claude",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "tee",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "duti",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "export",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "codesign",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "defaults",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "pkill",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "exe-fuelbar",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "uv",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "mv",
+      "Calls": 2,
+      "Share (%)": 0.03
+    },
+    {
+      "Command": "wait",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "-l",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "(ps",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "Phase",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "*Sell-What-Want*",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "legacy",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "<<'EOF'",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "org-3d\\",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "privacy-3d\\",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "voice-3d\"",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "ss",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "netstat",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "exed",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "print(json.dumps({'to':",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "pwd",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "esac",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "*Daily",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "bash",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "yt-dlp",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "release",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "print(json.dumps({'platform':'whatsapp','to':'$GROUP_JID','text':msg}))\")\"",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "!",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "timeout",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "-print",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "exe-gateway-token",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "whisper-cli",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "osascript",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "sw_vers",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "xcrun",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "man",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "fold",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "chmod",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "padding-bottom:56.25%",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "height:0",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "margin:32px",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "\\\">'",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "top:0",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "left:0",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "width:100%",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "height:100%",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "border-radius:8px",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "\\\"",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "nslookup",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "ping",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "crontab",
+      "Calls": 1,
+      "Share (%)": 0.01
+    },
+    {
+      "Command": "test",
+      "Calls": 1,
+      "Share (%)": 0.01
+    }
+  ]
+}

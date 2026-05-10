@@ -9,18 +9,19 @@ import { parseAllSessions, filterProjectsByName } from './parser.js'
 import { convertCost } from './currency.js'
 import { renderStatusBar } from './format.js'
 import { type PeriodData, type ProviderCost, type AgentStatsPayload } from './menubar-json.js'
-import { buildMenubarPayload, computeAgentSpend, mergeAgentSpend, buildProjectSpend, estimateAgentCosts, type DiagnosticsBlock } from './menubar-json.js'
-import { addNewDays, getDaysInRange, loadDailyCache, saveDailyCache, withDailyCacheLock } from './daily-cache.js'
-import { aggregateProjectsIntoDays, buildPeriodDataFromDays, filterDaysToProvider, dateKey } from './day-aggregator.js'
+import { buildMenubarPayload, computeAgentSpend, mergeAgentSpend, buildProjectSpendFromDays, estimateAgentCosts, type DiagnosticsBlock } from './menubar-json.js'
+import { addNewDays, buildDailyCacheScopeKey, getDaysInRange, loadDailyCache, saveDailyCache, withDailyCacheLock } from './daily-cache.js'
+import { aggregateProjectsIntoDays, buildPeriodDataFromDays, filterDaysToProvider, dateKey, fillMissingDays } from './day-aggregator.js'
 import { CATEGORY_LABELS, type DateRange, type ProjectSummary, type TaskCategory } from './types.js'
 import { renderDashboard } from './dashboard.js'
 import { parseDateRangeFlags } from './cli-date.js'
-import { runOptimize, scanAndDetect } from './optimize.js'
+import { prewarmOptimizeScan, runOptimize, scanAndDetect } from './optimize.js'
 import { renderCompare } from './compare.js'
 import { getAllProviders } from './providers/index.js'
 import { clearPlan, readConfig, readPlan, saveConfig, savePlan, getConfigFilePath, type PlanId } from './config.js'
 import { clampResetDay, getPlanUsageOrNull, type PlanUsage } from './plan-usage.js'
 import { getPresetPlan, isPlanId, isPlanProvider, planDisplayName } from './plans.js'
+import { ALL_TIME_HISTORY_DAYS, computeProgressiveBackfillStart, resolveColdStartHistoryDays } from './progressive-backfill.js'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
@@ -28,7 +29,7 @@ const { version } = require('../package.json')
 import { loadCurrency, getCurrency, isValidCurrencyCode } from './currency.js'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
-const BACKFILL_DAYS = 365
+const BACKFILL_DAYS = ALL_TIME_HISTORY_DAYS
 
 function toDateString(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -49,7 +50,7 @@ function getDateRange(period: string): { range: DateRange; label: string } {
       return { range: { start, end: yesterdayEnd }, label: `Yesterday (${toDateString(start)})` }
     }
     case 'week': {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
       return { range: { start, end }, label: 'Last 7 Days' }
     }
     case 'month': {
@@ -57,18 +58,15 @@ function getDateRange(period: string): { range: DateRange; label: string } {
       return { range: { start, end }, label: `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}` }
     }
     case '30days': {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30)
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29)
       return { range: { start, end }, label: 'Last 30 Days' }
     }
     case 'all': {
-      // Cap "All Time" to the last 6 months. Older data is rarely actionable for a cost
-      // tracker and keeps the parse path bounded so providers like Codex/Cursor with sparse
-      // data still load in seconds.
-      const start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate())
-      return { range: { start, end }, label: 'Last 6 months' }
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (ALL_TIME_HISTORY_DAYS - 1))
+      return { range: { start, end }, label: 'All Time' }
     }
     default: {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
       return { range: { start, end }, label: 'Last 7 Days' }
     }
   }
@@ -379,16 +377,15 @@ program
     if (opts.format === 'menubar-json') {
       const periodInfo = getDateRange(opts.period)
       const now = new Date()
+      const selectedPeriodHistoryDays = resolveColdStartHistoryDays(opts.period, now)
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
       const yesterdayEnd = new Date(todayStart.getTime() - 1)
       const yesterdayStr = toDateString(new Date(todayStart.getTime() - MS_PER_DAY))
       const isAllProviders = pf === 'all'
+      const dailyCacheScope = buildDailyCacheScopeKey(opts.project, opts.exclude)
 
-      // The daily cache is provider-agnostic: always backfill it from .all so subsequent
-      // provider-filtered reads can derive per-provider cost+calls from DailyEntry.providers.
-      // Yesterday is always recomputed: it may have been cached mid-day with partial data.
       const cache = await withDailyCacheLock(async () => {
-        let c = await loadDailyCache()
+        let c = await loadDailyCache(dailyCacheScope)
 
         // Evict yesterday (and any stale future entries) so the gap fill recomputes them.
         const hadYesterday = c.days.some(d => d.date >= yesterdayStr)
@@ -398,21 +395,52 @@ program
           c = { ...c, days: freshDays, lastComputedDate: latestFresh }
         }
 
-        const gapStart = c.lastComputedDate
-          ? new Date(
-              parseInt(c.lastComputedDate.slice(0, 4)),
-              parseInt(c.lastComputedDate.slice(5, 7)) - 1,
-              parseInt(c.lastComputedDate.slice(8, 10)) + 1
-            )
-          : new Date(todayStart.getTime() - BACKFILL_DAYS * MS_PER_DAY)
+        // --- FORWARD GAP: fill from lastComputedDate through yesterday ---
+        const oldestCachedDate = c.days.length > 0 ? c.days[0].date : null
+        const effectiveGapStart = computeProgressiveBackfillStart({
+          lastComputedDate: c.lastComputedDate,
+          oldestCachedDate,
+          todayStart,
+          yesterdayEnd,
+          backfillDays: BACKFILL_DAYS,
+          coldStartHistoryDays: selectedPeriodHistoryDays,
+        })
 
-        if (gapStart.getTime() <= yesterdayEnd.getTime()) {
-          const gapRange: DateRange = { start: gapStart, end: yesterdayEnd }
+        // Determine the gap end: if we're filling backward (effectiveGapStart < oldestCachedDate),
+        // the end is the day before the oldest cached day. Otherwise it's yesterday.
+        const gapEnd = (oldestCachedDate && effectiveGapStart.getTime() < new Date(oldestCachedDate).getTime())
+          ? new Date(new Date(oldestCachedDate).getTime() - MS_PER_DAY)
+          : yesterdayEnd
+
+        if (effectiveGapStart.getTime() <= gapEnd.getTime()) {
+          const gapRange: DateRange = { start: effectiveGapStart, end: gapEnd }
           const gapProjects = filterProjectsByName(await parseAllSessions(gapRange, 'all'), opts.project, opts.exclude)
-          const gapDays = aggregateProjectsIntoDays(gapProjects)
-          c = addNewDays(c, gapDays, yesterdayStr)
+          const gapDays = fillMissingDays(gapRange.start, gapRange.end, aggregateProjectsIntoDays(gapProjects))
+          // Don't advance lastComputedDate for backward fills
+          const coveredThrough = gapEnd.getTime() >= yesterdayEnd.getTime() ? yesterdayStr : undefined
+          c = addNewDays(c, gapDays, yesterdayStr, coveredThrough ? { coveredThrough } : undefined)
           await saveDailyCache(c)
         }
+
+        // --- BACKWARD GAP: if the forward fill ran but the cache still doesn't reach
+        // far enough back for the requested period, fill backward now. Without this,
+        // the forward gap (yesterday re-eviction) blocks backward fills indefinitely. ---
+        const updatedOldest = c.days.length > 0 ? c.days[0].date : null
+        const neededStart = new Date(todayStart.getTime() - (selectedPeriodHistoryDays - 1) * MS_PER_DAY)
+        const fullBackfillStart = new Date(todayStart.getTime() - BACKFILL_DAYS * MS_PER_DAY)
+        const clampedNeeded = neededStart < fullBackfillStart ? fullBackfillStart : neededStart
+
+        if (updatedOldest && clampedNeeded.getTime() < new Date(updatedOldest).getTime()) {
+          const backEnd = new Date(new Date(updatedOldest).getTime() - MS_PER_DAY)
+          if (clampedNeeded.getTime() <= backEnd.getTime()) {
+            const backRange: DateRange = { start: clampedNeeded, end: backEnd }
+            const backProjects = filterProjectsByName(await parseAllSessions(backRange, 'all'), opts.project, opts.exclude)
+            const backDays = fillMissingDays(backRange.start, backRange.end, aggregateProjectsIntoDays(backProjects))
+            c = addNewDays(c, backDays, yesterdayStr)
+            await saveDailyCache(c)
+          }
+        }
+
         return c
       })
 
@@ -420,21 +448,23 @@ program
       // - .all provider: assemble from cache + today (fast)
       // - specific provider: parse the period range with provider filter (correct, but slower)
       let currentData: PeriodData
-      let scanProjects: ProjectSummary[]
-      let scanRange: DateRange
+      const scanRange = periodInfo.range
 
       // Parse only today's sessions once — reused across period data, providers, and history.
       const todayRange: DateRange = { start: todayStart, end: periodInfo.range.end }
       const warnings: string[] = []
       const parseStart = Date.now()
       let todayProjects: ProjectSummary[]
+      let allTodayProjects: ProjectSummary[]
       try {
-        todayProjects = fp(await parseAllSessions(todayRange, 'all'))
+        allTodayProjects = await parseAllSessions(todayRange, 'all')
+        todayProjects = fp(allTodayProjects)
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         const warn = `parseAllSessions failed: ${msg}`
         warnings.push(warn)
         process.stderr.write(`[qma-watcher] WARNING: ${warn}\n`)
+        allTodayProjects = []
         todayProjects = []
       }
       if (todayProjects.length === 0) {
@@ -449,6 +479,7 @@ program
       // Previously, specific providers re-parsed all sessions which could produce different
       // totals than the all-provider breakdown (different dedup order, different discovery).
       let daysCount = 0
+      let selectedPeriodDays = [] as ReturnType<typeof aggregateProjectsIntoDays>
       {
         const rangeStartStr = toDateString(periodInfo.range.start)
         const rangeEndStr = toDateString(periodInfo.range.end)
@@ -456,19 +487,17 @@ program
         // Only include today from the fresh parse — historical days already come from cache.
         // Without this filter, days between rangeStart and yesterday appear in BOTH arrays.
         const todayOnly = todayDays.filter(d => d.date > yesterdayStr && d.date <= rangeEndStr)
-        const allDays = [...historicalDays, ...todayOnly].sort((a, b) => a.date.localeCompare(b.date))
-        daysCount = allDays.length
+        selectedPeriodDays = [...historicalDays, ...todayOnly].sort((a, b) => a.date.localeCompare(b.date))
+        daysCount = selectedPeriodDays.length
 
         if (isAllProviders) {
-          currentData = buildPeriodDataFromDays(allDays, periodInfo.label)
+          currentData = buildPeriodDataFromDays(selectedPeriodDays, periodInfo.label)
         } else {
           // Filter to the specific provider's cost/calls from the same aggregated data,
           // so the number always matches the all-provider breakdown.
-          const providerDays = filterDaysToProvider(allDays, pf)
+          const providerDays = filterDaysToProvider(selectedPeriodDays, pf)
           currentData = buildPeriodDataFromDays(providerDays, periodInfo.label)
         }
-        scanProjects = todayProjects
-        scanRange = periodInfo.range
       }
 
       // PROVIDERS
@@ -498,11 +527,9 @@ program
         for (const [name, cost] of Object.entries(providerTotals)) {
           providers.push({ name: displayNameByName.get(name) ?? name, cost })
         }
-        for (const p of allProviders) {
-          if (providers.some(pc => pc.name === p.displayName)) continue
-          const sources = await p.discoverSessions()
-          if (sources.length > 0) providers.push({ name: p.displayName, cost: 0 })
-        }
+        // Skip filesystem scan for installed-but-zero providers — only show providers
+        // with actual spend. Saves ~500ms from discoverSessions() calls on cold paths.
+        // Providers appear automatically when they accumulate spend.
       } else {
         const display = displayNameByName.get(pf) ?? pf
         providers.push({ name: display, cost: currentData.cost })
@@ -540,20 +567,45 @@ program
             topModels,
           }
         }
-        const prov = d.providers[pf] ?? { calls: 0, cost: 0 }
+        const prov = d.providers[pf]
+        const topModels = Object.entries(prov?.models ?? {})
+          .filter(([name]) => name !== '<synthetic>')
+          .sort(([, a], [, b]) => b.cost - a.cost)
+          .slice(0, 5)
+          .map(([name, m]) => ({
+            name,
+            cost: m.cost,
+            calls: m.calls,
+            inputTokens: m.inputTokens,
+            outputTokens: m.outputTokens,
+          }))
         return {
           date: d.date,
-          cost: prov.cost,
-          calls: prov.calls,
-          inputTokens: 0,
-          outputTokens: 0,
-          cacheReadTokens: 0,
-          cacheWriteTokens: 0,
-          topModels: [],
+          cost: prov?.cost ?? 0,
+          calls: prov?.calls ?? 0,
+          inputTokens: prov?.inputTokens ?? 0,
+          outputTokens: prov?.outputTokens ?? 0,
+          cacheReadTokens: prov?.cacheReadTokens ?? 0,
+          cacheWriteTokens: prov?.cacheWriteTokens ?? 0,
+          topModels,
         }
       })
 
-      const optimize = opts.optimize === false ? null : await scanAndDetect(scanProjects, scanRange)
+      let optimize = null
+      if (opts.optimize !== false) {
+        try {
+          const optimizeProjects = isAllProviders && opts.period === 'today'
+            ? todayProjects
+            : fp(await parseAllSessions(scanRange, isAllProviders ? 'all' : pf))
+          optimize = await scanAndDetect(optimizeProjects, scanRange)
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          const warn = `optimize parse failed: ${msg}`
+          warnings.push(warn)
+          process.stderr.write(`[exe-watcher] WARNING: ${warn}\n`)
+          optimize = await scanAndDetect(todayProjects, scanRange)
+        }
+      }
 
       // Read exe-os agent stats if available (auto-detect exe-os presence)
       const exeOsDir = join(homedir(), '.exe-os')
@@ -582,16 +634,32 @@ program
         agentStats = estimateAgentCosts(agentStats)
       }
 
-      // Per-project spend across 24h/7d/30d periods.
-      const [proj24h, proj7d, proj30d] = await Promise.all([
-        parseAllSessions(getDateRange('today').range, 'all'),
-        parseAllSessions(getDateRange('week').range, 'all'),
-        parseAllSessions(getDateRange('30days').range, 'all'),
-      ])
-      const projectSpend = buildProjectSpend(proj24h, proj7d, proj30d)
+      // Per-project spend across 24h/7d/30d periods, ranked by the currently selected period.
+      // Use the daily cache + today's fresh parse so this stays fast without rendering empty
+      // 7d/30d columns on cold historical selections.
+      let projectSpend: ReturnType<typeof buildProjectSpendFromDays> | null = null
+      try {
+        const weekStartStr = toDateString(getDateRange('week').range.start)
+        const thirtyDayStartStr = toDateString(getDateRange('30days').range.start)
+        const todayOnlyDays = todayDays.filter(d => d.date > yesterdayStr)
+        const days7d = [
+          ...getDaysInRange(cache, weekStartStr, yesterdayStr),
+          ...todayOnlyDays,
+        ].sort((a, b) => a.date.localeCompare(b.date))
+        const days30d = [
+          ...getDaysInRange(cache, thirtyDayStartStr, yesterdayStr),
+          ...todayOnlyDays,
+        ].sort((a, b) => a.date.localeCompare(b.date))
+        projectSpend = buildProjectSpendFromDays(selectedPeriodDays, todayOnlyDays, days7d, days30d)
+      } catch {
+        const todayOnlyDays = todayDays.filter(d => d.date > yesterdayStr)
+        projectSpend = buildProjectSpendFromDays(selectedPeriodDays, todayOnlyDays, [], [])
+      }
 
       const diagnostics: DiagnosticsBlock = { daysCount, parseTimeMs, warnings }
-      console.log(JSON.stringify(buildMenubarPayload(currentData, providers, optimize, dailyHistory, agentStats, projectSpend, exeOsDetected, statsFileAge, diagnostics)))
+      const payload = buildMenubarPayload(currentData, providers, optimize, dailyHistory, agentStats, projectSpend, exeOsDetected, statsFileAge, diagnostics)
+      const json = JSON.stringify(payload)
+      console.log(json)
       return
     }
 
@@ -936,13 +1004,14 @@ program
 program
   .command('optimize')
   .description('Find token waste and get exact fixes')
-  .option('-p, --period <period>', 'Analysis period: today, week, 30days, month, all', '30days')
+  .option('-p, --period <period>', 'Analysis period: today, week, 30days, month, all', 'week')
   .option('--provider <provider>', 'Filter by provider: all, claude, codex, cursor', 'all')
   .action(async (opts) => {
     await loadPricing()
     const { range, label } = getDateRange(opts.period)
+    const scanPromise = prewarmOptimizeScan(range)
     const projects = await parseAllSessions(range, opts.provider)
-    await runOptimize(projects, label, range)
+    await runOptimize(projects, label, range, scanPromise)
   })
 
 program

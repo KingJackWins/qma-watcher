@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildMenubarPayload, type PeriodData, type ProviderCost } from '../src/menubar-json.js'
+import { buildMenubarPayload, buildProjectSpend, type PeriodData, type ProviderCost } from '../src/menubar-json.js'
 import type { OptimizeResult } from '../src/optimize.js'
+import type { ProjectSummary } from '../src/types.js'
 
 function emptyPeriod(label: string): PeriodData {
   return {
@@ -15,6 +16,32 @@ function emptyPeriod(label: string): PeriodData {
     cacheWriteTokens: 0,
     categories: [],
     models: [],
+  }
+}
+
+function projectSummary(project: string, totalCostUSD: number, sessionCount = 1): ProjectSummary {
+  return {
+    project,
+    projectPath: project,
+    sessions: Array.from({ length: sessionCount }, (_, i) => ({
+      sessionId: `sess-${project}-${i}`,
+      firstTimestamp: '2026-05-06T00:00:00.000Z',
+      lastTimestamp: '2026-05-06T00:00:00.000Z',
+      totalCostUSD: totalCostUSD / sessionCount,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCacheReadTokens: 0,
+      totalCacheWriteTokens: 0,
+      apiCalls: 1,
+      turns: [],
+      modelBreakdown: {},
+      toolBreakdown: {},
+      mcpBreakdown: {},
+      bashBreakdown: {},
+      categoryBreakdown: {},
+    })),
+    totalCostUSD,
+    totalApiCalls: sessionCount,
   }
 }
 
@@ -230,5 +257,65 @@ describe('buildMenubarPayload', () => {
     ]
     const payload = buildMenubarPayload(emptyPeriod('Today'), providers, null)
     expect(payload.current.providers).toEqual({ claude: 76.45 })
+  })
+})
+
+describe('buildProjectSpend', () => {
+  it('collapses both Claude and cwd-style worktree names into the parent project', () => {
+    const selected = [
+      projectSummary('-Users-exeai-exe-os--worktrees-tom', 10),
+      projectSummary('Users-exeai-exe-os-.worktrees-bob', 5),
+    ]
+
+    const rows = buildProjectSpend(selected, selected, selected, selected)
+
+    expect(rows).toEqual([
+      expect.objectContaining({
+        name: 'exe-os',
+        cost24h: 15,
+        cost7d: 15,
+        cost30d: 15,
+        selectedPeriodCost: 15,
+        sessions: 2,
+      }),
+    ])
+  })
+
+  it('filters and sorts rows by the selected-period cost instead of always using 30d totals', () => {
+    const selected = [
+      projectSummary('Users-exeai-alpha', 50),
+      projectSummary('Users-exeai-beta', 10),
+    ]
+    const d24 = [
+      projectSummary('Users-exeai-alpha', 2),
+      projectSummary('Users-exeai-beta', 4),
+    ]
+    const d7 = [
+      projectSummary('Users-exeai-alpha', 8),
+      projectSummary('Users-exeai-beta', 20),
+    ]
+    const d30 = [
+      projectSummary('Users-exeai-alpha', 12),
+      projectSummary('Users-exeai-beta', 30),
+      projectSummary('Users-exeai-stale', 99),
+    ]
+
+    const rows = buildProjectSpend(selected, d24, d7, d30)
+
+    expect(rows.map((row) => row.name)).toEqual(['alpha', 'beta'])
+    expect(rows[0]).toMatchObject({
+      name: 'alpha',
+      cost24h: 2,
+      cost7d: 8,
+      cost30d: 12,
+      selectedPeriodCost: 50,
+    })
+    expect(rows[1]).toMatchObject({
+      name: 'beta',
+      cost24h: 4,
+      cost7d: 20,
+      cost30d: 30,
+      selectedPeriodCost: 10,
+    })
   })
 })

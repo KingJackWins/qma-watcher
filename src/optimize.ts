@@ -315,6 +315,10 @@ async function scanSessions(dateRange?: DateRange): Promise<ScanData> {
   return { toolCalls: allCalls, projectCwds: allCwds, apiCalls: allApiCalls, userMessages: allUserMessages }
 }
 
+export function prewarmOptimizeScan(dateRange?: DateRange): Promise<ScanData> {
+  return scanSessions(dateRange)
+}
+
 // ============================================================================
 // Shared helpers
 // ============================================================================
@@ -954,6 +958,7 @@ function cacheKey(projects: ProjectSummary[], dateRange: DateRange | undefined):
 export async function scanAndDetect(
   projects: ProjectSummary[],
   dateRange?: DateRange,
+  preScanned?: ScanData | Promise<ScanData>,
 ): Promise<OptimizeResult> {
   if (projects.length === 0) {
     return { findings: [], costRate: 0, healthScore: 100, healthGrade: 'A' }
@@ -964,7 +969,9 @@ export async function scanAndDetect(
   if (cached && Date.now() - cached.ts < RESULT_CACHE_TTL_MS) return cached.data
 
   const costRate = computeInputCostRate(projects)
-  const { toolCalls, projectCwds, apiCalls, userMessages } = await scanSessions(dateRange)
+  const { toolCalls, projectCwds, apiCalls, userMessages } = preScanned
+    ? await preScanned
+    : await scanSessions(dateRange)
 
   const findings: WasteFinding[] = []
   const syncDetectors: Array<() => WasteFinding | null> = [
@@ -1113,6 +1120,7 @@ export async function runOptimize(
   projects: ProjectSummary[],
   periodLabel: string,
   dateRange?: DateRange,
+  preScanned?: ScanData | Promise<ScanData>,
 ): Promise<void> {
   if (projects.length === 0) {
     console.log(chalk.dim('\n  No usage data found for this period.\n'))
@@ -1121,7 +1129,7 @@ export async function runOptimize(
 
   process.stderr.write(chalk.dim('  Analyzing your sessions...\n'))
 
-  const { findings, costRate, healthScore, healthGrade } = await scanAndDetect(projects, dateRange)
+  const { findings, costRate, healthScore, healthGrade } = await scanAndDetect(projects, dateRange, preScanned)
   const sessions = projects.flatMap(p => p.sessions)
   const periodCost = projects.reduce((s, p) => s + p.totalCostUSD, 0)
   const callCount = projects.reduce((s, p) => s + p.totalApiCalls, 0)

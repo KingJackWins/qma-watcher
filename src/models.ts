@@ -1,7 +1,7 @@
 import { readFile, mkdir, rename, unlink } from 'fs/promises'
 import { open } from 'fs/promises'
 import { join } from 'path'
-import { randomBytes } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
 
 import { getCacheDir } from './cache-dir.js'
 
@@ -12,6 +12,13 @@ export type ModelCosts = {
   cacheReadCostPerToken: number
   webSearchCostPerRequest: number
   fastMultiplier: number
+  contextTiers?: Array<{
+    minPromptTokens: number
+    inputCostPerToken?: number
+    outputCostPerToken?: number
+    cacheWriteCostPerToken?: number
+    cacheReadCostPerToken?: number
+  }>
 }
 
 type LiteLLMEntry = {
@@ -25,6 +32,9 @@ type LiteLLMEntry = {
 const LITELLM_URL = 'https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json'
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const WEB_SEARCH_COST = 0.01
+const LONG_CONTEXT_1M_THRESHOLD_TOKENS = 272_000
+const GEMINI_LONG_CONTEXT_THRESHOLD_TOKENS = 200_000
+const DIRECT_PROVIDER_PREFIXES = ['openai/', 'anthropic/', 'google/', 'vertex_ai/', 'minimax/']
 
 const FALLBACK_PRICING: Record<string, ModelCosts> = {
   'claude-opus-4-7': { inputCostPerToken: 5e-6, outputCostPerToken: 25e-6, cacheWriteCostPerToken: 6.25e-6, cacheReadCostPerToken: 0.5e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 6 },
@@ -41,14 +51,60 @@ const FALLBACK_PRICING: Record<string, ModelCosts> = {
   'claude-3-5-haiku': { inputCostPerToken: 0.8e-6, outputCostPerToken: 4e-6, cacheWriteCostPerToken: 1e-6, cacheReadCostPerToken: 0.08e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'gpt-4o': { inputCostPerToken: 2.5e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 2.5e-6, cacheReadCostPerToken: 1.25e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'gpt-4o-mini': { inputCostPerToken: 0.15e-6, outputCostPerToken: 0.6e-6, cacheWriteCostPerToken: 0.15e-6, cacheReadCostPerToken: 0.075e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
-  'gemini-2.5-pro': { inputCostPerToken: 1.25e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 1.25e-6, cacheReadCostPerToken: 0.315e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gemini-2.5-pro': {
+    inputCostPerToken: 1.25e-6,
+    outputCostPerToken: 10e-6,
+    cacheWriteCostPerToken: 1.25e-6,
+    cacheReadCostPerToken: 0.125e-6,
+    webSearchCostPerRequest: WEB_SEARCH_COST,
+    fastMultiplier: 1,
+    contextTiers: [{
+      minPromptTokens: GEMINI_LONG_CONTEXT_THRESHOLD_TOKENS,
+      inputCostPerToken: 2.5e-6,
+      outputCostPerToken: 15e-6,
+      cacheReadCostPerToken: 0.25e-6,
+    }],
+  },
   'gpt-5.5': { inputCostPerToken: 5e-6, outputCostPerToken: 30e-6, cacheWriteCostPerToken: 5e-6, cacheReadCostPerToken: 0.5e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
-  'gpt-5.4': { inputCostPerToken: 2.5e-6, outputCostPerToken: 15e-6, cacheWriteCostPerToken: 2.5e-6, cacheReadCostPerToken: 0.25e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.5-pro': { inputCostPerToken: 30e-6, outputCostPerToken: 180e-6, cacheWriteCostPerToken: 0, cacheReadCostPerToken: 0, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.4': {
+    inputCostPerToken: 2.5e-6,
+    outputCostPerToken: 15e-6,
+    cacheWriteCostPerToken: 2.5e-6,
+    cacheReadCostPerToken: 0.25e-6,
+    webSearchCostPerRequest: WEB_SEARCH_COST,
+    fastMultiplier: 1,
+    contextTiers: [{
+      minPromptTokens: LONG_CONTEXT_1M_THRESHOLD_TOKENS,
+      inputCostPerToken: 5e-6,
+      outputCostPerToken: 22.5e-6,
+      cacheWriteCostPerToken: 5e-6,
+      cacheReadCostPerToken: 0.5e-6,
+    }],
+  },
+  'gpt-5.4-pro': {
+    inputCostPerToken: 30e-6,
+    outputCostPerToken: 180e-6,
+    cacheWriteCostPerToken: 0,
+    cacheReadCostPerToken: 0,
+    webSearchCostPerRequest: WEB_SEARCH_COST,
+    fastMultiplier: 1,
+    contextTiers: [{
+      minPromptTokens: LONG_CONTEXT_1M_THRESHOLD_TOKENS,
+      inputCostPerToken: 60e-6,
+      outputCostPerToken: 270e-6,
+    }],
+  },
   'gpt-5.4-mini': { inputCostPerToken: 0.75e-6, outputCostPerToken: 4.5e-6, cacheWriteCostPerToken: 0.75e-6, cacheReadCostPerToken: 0.075e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.4-nano': { inputCostPerToken: 0.2e-6, outputCostPerToken: 1.25e-6, cacheWriteCostPerToken: 0.2e-6, cacheReadCostPerToken: 0.02e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'gpt-5.3-codex': { inputCostPerToken: 1.75e-6, outputCostPerToken: 14e-6, cacheWriteCostPerToken: 1.75e-6, cacheReadCostPerToken: 0.175e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'gpt-5.3-codex-spark': { inputCostPerToken: 1.75e-6, outputCostPerToken: 14e-6, cacheWriteCostPerToken: 1.75e-6, cacheReadCostPerToken: 0.175e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
-  'gpt-5': { inputCostPerToken: 2.5e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 2.5e-6, cacheReadCostPerToken: 1.25e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
-  'gpt-5-mini': { inputCostPerToken: 0.4e-6, outputCostPerToken: 1.6e-6, cacheWriteCostPerToken: 0.4e-6, cacheReadCostPerToken: 0.2e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.2': { inputCostPerToken: 1.75e-6, outputCostPerToken: 14e-6, cacheWriteCostPerToken: 1.75e-6, cacheReadCostPerToken: 0.175e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.1': { inputCostPerToken: 1.25e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 1.25e-6, cacheReadCostPerToken: 0.125e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5': { inputCostPerToken: 1.25e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 1.25e-6, cacheReadCostPerToken: 0.125e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5-codex': { inputCostPerToken: 1.25e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 1.25e-6, cacheReadCostPerToken: 0.125e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5-mini': { inputCostPerToken: 0.25e-6, outputCostPerToken: 2e-6, cacheWriteCostPerToken: 0.25e-6, cacheReadCostPerToken: 0.025e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5-nano': { inputCostPerToken: 0.05e-6, outputCostPerToken: 0.4e-6, cacheWriteCostPerToken: 0.05e-6, cacheReadCostPerToken: 0.005e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'gpt-4.1': { inputCostPerToken: 2e-6, outputCostPerToken: 8e-6, cacheWriteCostPerToken: 2e-6, cacheReadCostPerToken: 0.5e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'gpt-4.1-mini': { inputCostPerToken: 0.4e-6, outputCostPerToken: 1.6e-6, cacheWriteCostPerToken: 0.4e-6, cacheReadCostPerToken: 0.1e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'gpt-4.1-nano': { inputCostPerToken: 0.1e-6, outputCostPerToken: 0.4e-6, cacheWriteCostPerToken: 0.1e-6, cacheReadCostPerToken: 0.025e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
@@ -56,9 +112,9 @@ const FALLBACK_PRICING: Record<string, ModelCosts> = {
   'o4-mini': { inputCostPerToken: 1.1e-6, outputCostPerToken: 4.4e-6, cacheWriteCostPerToken: 1.1e-6, cacheReadCostPerToken: 0.275e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'codex-mini-latest': { inputCostPerToken: 1.5e-6, outputCostPerToken: 6e-6, cacheWriteCostPerToken: 1.5e-6, cacheReadCostPerToken: 0.375e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'codex-mini': { inputCostPerToken: 1.5e-6, outputCostPerToken: 6e-6, cacheWriteCostPerToken: 1.5e-6, cacheReadCostPerToken: 0.375e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
-  'gpt-5.1-codex': { inputCostPerToken: 1.25e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 1.25e-6, cacheReadCostPerToken: 0.625e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
-  'gpt-5.1-codex-mini': { inputCostPerToken: 0.25e-6, outputCostPerToken: 2e-6, cacheWriteCostPerToken: 0.25e-6, cacheReadCostPerToken: 0.125e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
-  'gpt-5.2-codex': { inputCostPerToken: 1.75e-6, outputCostPerToken: 14e-6, cacheWriteCostPerToken: 1.75e-6, cacheReadCostPerToken: 0.875e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.1-codex': { inputCostPerToken: 1.25e-6, outputCostPerToken: 10e-6, cacheWriteCostPerToken: 1.25e-6, cacheReadCostPerToken: 0.125e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.1-codex-mini': { inputCostPerToken: 0.25e-6, outputCostPerToken: 2e-6, cacheWriteCostPerToken: 0.25e-6, cacheReadCostPerToken: 0.025e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
+  'gpt-5.2-codex': { inputCostPerToken: 1.75e-6, outputCostPerToken: 14e-6, cacheWriteCostPerToken: 1.75e-6, cacheReadCostPerToken: 0.175e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'MiniMax-M2.7-highspeed': { inputCostPerToken: 0.6e-6, outputCostPerToken: 2.4e-6, cacheWriteCostPerToken: 0.375e-6, cacheReadCostPerToken: 0.06e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
   'MiniMax-M2.7': { inputCostPerToken: 0.3e-6, outputCostPerToken: 1.2e-6, cacheWriteCostPerToken: 0.375e-6, cacheReadCostPerToken: 0.06e-6, webSearchCostPerRequest: WEB_SEARCH_COST, fastMultiplier: 1 },
 }
@@ -86,16 +142,25 @@ async function fetchAndCachePricing(): Promise<Map<string, ModelCosts>> {
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   const data = await response.json() as Record<string, LiteLLMEntry>
   const pricing = new Map<string, ModelCosts>()
+  const preferredStripped = new Map<string, ModelCosts>()
+  const fallbackStripped = new Map<string, ModelCosts>()
 
   for (const [name, entry] of Object.entries(data)) {
     const costs = parseLiteLLMEntry(entry)
     if (!costs) continue
     pricing.set(name, costs)
-    // Also index by stripped name so lookups work without provider prefix:
-    // 'anthropic/claude-opus-4-6' is also queryable as 'claude-opus-4-6'.
-    // First write wins so direct-provider entries take precedence over re-hosters.
     const stripped = name.replace(/^[^/]+\//, '')
-    if (stripped !== name && !pricing.has(stripped)) pricing.set(stripped, costs)
+    if (stripped === name) continue
+    const isDirectProvider = DIRECT_PROVIDER_PREFIXES.some(prefix => name.toLowerCase().startsWith(prefix))
+    const target = isDirectProvider ? preferredStripped : fallbackStripped
+    if (!target.has(stripped)) target.set(stripped, costs)
+  }
+
+  for (const [name, costs] of preferredStripped) {
+    if (!pricing.has(name)) pricing.set(name, costs)
+  }
+  for (const [name, costs] of fallbackStripped) {
+    if (!pricing.has(name)) pricing.set(name, costs)
   }
 
   await mkdir(getCacheDir(), { recursive: true })
@@ -180,24 +245,14 @@ function getCanonicalName(model: string): string {
 
 export function getModelCosts(model: string): ModelCosts | null {
   const canonical = resolveAlias(getCanonicalName(model))
+  const exactFetched = pricingCache?.get(canonical) ?? null
+  const exactFallback = Object.hasOwn(FALLBACK_PRICING, canonical) ? FALLBACK_PRICING[canonical]! : null
+  const exactMatch = mergeModelCosts(exactFetched, exactFallback)
+  if (exactMatch) return exactMatch
 
-  // Our curated prices (official direct API pricing) take precedence over
-  // LiteLLM which may return third-party provider markups (e.g. Vertex AI
-  // charges $1/$5 for Haiku 3.5 vs Anthropic direct at $0.80/$4).
-  // Exact matches only here — prefix matching happens below after LiteLLM.
-  if (Object.hasOwn(FALLBACK_PRICING, canonical)) return FALLBACK_PRICING[canonical]!
-
-  if (pricingCache?.has(canonical)) return pricingCache.get(canonical)!
-
-  for (const [key, costs] of pricingCache ?? new Map()) {
-    if (canonical.startsWith(key)) return costs
-  }
-
-  for (const [key, costs] of Object.entries(FALLBACK_PRICING)) {
-    if (canonical.startsWith(key)) return costs
-  }
-
-  return null
+  const prefixFetched = findPrefixMatch(pricingCache ?? new Map(), canonical)
+  const prefixFallback = findPrefixMatch(new Map(Object.entries(FALLBACK_PRICING)), canonical)
+  return mergeModelCosts(prefixFetched, prefixFallback)
 }
 
 export function calculateCost(
@@ -208,8 +263,10 @@ export function calculateCost(
   cacheReadTokens: number,
   webSearchRequests: number,
   speed: 'standard' | 'fast' = 'standard',
+  tierInputTokens?: number,
 ): number {
-  const costs = getModelCosts(model)
+  const baseCosts = getModelCosts(model)
+  const costs = applyContextTier(baseCosts, tierInputTokens ?? inputTokens)
   if (!costs) return 0
 
   const multiplier = speed === 'fast' ? costs.fastMultiplier : 1
@@ -244,10 +301,17 @@ export function getShortModelName(model: string): string {
     'gpt-4.1-mini': 'GPT-4.1 Mini',
     'gpt-4.1': 'GPT-4.1',
     'gpt-5.5': 'GPT-5.5',
+    'gpt-5.5-pro': 'GPT-5.5 Pro',
+    'gpt-5.4-pro': 'GPT-5.4 Pro',
+    'gpt-5.4-nano': 'GPT-5.4 Nano',
     'gpt-5.4-mini': 'GPT-5.4 Mini',
     'gpt-5.4': 'GPT-5.4',
     'gpt-5.3-codex-spark': 'GPT-5.3 Codex Spark',
     'gpt-5.3-codex': 'GPT-5.3 Codex',
+    'gpt-5.2': 'GPT-5.2',
+    'gpt-5.1': 'GPT-5.1',
+    'gpt-5-codex': 'GPT-5-Codex',
+    'gpt-5-nano': 'GPT-5 Nano',
     'gpt-5-mini': 'GPT-5 Mini',
     'gpt-5': 'GPT-5',
     'gemini-2.5-pro': 'Gemini 2.5 Pro',
@@ -256,8 +320,42 @@ export function getShortModelName(model: string): string {
     'MiniMax-M2.7-highspeed': 'MiniMax M2.7 Highspeed',
     'MiniMax-M2.7': 'MiniMax M2.7',
   }
-  for (const [key, name] of Object.entries(shortNames)) {
+  if (Object.hasOwn(shortNames, canonical)) return shortNames[canonical]!
+  for (const [key, name] of Object.entries(shortNames).sort((a, b) => b[0].length - a[0].length)) {
     if (canonical.startsWith(key)) return name
   }
   return canonical
+}
+
+function mergeModelCosts(primary: ModelCosts | null | undefined, fallback: ModelCosts | null | undefined): ModelCosts | null {
+  if (!primary && !fallback) return null
+  if (!primary) return fallback ?? null
+  if (!fallback) return primary
+  return {
+    ...fallback,
+    ...primary,
+    contextTiers: primary.contextTiers ?? fallback.contextTiers,
+  }
+}
+
+function findPrefixMatch(entries: Map<string, ModelCosts>, canonical: string): ModelCosts | null {
+  for (const [key, costs] of entries) {
+    if (canonical.startsWith(key)) return costs
+  }
+  return null
+}
+
+function applyContextTier(costs: ModelCosts | null, inputTokens: number): ModelCosts | null {
+  if (!costs || !costs.contextTiers || costs.contextTiers.length === 0) return costs
+  const tier = costs.contextTiers
+    .filter(candidate => inputTokens > candidate.minPromptTokens)
+    .sort((a, b) => b.minPromptTokens - a.minPromptTokens)[0]
+  if (!tier) return costs
+  return {
+    ...costs,
+    inputCostPerToken: tier.inputCostPerToken ?? costs.inputCostPerToken,
+    outputCostPerToken: tier.outputCostPerToken ?? costs.outputCostPerToken,
+    cacheWriteCostPerToken: tier.cacheWriteCostPerToken ?? costs.cacheWriteCostPerToken,
+    cacheReadCostPerToken: tier.cacheReadCostPerToken ?? costs.cacheReadCostPerToken,
+  }
 }

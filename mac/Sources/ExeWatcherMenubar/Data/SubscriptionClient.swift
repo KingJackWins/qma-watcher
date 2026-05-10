@@ -51,21 +51,15 @@ struct SubscriptionClient {
     // MARK: - Credentials
 
     private static func loadCredentials() throws -> StoredCredentials {
+        // Try file first (silent, no popup). Falls back to Keychain (one-time macOS
+        // permission prompt — click "Always Allow" and it never asks again).
         if let data = try readFileCredentials() {
-            return try parseCredentials(data: sanitizeKeychainData(data))
+            return try parseCredentials(data: sanitize(data))
         }
         if let creds = try readKeychainCredentials() {
             return creds
         }
         throw SubscriptionError.noCredentials
-    }
-
-    private static func readFileCredentials() throws -> Data? {
-        let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(credentialsRelativePath)
-        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        // SafeFile refuses to follow symlinks and caps the read, so a 6 GB /dev/urandom
-        // masquerading as the creds file can't blow up the app.
-        return try SafeFile.read(from: url.path, maxBytes: maxCredentialBytes)
     }
 
     private static func readKeychainCredentials() throws -> StoredCredentials? {
@@ -77,20 +71,28 @@ struct SubscriptionClient {
         ]
         var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        if status == errSecItemNotFound { return nil }
+        if status == errSecItemNotFound || status == errSecAuthFailed { return nil }
         guard status == errSecSuccess, let data = result as? Data else {
-            NSLog("Watcher by QM: keychain query failed status=\(status)")
+            NSLog("Exe Watcher: keychain query status=\(status)")
             return nil
         }
-        return try parseCredentials(data: sanitizeKeychainData(data))
+        return try parseCredentials(data: sanitize(data))
     }
 
-    /// Claude Code's keychain writer line-wraps long string values (newline + leading spaces)
+    private static func readFileCredentials() throws -> Data? {
+        let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(credentialsRelativePath)
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        // SafeFile refuses to follow symlinks and caps the read, so a 6 GB /dev/urandom
+        // masquerading as the creds file can't blow up the app.
+        return try SafeFile.read(from: url.path, maxBytes: maxCredentialBytes)
+    }
+
+    /// Claude Code's credential writer line-wraps long string values (newline + leading spaces)
     /// mid-token, producing JSON with literal control chars and stray spaces inside string
     /// values. Replace every newline (CR/LF) plus the run of spaces/tabs that follows it.
     /// Drops both the wrapping in tokens AND pretty-print indentation between fields (both
     /// produce valid, compact JSON afterward).
-    private static func sanitizeKeychainData(_ data: Data) -> Data {
+    private static func sanitize(_ data: Data) -> Data {
         guard var s = String(data: data, encoding: .utf8) else { return data }
         s = s.replacingOccurrences(of: "\r", with: "")
         let regex = try? NSRegularExpression(pattern: "\\n[ \\t]*", options: [])

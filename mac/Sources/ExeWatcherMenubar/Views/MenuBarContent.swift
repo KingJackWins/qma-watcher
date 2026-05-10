@@ -122,7 +122,13 @@ struct MenuBarContent: View {
             }
             .frame(height: 520)
             .overlay {
-                if !store.hasCachedData && store.payload.generated.isEmpty {
+                if showFirstLoadError {
+                    FirstLoadErrorOverlay(
+                        periodLabel: store.selectedPeriod.rawValue,
+                        message: store.lastError ?? "Unknown error"
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if showInitialLoadingOverlay {
                     BurnLoadingOverlay(periodLabel: store.selectedPeriod.rawValue)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .allowsHitTesting(false)
@@ -154,10 +160,18 @@ struct MenuBarContent: View {
     /// on this machine. Hidden only when nothing is detected, which means there's
     /// nothing to filter by anyway.
     private var showAgentTabs: Bool {
-        let payload = store.todayPayload ?? store.payload
-        return !payload.current.providers.isEmpty
+        store.showProviderTabs
     }
 
+    private var showInitialLoadingOverlay: Bool {
+        guard !store.hasCachedData && store.payload.generated.isEmpty else { return false }
+        return store.isCurrentSelectionLoading || store.lastError == nil
+    }
+
+    private var showFirstLoadError: Bool {
+        guard !store.hasCachedData && store.payload.generated.isEmpty else { return false }
+        return !store.isCurrentSelectionLoading && store.lastError != nil
+    }
 }
 
 private struct EmptyProviderState: View {
@@ -227,6 +241,44 @@ private struct BurnLoadingOverlay: View {
     }
 }
 
+private struct FirstLoadErrorOverlay: View {
+    @Environment(AppStore.self) private var store
+
+    let periodLabel: String
+    let message: String
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+
+            VStack(spacing: 12) {
+                Image(systemName: "wifi.exclamationmark")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(.orange)
+
+                VStack(spacing: 4) {
+                    Text("Couldn't load \(periodLabel)")
+                        .font(.system(size: 12, weight: .semibold))
+                    Text(message)
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(4)
+                        .frame(maxWidth: 260)
+                }
+
+                Button("Retry") {
+                    Task { await store.refresh(includeOptimize: false) }
+                }
+                .goldButton()
+                .controlSize(.small)
+            }
+            .padding(20)
+        }
+    }
+}
+
 private struct Header: View {
     @Environment(AppStore.self) private var store
     @Environment(UpdateChecker.self) private var updateChecker
@@ -252,7 +304,7 @@ private struct Header: View {
                 UpdateBadge()
             } else {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(store.payload.current.cost.asCurrency())
+                    Text(store.headerPayload.current.cost.asCurrency())
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .monospacedDigit()
                         .tracking(-0.5)
@@ -346,6 +398,7 @@ struct StarBanner: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .noFocusRing()
 
                 Spacer()
 
@@ -359,6 +412,7 @@ struct StarBanner: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .noFocusRing()
                 .help("Hide this banner")
             }
             .padding(.horizontal, 12)
@@ -400,6 +454,7 @@ struct FooterBar: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             .fixedSize()
+            .noFocusRing()
 
             Button {
                 Task { await store.refresh(includeOptimize: true) }
@@ -409,6 +464,7 @@ struct FooterBar: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .noFocusRing()
 
             Menu {
                 Button("CSV (folder)") { runExport(format: .csv) }
@@ -423,6 +479,7 @@ struct FooterBar: View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             .fixedSize()
+            .noFocusRing()
 
             Spacer()
 
@@ -440,6 +497,7 @@ struct FooterBar: View {
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .noFocusRing()
             .help("Quit Watcher")
         }
         .padding(.horizontal, 12)
@@ -492,17 +550,18 @@ struct FooterBar: View {
     private func applyCurrency(code: String) {
         store.currency = code
         let symbol = CurrencyState.symbolForCode(code)
+        let generation = CurrencyState.shared.beginSelection(code: code, symbol: symbol)
 
         Task {
             let cached = await FXRateCache.shared.cachedRate(for: code)
             await MainActor.run {
-                CurrencyState.shared.apply(code: code, rate: cached, symbol: symbol)
+                CurrencyState.shared.apply(code: code, rate: cached, symbol: symbol, generation: generation)
             }
 
             let fresh = await FXRateCache.shared.rate(for: code)
             if let fresh, fresh != cached {
                 await MainActor.run {
-                    CurrencyState.shared.apply(code: code, rate: fresh, symbol: symbol)
+                    CurrencyState.shared.apply(code: code, rate: fresh, symbol: symbol, generation: generation)
                 }
             }
         }

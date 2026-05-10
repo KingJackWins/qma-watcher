@@ -294,4 +294,32 @@ describe('parser pipeline via parseAllSessions', () => {
     // Filtered to 'claude' only, and our temp dir has no sessions
     expect(projects).toEqual([])
   })
+
+  it('detects new project directories via source set change in cache key', async () => {
+    // Parser cache uses a cheap path-set hash (not per-file stat fingerprints) for performance.
+    // Adding a new project directory changes the source set, invalidating the cache immediately.
+    const base = await setupTmpClaudeDir()
+    const fixedRange = {
+      start: new Date('2026-04-10T00:00:00Z'),
+      end: new Date('2026-04-10T23:59:59Z'),
+    }
+
+    await writeSessionFile(base, 'project-a', 'sess-008', [
+      userEntry('initial', '2026-04-10T12:00:00Z', 'sess-008'),
+      assistantEntry('msg_initial', 'claude-opus-4-6', 100, 50, '2026-04-10T12:00:01Z'),
+    ])
+
+    const first = await parseAllSessions(fixedRange, 'claude')
+    expect(first).toHaveLength(1)
+    expect(first[0]!.project).toBe('project-a')
+
+    // Add a new project directory — changes source set hash, invalidates cache
+    await writeSessionFile(base, 'project-b', 'sess-009', [
+      userEntry('second', '2026-04-10T13:00:00Z', 'sess-009'),
+      assistantEntry('msg_second', 'claude-opus-4-6', 200, 75, '2026-04-10T13:00:01Z'),
+    ])
+
+    const second = await parseAllSessions(fixedRange, 'claude')
+    expect(second).toHaveLength(2)
+  })
 })

@@ -38,31 +38,32 @@ struct CollapsibleSection<Trailing: View, Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
-            Button {
+            HStack(spacing: 8) {
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(Theme.brandAccent.opacity(0.7))
+                        .frame(width: 3, height: 3)
+                    Text(caption)
+                        .font(.system(size: 11.5, weight: .medium))
+                        .tracking(-0.1)
+                }
+                Spacer()
+                trailing
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 9, weight: .semibold))
+                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    .opacity(0.55)
+            }
+            .foregroundStyle(.secondary)
+            .contentShape(Rectangle())
+            .onTapGesture {
                 withAnimation(.easeInOut(duration: 0.18)) {
                     isExpanded.toggle()
                 }
-            } label: {
-                HStack(spacing: 8) {
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(Theme.brandAccent.opacity(0.7))
-                            .frame(width: 3, height: 3)
-                        Text(caption)
-                            .font(.system(size: 11.5, weight: .medium))
-                            .tracking(-0.1)
-                    }
-                    Spacer()
-                    trailing
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 9, weight: .semibold))
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                        .opacity(0.55)
-                }
-                .foregroundStyle(.secondary)
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(caption)
+            .accessibilityAddTraits(.isButton)
 
             if isExpanded {
                 content

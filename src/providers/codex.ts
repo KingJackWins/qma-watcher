@@ -17,6 +17,8 @@ const modelDisplayNames: Record<string, string> = {
   'gpt-4o': 'GPT-4o',
 }
 
+const modelDisplayEntries = Object.entries(modelDisplayNames).sort((a, b) => b[0].length - a[0].length)
+
 const toolNameMap: Record<string, string> = {
   exec_command: 'Bash',
   read_file: 'Read',
@@ -170,6 +172,13 @@ function createParser(source: SessionSource, seenKeys: Set<string>): SessionPars
           continue
         }
 
+        // Codex stores the actual model name (e.g. "gpt-5.4") in turn_context events,
+        // not in session_meta or token_count. Capture it so we don't fall back to "gpt-5".
+        if (entry.type === 'turn_context' && entry.payload?.model) {
+          sessionModel = entry.payload.model
+          continue
+        }
+
         if (entry.type === 'response_item' && entry.payload?.type === 'function_call') {
           const rawName = entry.payload.name ?? ''
           pendingTools.push(toolNameMap[rawName] ?? rawName)
@@ -237,13 +246,26 @@ function createParser(source: SessionSource, seenKeys: Set<string>): SessionPars
           if (seenKeys.has(dedupKey)) continue
           seenKeys.add(dedupKey)
 
+          // Codex/OpenAI reports cached_input_tokens as a subset of input_tokens.
+          // Store/report fresh input and cache reads separately, but choose long-context
+          // pricing tiers from the full prompt footprint. Otherwise a 300K-token prompt
+          // with a high cache hit rate would incorrectly stay on the sub-270K tier.
+          const totalPromptInputTokens = uncachedInputTokens + cachedInputTokens
+
+          // Codex token_count events expose reasoning_output_tokens for observability,
+          // but sampled events satisfy total_tokens = input_tokens + output_tokens.
+          // Billing output_tokens + reasoning_output_tokens double-counts reasoning.
+          const billableOutputTokens = outputTokens
+
           const costUSD = calculateCost(
             model,
             uncachedInputTokens,
-            outputTokens + reasoningTokens,
+            billableOutputTokens,
             0,
             cachedInputTokens,
             0,
+            'standard',
+            totalPromptInputTokens,
           )
 
           yield {
@@ -282,7 +304,7 @@ export function createCodexProvider(codexDir?: string): Provider {
     displayName: 'Codex',
 
     modelDisplayName(model: string): string {
-      for (const [key, name] of Object.entries(modelDisplayNames)) {
+      for (const [key, name] of modelDisplayEntries) {
         if (model.startsWith(key)) return name
       }
       return model

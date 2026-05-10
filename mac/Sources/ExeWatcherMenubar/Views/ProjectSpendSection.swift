@@ -8,7 +8,10 @@ struct ProjectSpendSection: View {
     private let colSpend: CGFloat = 52
 
     var body: some View {
-        if let projects = store.payload.projectSpend, !projects.isEmpty {
+        let visibleProjects = (store.payload.projectSpend ?? [])
+            .filter { selectedProjectSpendValue($0, period: store.selectedPeriod) > 0 }
+
+        if !visibleProjects.isEmpty {
             CollapsibleSection(
                 caption: "Project Spend",
                 isExpanded: $isExpanded,
@@ -24,9 +27,14 @@ struct ProjectSpendSection: View {
                 }
             ) {
                 VStack(alignment: .leading, spacing: 7) {
-                    let maxCost = projects.first?.cost30d ?? 1
-                    ForEach(projects.prefix(10)) { project in
-                        ProjectRow(project: project, maxCost: maxCost, colSpend: colSpend)
+                    let maxCost = visibleProjects.map { selectedProjectSpendValue($0, period: store.selectedPeriod) }.max() ?? 1
+                    ForEach(visibleProjects.prefix(10)) { project in
+                        ProjectRow(
+                            project: project,
+                            barValue: selectedProjectSpendValue(project, period: store.selectedPeriod),
+                            maxCost: maxCost,
+                            colSpend: colSpend
+                        )
                     }
                 }
             }
@@ -36,12 +44,13 @@ struct ProjectSpendSection: View {
 
 private struct ProjectRow: View {
     let project: ProjectSpendEntry
+    let barValue: Double
     let maxCost: Double
     let colSpend: CGFloat
 
     var body: some View {
         HStack(spacing: 3) {
-            FixedBar(fraction: project.cost30d / maxCost)
+            FixedBar(fraction: barValue / max(maxCost, 0.01))
                 .frame(width: 32, height: 6)
 
             Text(project.name)

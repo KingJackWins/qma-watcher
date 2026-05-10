@@ -7,16 +7,20 @@ struct AgentTabStrip: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 5) {
                 ForEach(visibleFilters) { filter in
-                    Button {
+                    // Deliberately not a SwiftUI Button: AppKit can still draw a blue keyboard
+                    // focus ring around focused buttons in menu bar popovers, even with plain
+                    // styling. The gold fill is the selected state, so handle taps directly.
+                    AgentTab(
+                        filter: filter,
+                        cost: cost(for: filter),
+                        isActive: store.selectedProvider == filter
+                    )
+                    .onTapGesture {
                         Task { await store.switchTo(provider: filter) }
-                    } label: {
-                        AgentTab(
-                            filter: filter,
-                            cost: cost(for: filter),
-                            isActive: store.selectedProvider == filter
-                        )
                     }
-                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAddTraits(store.selectedProvider == filter ? .isSelected : [])
                 }
             }
             .padding(.horizontal, 12)
@@ -25,18 +29,19 @@ struct AgentTabStrip: View {
         }
     }
 
-    /// Drive tab visibility and per-tab cost labels from the *all-provider* payload (today),
-    /// not the currently selected provider's payload. Without this, switching to Codex (which
-    /// has no data) would hide every other tab including Claude.
-    private var allProvidersToday: MenubarPayload {
-        store.todayPayload ?? store.payload
+    /// Drive tab visibility from the selected period's all-provider payload whenever possible.
+    /// Never fall back to today's payload here; that makes the tab strip disagree with the
+    /// selected period's header whenever a historical fetch is still warming or failed.
+    private var tabSourcePayload: MenubarPayload? {
+        store.providerTabsPayload
     }
 
     private var visibleFilters: [ProviderFilter] {
+        guard let tabSourcePayload else { return [] }
         // Only show providers that have actual spend (cost > 0). Providers that are merely
         // "installed" (CLI found credential files) but never used just add clutter.
         let activeKeys = Set(
-            allProvidersToday.current.providers
+            tabSourcePayload.current.providers
                 .filter { $0.value > 0 }
                 .keys.map { $0.lowercased() }
         )
@@ -57,15 +62,14 @@ struct AgentTabStrip: View {
         switch filter {
         case .all:
             // "All" always reflects the selected period's grand total
-            return store.payload.current.cost
+            return store.headerPayload.current.cost
         default:
             let key = filter.rawValue.lowercased()
             // Always look up per-provider cost from the all-provider payload so inactive
             // tabs keep showing their dollar amount regardless of which tab is selected.
             // This also fixes the discrepancy where the active tab's filtered payload could
             // show a different number than the all-provider breakdown.
-            let allPayload = store.allProviderPayloadForPeriod ?? allProvidersToday
-            return allPayload.current.providers[key]
+            return tabSourcePayload?.current.providers[key]
         }
     }
 }
@@ -108,8 +112,10 @@ extension ProviderFilter {
         case .claude: return Theme.categoricalClaude
         case .codex: return Theme.categoricalCodex
         case .cursor: return Theme.categoricalCursor
+        case .cursorAgent: return Color(red: 0x8A/255.0, green: 0x6E/255.0, blue: 0xD9/255.0)
         case .copilot: return Color(red: 0x6D/255.0, green: 0x8F/255.0, blue: 0xA6/255.0)
         case .opencode: return Color(red: 0x5B/255.0, green: 0x83/255.0, blue: 0x5B/255.0)
+        case .omp: return Color(red: 0xC2/255.0, green: 0x8A/255.0, blue: 0x36/255.0)
         case .pi: return Color(red: 0xB2/255.0, green: 0x6B/255.0, blue: 0x3D/255.0)
         }
     }

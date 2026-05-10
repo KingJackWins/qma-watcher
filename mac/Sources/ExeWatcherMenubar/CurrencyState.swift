@@ -17,13 +17,31 @@ final class CurrencyState: @unchecked Sendable {
     var code: String = "USD"
     var rate: Double = 1.0
     var symbol: String = "$"
+    private var selectionGeneration: UInt64 = 0
 
     private init() {}
+
+    /// Starts a new currency selection sequence. Later async FX responses must present the same
+    /// generation token or they are ignored, which prevents an older selection from overwriting
+    /// the user's most recent choice when network responses arrive out of order.
+    @discardableResult
+    func beginSelection(code: String, symbol: String) -> UInt64 {
+        selectionGeneration &+= 1
+        self.code = code
+        self.symbol = symbol
+        if code == "USD" {
+            self.rate = 1.0
+        }
+        return selectionGeneration
+    }
 
     /// Applies a new currency context. Callers must invoke on the main actor so @Observable
     /// view updates run on the UI thread. Rejects non-finite or out-of-band rates so a
     /// poisoned Frankfurter response can't corrupt displayed costs.
-    func apply(code: String, rate: Double?, symbol: String) {
+    func apply(code: String, rate: Double?, symbol: String, generation: UInt64? = nil) {
+        if let generation, generation != selectionGeneration {
+            return
+        }
         self.code = code
         self.symbol = symbol
         if let r = rate, r.isFinite, r >= minValidFXRate, r <= maxValidFXRate {
