@@ -7,21 +7,20 @@ struct AgentTabStrip: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 5) {
                 ForEach(visibleFilters) { filter in
-                    Button {
+                    // Deliberately not a SwiftUI Button: AppKit can still draw a blue keyboard
+                    // focus ring around focused buttons in menu bar popovers, even with plain
+                    // styling. The gold fill is the selected state, so handle taps directly.
+                    AgentTab(
+                        filter: filter,
+                        cost: cost(for: filter),
+                        isActive: store.selectedProvider == filter
+                    )
+                    .onTapGesture {
                         Task { await store.switchTo(provider: filter) }
-                    } label: {
-                        AgentTab(
-                            filter: filter,
-                            cost: cost(for: filter),
-                            isActive: store.selectedProvider == filter
-                        )
                     }
-                    .buttonStyle(.plain)
-                    // Menu bar popovers should not show macOS's default blue keyboard-focus
-                    // ring around the active provider tab. Selection is already communicated
-                    // by the gold filled pill.
-                    .focusable(false)
-                    .focusEffectDisabled()
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAddTraits(store.selectedProvider == filter ? .isSelected : [])
                 }
             }
             .padding(.horizontal, 12)
