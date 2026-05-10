@@ -17,6 +17,11 @@ struct AgentTabStrip: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    // Menu bar popovers should not show macOS's default blue keyboard-focus
+                    // ring around the active provider tab. Selection is already communicated
+                    // by the gold filled pill.
+                    .focusable(false)
+                    .focusEffectDisabled()
                 }
             }
             .padding(.horizontal, 12)
