@@ -44,6 +44,13 @@ final class AppStore {
     var subscriptionLoadState: SubscriptionLoadState = .idle
     var capacityEstimates: [String: CapacityEstimate] = [:]
 
+    /// Lightweight self-diagnostics for the menubar refresh loop. These make stale-counter bugs
+    /// visible instead of forcing us to infer state from screenshots or process lists.
+    private(set) var activeFetchCount: Int = 0
+    private(set) var lastBadgeRefreshAttemptAt: Date?
+    private(set) var lastBadgeRefreshSuccessAt: Date?
+    private(set) var lastBadgeRefreshError: String?
+
     private let fetchPayload: MenubarPayloadFetcher
     private let now: AppStoreDateProvider
     private var cache: [PayloadCacheKey: CachedPayload] = [:]
@@ -198,21 +205,34 @@ final class AppStore {
     /// or update every other tick during active sessions.
     func refreshTodayBadge() async {
         let target = key(period: .today, provider: .all, includeOptimize: false)
-        await refreshKey(target, includeOptimize: false)
+        lastBadgeRefreshAttemptAt = now()
+        let succeeded = await refreshKey(target, includeOptimize: false)
+        if succeeded {
+            lastBadgeRefreshSuccessAt = now()
+            lastBadgeRefreshError = nil
+        } else if let error = errorsByKey[target] {
+            lastBadgeRefreshError = error
+        }
     }
 
-    private func refreshKey(_ key: PayloadCacheKey, includeOptimize: Bool) async {
-        guard !inFlightKeys.contains(key) else { return }
+    @discardableResult
+    private func refreshKey(_ key: PayloadCacheKey, includeOptimize: Bool) async -> Bool {
+        guard !inFlightKeys.contains(key) else { return false }
         inFlightKeys.insert(key)
-        defer { inFlightKeys.remove(key) }
+        activeFetchCount += 1
+        defer {
+            inFlightKeys.remove(key)
+            activeFetchCount = max(0, activeFetchCount - 1)
+        }
         do {
             let fresh = try await fetchPayload(key.period, key.provider, includeOptimize)
             cache[key] = CachedPayload(payload: fresh, fetchedAt: now())
             errorsByKey[key] = nil
-
+            return true
         } catch {
             errorsByKey[key] = Self.describe(error: error)
             NSLog("Exe Watcher: fetch failed for \(key.period.rawValue)/\(key.provider.rawValue): \(error)")
+            return false
         }
     }
 
