@@ -210,9 +210,6 @@ final class AppStore {
             cache[key] = CachedPayload(payload: fresh, fetchedAt: now())
             errorsByKey[key] = nil
 
-            if key.provider == .all {
-                scheduleVisibleProviderPrefetch(for: key.period)
-            }
         } catch {
             errorsByKey[key] = Self.describe(error: error)
             NSLog("Exe Watcher: fetch failed for \(key.period.rawValue)/\(key.provider.rawValue): \(error)")

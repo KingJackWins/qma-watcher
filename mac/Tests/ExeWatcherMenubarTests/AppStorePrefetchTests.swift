@@ -217,7 +217,7 @@ struct AppStoreProviderPrefetchTests {
                 #expect(provider == .all)
                 #expect(includeOptimize == false)
                 let value = await counter.next()
-                return makePayload(label: "Today", cost: Double(value), providers: [:])
+                return makePayload(label: "Today", cost: Double(value), providers: ["claude": Double(value)])
             },
             now: { clock.now }
         )
@@ -233,6 +233,11 @@ struct AppStoreProviderPrefetchTests {
         await store.refreshTodayBadge()
         #expect(await counter.value() == 2)
         #expect(store.payload.current.cost == 2)
+
+        // Badge refresh must not kick off provider/detail prefetches; those historical/detail
+        // scans are allowed only when the popover selection asks for them.
+        try await Task.sleep(nanoseconds: 50_000_000)
+        #expect(await counter.value() == 2)
     }
 
     @Test("today cache key rolls at the day boundary so stale yesterday payloads are not reused")
@@ -261,6 +266,11 @@ struct AppStoreProviderPrefetchTests {
         await store.refreshQuietly(period: .today)
         #expect(await counter.value() == 2)
         #expect(store.payload.current.cost == 2)
+
+        // Badge refresh must not kick off provider/detail prefetches; those historical/detail
+        // scans are allowed only when the popover selection asks for them.
+        try await Task.sleep(nanoseconds: 50_000_000)
+        #expect(await counter.value() == 2)
     }
 
     @Test("header stays anchored to the all-provider total when a provider tab is selected")

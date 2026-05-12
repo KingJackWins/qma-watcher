@@ -139,12 +139,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     private func startRefreshLoop() {
-        // Initial fetch: today first (fast, updates menubar badge), then prefetch all other periods
-        // in background so tab switching is instant.
+        // Initial fetch: update only the always-visible badge. Do not prefetch every period at
+        // launch: long historical scans can compete with the 30s badge refresh and make the
+        // menubar total look stuck. Historical periods load lazily when selected.
         Task {
             await store.refreshTodayBadge()
             refreshStatusButton()
-            await store.prefetchAllPeriods()
         }
 
         // Popover starts closed — use the idle interval. popoverWillShow will tighten to 60s.
