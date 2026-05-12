@@ -3,8 +3,10 @@ import AppKit
 import Observation
 import ServiceManagement
 
-private let refreshIntervalSeconds: UInt64 = 60
-private let idleRefreshIntervalSeconds: UInt64 = 300
+/// Keep the always-visible menu bar badge live. This matches the README/product promise and
+/// avoids the badge appearing stuck while the popover is closed during active coding sessions.
+private let refreshIntervalSeconds: UInt64 = 30
+private let idleRefreshIntervalSeconds: UInt64 = 30
 private let statusItemWidth: CGFloat = NSStatusItem.variableLength
 private let popoverWidth: CGFloat = 400
 private let popoverHeight: CGFloat = 660
