@@ -192,6 +192,15 @@ final class AppStore {
         await refreshKey(target, includeOptimize: includeOptimize)
     }
 
+    /// Force-refresh the always-visible menu bar badge. This intentionally bypasses the 30s
+    /// cache TTL: the timer also runs every 30s, and small scheduling jitter can otherwise make
+    /// a tick land just before TTL expiry and skip the fetch, causing the badge to appear stuck
+    /// or update every other tick during active sessions.
+    func refreshTodayBadge() async {
+        let target = key(period: .today, provider: .all, includeOptimize: false)
+        await refreshKey(target, includeOptimize: false)
+    }
+
     private func refreshKey(_ key: PayloadCacheKey, includeOptimize: Bool) async {
         guard !inFlightKeys.contains(key) else { return }
         inFlightKeys.insert(key)

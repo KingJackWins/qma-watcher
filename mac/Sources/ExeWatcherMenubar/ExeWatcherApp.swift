@@ -106,7 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func forceRefresh() {
         Task {
-            await store.refreshQuietly(period: .today)
+            await store.refreshTodayBadge()
             refreshStatusButton()
         }
     }
@@ -142,7 +142,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         // Initial fetch: today first (fast, updates menubar badge), then prefetch all other periods
         // in background so tab switching is instant.
         Task {
-            await store.refreshQuietly(period: .today)
+            await store.refreshTodayBadge()
             refreshStatusButton()
             await store.prefetchAllPeriods()
         }
@@ -158,7 +158,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         timer.setEventHandler { [weak self] in
             guard let self = self else { return }
             Task { @MainActor in
-                await self.store.refreshQuietly(period: .today)
+                await self.store.refreshTodayBadge()
                 self.refreshStatusButton()
                 let selected = self.store.selectedPeriod
                 if selected != .today {
@@ -274,7 +274,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     func popoverWillShow(_ notification: Notification) {
         Task {
-            await store.refreshQuietly(period: .today)
+            await store.refreshTodayBadge()
             refreshStatusButton()
         }
         rescheduleTimer(intervalSeconds: refreshIntervalSeconds)
