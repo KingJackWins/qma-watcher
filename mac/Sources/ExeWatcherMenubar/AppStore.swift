@@ -56,6 +56,14 @@ final class AppStore {
     private var cache: [PayloadCacheKey: CachedPayload] = [:]
     private var errorsByKey: [PayloadCacheKey: String] = [:]
 
+    /// Badge has its own dedicated fetch slot so detail/prefetch fetches can never starve it.
+    private var badgeInFlight: Bool = false
+    /// One-deep queue: when inFlightKeys blocks a refresh, mark the key as pending so it
+    /// re-fetches immediately after the current inflight completes.
+    private var pendingKeys: Set<PayloadCacheKey> = []
+    /// Handle to the most recent prefetch Task so we can cancel it before spawning a new one.
+    private var activePrefetchTask: Task<Void, Never>?
+
     init(
         fetchPayload: @escaping MenubarPayloadFetcher = DataClient.fetch,
         now: @escaping AppStoreDateProvider = Date.init
@@ -206,23 +214,44 @@ final class AppStore {
     func refreshTodayBadge() async {
         let target = key(period: .today, provider: .all, includeOptimize: false)
         lastBadgeRefreshAttemptAt = now()
-        let succeeded = await refreshKey(target, includeOptimize: false)
-        if succeeded {
+        // Badge uses its own dedicated fetch slot — never blocked by detail/prefetch fetches.
+        guard !badgeInFlight else { return }
+        badgeInFlight = true
+        defer { badgeInFlight = false }
+        do {
+            let fresh = try await fetchPayload(target.period, target.provider, false)
+            cache[target] = CachedPayload(payload: fresh, fetchedAt: now())
+            errorsByKey[target] = nil
             lastBadgeRefreshSuccessAt = now()
             lastBadgeRefreshError = nil
-        } else if let error = errorsByKey[target] {
-            lastBadgeRefreshError = error
+        } catch {
+            let desc = Self.describe(error: error)
+            errorsByKey[target] = desc
+            lastBadgeRefreshError = desc
+            NSLog("Exe Watcher: badge fetch failed: \(error)")
         }
     }
 
     @discardableResult
     private func refreshKey(_ key: PayloadCacheKey, includeOptimize: Bool) async -> Bool {
-        guard !inFlightKeys.contains(key) else { return false }
+        guard !inFlightKeys.contains(key) else {
+            // One-deep queue: mark for re-fetch when the current inflight completes.
+            pendingKeys.insert(key)
+            return false
+        }
         inFlightKeys.insert(key)
         activeFetchCount += 1
+        // Clear stale error on retry start so the UI shows "loading" instead of a stale error.
+        errorsByKey[key] = nil
         defer {
             inFlightKeys.remove(key)
             activeFetchCount = max(0, activeFetchCount - 1)
+            // Drain pending: if someone queued a refresh while we were in-flight, fire it now.
+            if pendingKeys.remove(key) != nil {
+                Task { @MainActor in
+                    await self.refreshKey(key, includeOptimize: includeOptimize)
+                }
+            }
         }
         do {
             let fresh = try await fetchPayload(key.period, key.provider, includeOptimize)
@@ -277,9 +306,12 @@ final class AppStore {
     private func scheduleVisibleProviderPrefetch(for period: Period) {
         let keys = visibleProviderKeys(for: period)
         guard !keys.isEmpty else { return }
-        Task { @MainActor in
+        // Cancel any previously spawned prefetch to prevent accumulation.
+        activePrefetchTask?.cancel()
+        activePrefetchTask = Task { @MainActor in
             await withTaskGroup(of: Void.self) { group in
                 for key in keys {
+                    guard !Task.isCancelled else { break }
                     group.addTask { await self.refreshIfNeeded(key, includeOptimize: false) }
                 }
             }

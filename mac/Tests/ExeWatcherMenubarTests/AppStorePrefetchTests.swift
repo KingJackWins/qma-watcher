@@ -168,6 +168,47 @@ struct AppStoreProviderPrefetchTests {
         #expect(callCountAfterTabSwitch == callCountBeforeTabSwitch)
     }
 
+    @Test("rapid period switches cancel the prior prefetch so only the latest runs")
+    @MainActor
+    func prefetchCancellationOnRapidSwitch() async throws {
+        let todayAll = PayloadCacheKey(period: .today, provider: .all)
+        let weekAll = PayloadCacheKey(period: .sevenDays, provider: .all)
+        let weekClaude = PayloadCacheKey(period: .sevenDays, provider: .claude)
+        let weekCodex = PayloadCacheKey(period: .sevenDays, provider: .codex)
+
+        let providerFetchCount = CallCounter()
+
+        let store = AppStore(
+            fetchPayload: { period, provider, _ in
+                if provider != .all {
+                    // Provider-specific prefetch — slow to simulate CLI scan time.
+                    try await Task.sleep(nanoseconds: 50_000_000)
+                    guard !Task.isCancelled else { throw CancellationError() }
+                    await providerFetchCount.next()
+                }
+                let cost: Double = period == .today ? 18 : 100
+                let providers: [String: Double] = period == .today
+                    ? ["claude": 12]
+                    : ["claude": 70, "codex": 30]
+                return makePayload(label: period.rawValue, cost: cost, providers: providers)
+            }
+        )
+
+        // First refreshQuietly triggers today prefetch (1 provider: claude).
+        await store.refreshQuietly(period: .today)
+        // Immediately switch to 7 days — should cancel today's prefetch and start week's.
+        await store.refreshQuietly(period: .sevenDays)
+
+        // Wait for the winning (week) prefetch to complete.
+        try await Task.sleep(nanoseconds: 150_000_000)
+
+        let completedCount = await providerFetchCount.value()
+        // At most the week's 2 providers should complete. Today's claude prefetch
+        // should have been cancelled. Total should be <= 2 (week's claude + codex).
+        #expect(completedCount <= 2)
+        #expect(completedCount >= 1) // at least one week provider completed
+    }
+
     @Test("optimize payload stays attached after a later base refresh for the same visible selection")
     @MainActor
     func optimizePayloadSurvivesBaseRefresh() async throws {
