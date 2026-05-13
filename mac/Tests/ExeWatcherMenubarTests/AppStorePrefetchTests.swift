@@ -77,6 +77,25 @@ private actor CallCounter {
     }
 }
 
+/// A simple gate that blocks waiters until opened.
+private actor Gate {
+    private var opened = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        if opened { return }
+        await withCheckedContinuation { cont in
+            waiters.append(cont)
+        }
+    }
+
+    func open() {
+        opened = true
+        for waiter in waiters { waiter.resume() }
+        waiters.removeAll()
+    }
+}
+
 @Suite("AppStore provider prefetch")
 struct AppStoreProviderPrefetchTests {
     @Test("refreshQuietly renders aggregate first and warms visible providers")
@@ -356,6 +375,42 @@ struct AppStoreProviderPrefetchTests {
         #expect(store.providerTabsPayload == nil)
         #expect(!store.showProviderTabs)
         #expect(store.lastError != nil)
+    }
+
+    @Test("badge refresh succeeds even when detail fetches saturate inFlightKeys")
+    @MainActor
+    func badgeRefreshNotBlockedByDetailFetches() async throws {
+        let day = ISO8601DateFormatter().date(from: "2026-05-04T12:00:00Z")!
+        let clock = TestClock(day)
+        let badgeCounter = CallCounter()
+        let gate = Gate()
+
+        let store = AppStore(
+            fetchPayload: { period, provider, includeOptimize in
+                if period == .today && provider == .all && !includeOptimize {
+                    // Badge path — completes immediately.
+                    let value = await badgeCounter.next()
+                    return makePayload(label: "Today", cost: Double(value), providers: [:])
+                }
+                // Detail path — blocks until gate is opened.
+                await gate.wait()
+                return makePayload(label: "Detail", cost: 99, providers: ["claude": 99])
+            },
+            now: { clock.now }
+        )
+
+        // Switch to a non-today period so the detail fetch uses a different inFlightKeys slot.
+        await store.switchTo(period: .sevenDays)
+        // Give the background refresh time to enter inFlightKeys.
+        try await Task.sleep(nanoseconds: 10_000_000)
+
+        // Badge must still succeed despite detail fetch being in-flight.
+        await store.refreshTodayBadge()
+        #expect(await badgeCounter.value() == 1)
+        #expect(store.todayPayload?.current.cost == 1)
+
+        // Clean up: release the detail gate and cancel the task.
+        await gate.open()
     }
 
     @Test("a failed historical fetch does not contaminate the cached today view")
