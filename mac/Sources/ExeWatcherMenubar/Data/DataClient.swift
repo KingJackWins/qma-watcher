@@ -7,12 +7,15 @@ import Foundation
 private let maxPayloadBytes = 20 * 1024 * 1024
 private let maxStderrBytes = 256 * 1024
 private let spawnTimeoutSeconds: UInt64 = 60
+/// Badge-only fetches use a shorter timeout so a slow/hung CLI doesn't block
+/// two full 30s timer cycles before the badge can retry.
+private let badgeTimeoutSeconds: UInt64 = 15
 
 enum DataClientError: Error {
     case spawn(String)
     case nonZeroExit(code: Int32, stderr: String)
     case decode(Error)
-    case timeout
+    case timeout(seconds: UInt64 = 60)
     case outputTooLarge
 }
 
@@ -39,8 +42,8 @@ extension DataClientError: LocalizedError {
             return cleaned
         case .decode:
             return "Watcher couldn't decode the CLI response."
-        case .timeout:
-            return "exe-watcher timed out after 60 seconds. Retry once the machine is idle."
+        case let .timeout(seconds):
+            return "exe-watcher timed out after \(seconds) seconds. Retry once the machine is idle."
         case .outputTooLarge:
             return "Watcher received an unexpectedly large CLI response and refused to render it."
         }
@@ -51,11 +54,14 @@ extension DataClientError: LocalizedError {
 /// commands through `/bin/zsh -c` anymore.
 struct DataClient {
     static func fetch(period: Period, provider: ProviderFilter, includeOptimize: Bool) async throws -> MenubarPayload {
+        let timeout = (period == .today && provider == .all && !includeOptimize)
+            ? badgeTimeoutSeconds
+            : spawnTimeoutSeconds
         let result = try await runCLI(subcommand: subcommand(
             period: period,
             provider: provider,
             includeOptimize: includeOptimize
-        ))
+        ), timeoutSeconds: timeout)
         guard result.exitCode == 0 else {
             throw DataClientError.nonZeroExit(code: result.exitCode, stderr: result.stderr)
         }
@@ -94,7 +100,7 @@ struct DataClient {
         let exitCode: Int32
     }
 
-    private static func runCLI(subcommand: [String]) async throws -> ProcessResult {
+    private static func runCLI(subcommand: [String], timeoutSeconds: UInt64 = spawnTimeoutSeconds) async throws -> ProcessResult {
         let process = ExeWatcherCLI.makeProcess(subcommand: subcommand)
         let timeoutState = TimeoutState()
 
@@ -116,7 +122,7 @@ struct DataClient {
 
         // Wall-clock timeout: if the CLI hangs (parser stuck, disk stall), kill it.
         let timeoutTask = Task.detached(priority: .utility) {
-            try? await Task.sleep(nanoseconds: spawnTimeoutSeconds * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: timeoutSeconds * 1_000_000_000)
             if process.isRunning {
                 timeoutState.markTimedOut()
                 process.terminate()
@@ -128,7 +134,7 @@ struct DataClient {
         process.waitUntilExit()
 
         if timeoutState.read() {
-            throw DataClientError.timeout
+            throw DataClientError.timeout(seconds: timeoutSeconds)
         }
 
         if out.count >= maxPayloadBytes {
