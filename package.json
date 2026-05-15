@@ -1,11 +1,11 @@
 {
-  "name": "qma-watcher",
-  "version": "0.2.2",
-  "description": "Quantum Memory AI fuel bar — cost, tokens, agents, and projects in your terminal and menu bar",
+  "name": "exe-watcher",
+  "version": "0.2.25",
+  "description": "The owl watching your AI coding spend — cost, tokens, agents, and projects in your terminal and menu bar",
   "type": "module",
   "main": "./dist/cli.js",
   "bin": {
-    "qma-watcher": "dist/cli.js"
+    "exe-watcher": "dist/cli.js"
   },
   "files": [
     "dist"
@@ -31,16 +31,16 @@
   "engines": {
     "node": ">=22.5.0"
   },
-  "author": "Quantum Memory AI <jack@quantummemory.ai>",
+  "author": "Exe AI <hello@askexe.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KingJackWins/qma-watcher.git"
+    "url": "git+https://github.com/AskExe/exe-watcher.git"
   },
   "bugs": {
-    "url": "https://github.com/KingJackWins/qma-watcher/issues"
+    "url": "https://github.com/AskExe/exe-watcher/issues"
   },
-  "homepage": "https://github.com/KingJackWins/qma-watcher#readme",
+  "homepage": "https://github.com/AskExe/exe-watcher#readme",
   "dependencies": {
     "chalk": "^5.4.1",
     "commander": "^13.1.0",

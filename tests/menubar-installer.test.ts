@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest'
 import * as os from 'node:os'
 import * as childProcess from 'node:child_process'
+import { EventEmitter } from 'node:events'
 
 // Mock os.platform before importing the module under test.
 // The module reads platform() at call time, so vi.mock is sufficient.
@@ -40,6 +41,14 @@ vi.mock('node:fs', async (importOriginal) => {
   }
 })
 
+vi.mock('node:stream/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:stream/promises')>()
+  return {
+    ...actual,
+    pipeline: vi.fn().mockResolvedValue(undefined),
+  }
+})
+
 // Lazy import so mocks are in place
 const { installMenubarApp } = await import('../src/menubar-installer.js')
 type InstallResult = Awaited<ReturnType<typeof installMenubarApp>>
@@ -54,6 +63,8 @@ describe('menubar-installer', () => {
 
   beforeEach(() => {
     savedEnv['EXE_WATCHER_FORCE_MACOS_MAJOR'] = process.env.EXE_WATCHER_FORCE_MACOS_MAJOR
+    savedEnv['EXE_WATCHER_APP_EXIT_TIMEOUT_MS'] = process.env.EXE_WATCHER_APP_EXIT_TIMEOUT_MS
+    savedEnv['EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS'] = process.env.EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS
     // Default: force macOS 15 so platform checks pass unless a test overrides
     process.env.EXE_WATCHER_FORCE_MACOS_MAJOR = '15'
     vi.mocked(os.platform).mockReturnValue('darwin')
@@ -65,6 +76,16 @@ describe('menubar-installer', () => {
       delete process.env.EXE_WATCHER_FORCE_MACOS_MAJOR
     } else {
       process.env.EXE_WATCHER_FORCE_MACOS_MAJOR = savedEnv['EXE_WATCHER_FORCE_MACOS_MAJOR']
+    }
+    if (savedEnv['EXE_WATCHER_APP_EXIT_TIMEOUT_MS'] === undefined) {
+      delete process.env.EXE_WATCHER_APP_EXIT_TIMEOUT_MS
+    } else {
+      process.env.EXE_WATCHER_APP_EXIT_TIMEOUT_MS = savedEnv['EXE_WATCHER_APP_EXIT_TIMEOUT_MS']
+    }
+    if (savedEnv['EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS'] === undefined) {
+      delete process.env.EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS
+    } else {
+      process.env.EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS = savedEnv['EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS']
     }
     vi.restoreAllMocks()
   })
@@ -138,6 +159,7 @@ describe('menubar-installer', () => {
   describe('InstallResult type shape', () => {
     it('has installedPath (string) and launched (boolean) when install succeeds', async () => {
       process.env.EXE_WATCHER_FORCE_MACOS_MAJOR = '15'
+      process.env.EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS = '1'
 
       // Simulate the app already being installed: stat resolves (file exists),
       // and pgrep says it's running.
@@ -161,6 +183,117 @@ describe('menubar-installer', () => {
       expect(typeof result.launched).toBe('boolean')
       expect(result.installedPath).toContain('Watcher by EXE.app')
       expect(result.launched).toBe(true)
+    })
+  })
+
+  describe('force reinstall process lifecycle', () => {
+    it('terminates the stale running app and waits for the replacement to launch', async () => {
+      process.env.EXE_WATCHER_FORCE_MACOS_MAJOR = '15'
+      process.env.EXE_WATCHER_APP_EXIT_TIMEOUT_MS = '0'
+      process.env.EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS = '1'
+
+      const fsMock = await import('node:fs/promises')
+      vi.mocked(fsMock.stat).mockResolvedValue({} as any)
+      vi.mocked(fsMock.mkdtemp).mockResolvedValue('/tmp/exe-watcher-menubar-mock')
+      vi.mocked(fsMock.mkdir).mockResolvedValue(undefined)
+      vi.mocked(fsMock.rename).mockResolvedValue(undefined)
+      vi.mocked(fsMock.rm).mockResolvedValue(undefined)
+
+      const fakeRelease = {
+        tag_name: 'v0.2.21',
+        assets: [
+          {
+            name: 'ExeWatcherMenubar-v0.2.21.zip',
+            browser_download_url: 'https://example.com/fake.zip',
+          },
+        ],
+      }
+      vi.stubGlobal('fetch', vi.fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => fakeRelease } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          body: new ReadableStream({ start(controller) { controller.close() } }),
+        } as unknown as Response))
+
+      const pgrepOutputs = ['111\n', '', '222\n']
+      const spawnCalls: Array<{ command: string; args: string[] }> = []
+      vi.mocked(childProcess.spawn).mockImplementation((command: string, args: readonly string[] = []) => {
+        spawnCalls.push({ command, args: [...args] })
+        const proc = new EventEmitter() as any
+        proc.stdout = new EventEmitter()
+        proc.stderr = new EventEmitter()
+
+        process.nextTick(() => {
+          if (command === '/usr/bin/pgrep') {
+            const out = pgrepOutputs.shift() ?? ''
+            if (out) proc.stdout.emit('data', Buffer.from(out))
+            proc.emit('close', out ? 0 : 1)
+          } else {
+            proc.emit('close', 0)
+          }
+        })
+
+        return proc
+      })
+
+      const result = await installMenubarApp({ force: true })
+
+      expect(result.launched).toBe(true)
+      expect(spawnCalls).toContainEqual({ command: '/bin/kill', args: ['-TERM', '111'] })
+      expect(spawnCalls).toContainEqual({ command: '/usr/bin/open', args: [expect.stringContaining('Watcher by EXE.app')] })
+      expect(spawnCalls.filter(c => c.command === '/usr/bin/pgrep').length).toBeGreaterThanOrEqual(3)
+    })
+
+    it('escalates to SIGKILL when the stale app ignores SIGTERM', async () => {
+      process.env.EXE_WATCHER_FORCE_MACOS_MAJOR = '15'
+
+      const fsMock = await import('node:fs/promises')
+      vi.mocked(fsMock.stat).mockResolvedValue({} as any)
+      vi.mocked(fsMock.mkdtemp).mockResolvedValue('/tmp/exe-watcher-menubar-mock')
+      vi.mocked(fsMock.mkdir).mockResolvedValue(undefined)
+      vi.mocked(fsMock.rename).mockResolvedValue(undefined)
+      vi.mocked(fsMock.rm).mockResolvedValue(undefined)
+
+      vi.stubGlobal('fetch', vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            tag_name: 'v0.2.21',
+            assets: [{ name: 'ExeWatcherMenubar-v0.2.21.zip', browser_download_url: 'https://example.com/fake.zip' }],
+          }),
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          body: new ReadableStream({ start(controller) { controller.close() } }),
+        } as unknown as Response))
+
+      // Initial pgrep finds 111; wait loop repeatedly sees it still alive; after SIGKILL it exits;
+      // final launch pgrep finds the replacement 222.
+      const pgrepOutputs = ['111\n', '111\n', '111\n', '', '222\n']
+      const spawnCalls: Array<{ command: string; args: string[] }> = []
+      vi.mocked(childProcess.spawn).mockImplementation((command: string, args: readonly string[] = []) => {
+        spawnCalls.push({ command, args: [...args] })
+        const proc = new EventEmitter() as any
+        proc.stdout = new EventEmitter()
+        proc.stderr = new EventEmitter()
+
+        process.nextTick(() => {
+          if (command === '/usr/bin/pgrep') {
+            const out = pgrepOutputs.shift() ?? ''
+            if (out) proc.stdout.emit('data', Buffer.from(out))
+            proc.emit('close', out ? 0 : 1)
+          } else {
+            proc.emit('close', 0)
+          }
+        })
+
+        return proc
+      })
+
+      await installMenubarApp({ force: true })
+
+      expect(spawnCalls).toContainEqual({ command: '/bin/kill', args: ['-TERM', '111'] })
+      expect(spawnCalls).toContainEqual({ command: '/bin/kill', args: ['-KILL', '111'] })
     })
   })
 

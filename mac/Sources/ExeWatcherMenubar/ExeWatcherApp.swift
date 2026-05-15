@@ -3,8 +3,10 @@ import AppKit
 import Observation
 import ServiceManagement
 
-private let refreshIntervalSeconds: UInt64 = 60
-private let idleRefreshIntervalSeconds: UInt64 = 300
+/// Keep the always-visible menu bar badge live. This matches the README/product promise and
+/// avoids the badge appearing stuck while the popover is closed during active coding sessions.
+private let refreshIntervalSeconds: UInt64 = 30
+private let idleRefreshIntervalSeconds: UInt64 = 30
 private let statusItemWidth: CGFloat = NSStatusItem.variableLength
 private let popoverWidth: CGFloat = 400
 private let popoverHeight: CGFloat = 660
@@ -104,7 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func forceRefresh() {
         Task {
-            await store.refreshQuietly(period: .today)
+            await store.refreshTodayBadge()
             refreshStatusButton()
         }
     }
@@ -137,12 +139,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     private func startRefreshLoop() {
-        // Initial fetch: today first (fast, updates menubar badge), then prefetch all other periods
-        // in background so tab switching is instant.
+        // Initial fetch: update only the always-visible badge. Do not prefetch every period at
+        // launch: long historical scans can compete with the 30s badge refresh and make the
+        // menubar total look stuck. Historical periods load lazily when selected.
         Task {
-            await store.refreshQuietly(period: .today)
+            await store.refreshTodayBadge()
             refreshStatusButton()
-            await store.prefetchAllPeriods()
         }
 
         // Popover starts closed — use the idle interval. popoverWillShow will tighten to 60s.
@@ -156,7 +158,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         timer.setEventHandler { [weak self] in
             guard let self = self else { return }
             Task { @MainActor in
-                await self.store.refreshQuietly(period: .today)
+                await self.store.refreshTodayBadge()
                 self.refreshStatusButton()
                 let selected = self.store.selectedPeriod
                 if selected != .today {
@@ -272,7 +274,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     func popoverWillShow(_ notification: Notification) {
         Task {
-            await store.refreshQuietly(period: .today)
+            await store.refreshTodayBadge()
             refreshStatusButton()
         }
         rescheduleTimer(intervalSeconds: refreshIntervalSeconds)

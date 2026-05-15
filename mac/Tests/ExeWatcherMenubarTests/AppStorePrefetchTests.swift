@@ -203,6 +203,77 @@ struct AppStoreProviderPrefetchTests {
         #expect(store.payload.optimize.findingCount == 3)
     }
 
+
+    @Test("today badge refresh bypasses cache TTL so the menu bar cannot appear stuck")
+    @MainActor
+    func todayBadgeRefreshBypassesCacheTTL() async throws {
+        let day = ISO8601DateFormatter().date(from: "2026-05-04T12:00:00Z")!
+        let clock = TestClock(day)
+        let counter = CallCounter()
+
+        let store = AppStore(
+            fetchPayload: { period, provider, includeOptimize in
+                #expect(period == .today)
+                #expect(provider == .all)
+                #expect(includeOptimize == false)
+                let value = await counter.next()
+                return makePayload(label: "Today", cost: Double(value), providers: ["claude": Double(value)])
+            },
+            now: { clock.now }
+        )
+
+        await store.refreshTodayBadge()
+        #expect(await counter.value() == 1)
+        #expect(store.payload.current.cost == 1)
+
+        // Even one second later, the badge timer must fetch fresh data instead of reusing
+        // the 30s cache. The timer itself runs every 30s, so jitter around that boundary
+        // previously caused skipped refreshes and a stale-looking menu bar total.
+        clock.now = day.addingTimeInterval(1)
+        await store.refreshTodayBadge()
+        #expect(await counter.value() == 2)
+        #expect(store.payload.current.cost == 2)
+
+        // Badge refresh must not kick off provider/detail prefetches; those historical/detail
+        // scans are allowed only when the popover selection asks for them.
+        try await Task.sleep(nanoseconds: 50_000_000)
+        #expect(await counter.value() == 2)
+    }
+
+
+    @Test("badge refresh records diagnostics for attempts successes and failures")
+    @MainActor
+    func badgeRefreshRecordsDiagnostics() async throws {
+        enum TestError: Error { case failed }
+        let day = ISO8601DateFormatter().date(from: "2026-05-04T12:00:00Z")!
+        let clock = TestClock(day)
+        let counter = CallCounter()
+
+        let store = AppStore(
+            fetchPayload: { _, _, _ in
+                let value = await counter.next()
+                if value == 1 {
+                    return makePayload(label: "Today", cost: 1, providers: [:])
+                }
+                throw TestError.failed
+            },
+            now: { clock.now }
+        )
+
+        await store.refreshTodayBadge()
+        #expect(store.lastBadgeRefreshAttemptAt == day)
+        #expect(store.lastBadgeRefreshSuccessAt == day)
+        #expect(store.lastBadgeRefreshError == nil)
+        #expect(store.activeFetchCount == 0)
+
+        clock.now = day.addingTimeInterval(1)
+        await store.refreshTodayBadge()
+        #expect(store.lastBadgeRefreshAttemptAt == clock.now)
+        #expect(store.lastBadgeRefreshSuccessAt == day)
+        #expect(store.lastBadgeRefreshError != nil)
+        #expect(store.activeFetchCount == 0)
+    }
+
     @Test("today cache key rolls at the day boundary so stale yesterday payloads are not reused")
     @MainActor
     func todayCacheKeyRollsAtDayBoundary() async throws {

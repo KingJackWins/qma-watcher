@@ -15,6 +15,9 @@ const ASSET_PATTERN = /^ExeWatcherMenubar-.*\.zip$/
 const APP_PROCESS_NAME = 'ExeWatcherMenubar'
 const SUPPORTED_OS = 'darwin'
 const MIN_MACOS_MAJOR = 14
+const DEFAULT_APP_EXIT_TIMEOUT_MS = 5_000
+const DEFAULT_APP_LAUNCH_TIMEOUT_MS = 5_000
+const POLL_INTERVAL_MS = 150
 
 export type InstallResult = { installedPath: string; launched: boolean }
 
@@ -104,20 +107,87 @@ async function runCommand(command: string, args: string[]): Promise<void> {
   })
 }
 
-async function isAppRunning(): Promise<boolean> {
+async function sleep(ms: number): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function captureCommand(command: string, args: string[]): Promise<{ code: number; stdout: string }> {
   return new Promise((resolve) => {
-    const proc = spawn('/usr/bin/pgrep', ['-f', APP_PROCESS_NAME])
-    proc.on('close', (code) => resolve(code === 0))
-    proc.on('error', () => resolve(false))
+    const proc = spawn(command, args, { stdio: ['ignore', 'pipe', 'ignore'] })
+    let stdout = ''
+    proc.stdout?.on('data', (chunk: Buffer) => { stdout += chunk.toString() })
+    proc.on('error', () => resolve({ code: 1, stdout: '' }))
+    proc.on('close', (code) => resolve({ code: code ?? 1, stdout }))
+  })
+}
+
+function parsePids(output: string): number[] {
+  return output
+    .split(/\s+/)
+    .map(s => Number(s))
+    .filter(pid => Number.isInteger(pid) && pid > 0 && pid !== process.pid)
+}
+
+async function runningAppPids(): Promise<number[]> {
+  // `pgrep -f` is intentionally used instead of relying only on bundle APIs: it catches stale
+  // menu bar helpers that survived a bundle replacement and still have the old executable mapped.
+  const result = await captureCommand('/usr/bin/pgrep', ['-f', APP_PROCESS_NAME])
+  return result.code === 0 ? parsePids(result.stdout) : []
+}
+
+async function isAppRunning(): Promise<boolean> {
+  return (await runningAppPids()).length > 0
+}
+
+function timeoutFromEnv(name: string, fallback: number): number {
+  const value = Number(process.env[name] ?? '')
+  return Number.isFinite(value) && value >= 0 ? value : fallback
+}
+
+async function waitForNoRunningApp(timeoutMs = timeoutFromEnv('EXE_WATCHER_APP_EXIT_TIMEOUT_MS', DEFAULT_APP_EXIT_TIMEOUT_MS)): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if ((await runningAppPids()).length === 0) return true
+    await sleep(POLL_INTERVAL_MS)
+  }
+  return (await runningAppPids()).length === 0
+}
+
+async function waitForRunningApp(timeoutMs = timeoutFromEnv('EXE_WATCHER_APP_LAUNCH_TIMEOUT_MS', DEFAULT_APP_LAUNCH_TIMEOUT_MS)): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if ((await runningAppPids()).length > 0) return true
+    await sleep(POLL_INTERVAL_MS)
+  }
+  return (await runningAppPids()).length > 0
+}
+
+async function signalPids(signal: 'TERM' | 'KILL', pids: number[]): Promise<void> {
+  if (pids.length === 0) return
+  await new Promise<void>((resolve) => {
+    const proc = spawn('/bin/kill', [`-${signal}`, ...pids.map(String)])
+    proc.on('close', () => resolve())
+    proc.on('error', () => resolve())
   })
 }
 
 async function killRunningApp(): Promise<void> {
-  await new Promise<void>((resolve) => {
-    const proc = spawn('/usr/bin/pkill', ['-f', APP_PROCESS_NAME])
-    proc.on('close', () => resolve())
-    proc.on('error', () => resolve())
-  })
+  const initialPids = await runningAppPids()
+  if (initialPids.length === 0) return
+
+  console.log(`Stopping existing Exe Watcher Menubar (${initialPids.join(', ')})...`)
+  await signalPids('TERM', initialPids)
+  if (await waitForNoRunningApp()) return
+
+  const stubbornPids = await runningAppPids()
+  if (stubbornPids.length > 0) {
+    console.log(`Force-stopping stale Exe Watcher Menubar (${stubbornPids.join(', ')})...`)
+    await signalPids('KILL', stubbornPids)
+  }
+
+  if (!(await waitForNoRunningApp())) {
+    throw new Error('Could not stop the existing Exe Watcher Menubar process. Please quit it and retry.')
+  }
 }
 
 export async function installMenubarApp(options: { force?: boolean } = {}): Promise<InstallResult> {
@@ -178,6 +248,9 @@ export async function installMenubarApp(options: { force?: boolean } = {}): Prom
 
     console.log('Launching QMA Watcher Menubar...')
     await runCommand('/usr/bin/open', [targetPath])
+    if (!(await waitForRunningApp())) {
+      throw new Error('Installed Exe Watcher Menubar, but the app did not launch. Open it from ~/Applications and retry if needed.')
+    }
     return { installedPath: targetPath, launched: true }
   } finally {
     await rm(stagingDir, { recursive: true, force: true })
