@@ -460,6 +460,14 @@ const CACHE_TTL_MS = 60_000
 const MAX_CACHE_ENTRIES = 10
 const sessionCache = new Map<string, { data: ProjectSummary[]; ts: number }>()
 const inFlightSourceContexts = new Map<string, Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }>>()
+/** Resolved source contexts cached for the lifetime of the process. The CLI
+ *  calls parseAllSessions() 2-3 times sequentially with different date ranges
+ *  but the same provider filter — without this, each call re-discovers 2000+
+ *  session files from disk (~200-500ms each).
+ *  Uses a short TTL (5s) to stay fresh enough for tests that add files mid-run
+ *  while still avoiding redundant discovery within a single CLI invocation. */
+const SOURCE_CONTEXT_TTL_MS = 5_000
+const resolvedSourceContexts = new Map<string, { result: { sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }; ts: number }>()
 
 function sourceContextCacheKey(providerFilter?: string): string {
   return JSON.stringify({
@@ -497,9 +505,17 @@ function buildCacheFingerprint(sources: Array<{ provider: string; project: strin
 
 async function getSourceContext(providerFilter?: string): Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }> {
   const key = sourceContextCacheKey(providerFilter)
-  const cached = inFlightSourceContexts.get(key)
-  if (cached) {
-    return cached
+
+  // Return recent cache hit (avoids re-discovering 2000+ files on sequential calls).
+  const resolved = resolvedSourceContexts.get(key)
+  if (resolved && Date.now() - resolved.ts < SOURCE_CONTEXT_TTL_MS) {
+    return resolved.result
+  }
+
+  // Deduplicate concurrent calls via the inflight promise map.
+  const inflight = inFlightSourceContexts.get(key)
+  if (inflight) {
+    return inflight
   }
 
   const promise = (async () => {
@@ -511,13 +527,11 @@ async function getSourceContext(providerFilter?: string): Promise<{ sources: Arr
   inFlightSourceContexts.set(key, promise)
 
   try {
-    return await promise
-  } catch (err) {
-    throw err
+    const result = await promise
+    resolvedSourceContexts.set(key, { result, ts: Date.now() })
+    return result
   } finally {
-    if (inFlightSourceContexts.get(key) === promise) {
-      inFlightSourceContexts.delete(key)
-    }
+    inFlightSourceContexts.delete(key)
   }
 }
 
@@ -531,6 +545,14 @@ function cachePut(key: string, data: ProjectSummary[]) {
     if (oldest) sessionCache.delete(oldest[0])
   }
   sessionCache.set(key, { data, ts: now })
+}
+
+/** Clear all in-process parser caches. Used by tests that modify the filesystem
+ *  between parseAllSessions() calls and need discovery to re-scan. */
+export function clearParserCaches(): void {
+  sessionCache.clear()
+  resolvedSourceContexts.clear()
+  inFlightSourceContexts.clear()
 }
 
 export function filterProjectsByName(
