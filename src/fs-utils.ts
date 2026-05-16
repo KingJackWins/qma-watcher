@@ -84,7 +84,7 @@ export function readSessionFileSync(filePath: string): string | null {
   }
 }
 
-export async function* readSessionLines(filePath: string): AsyncGenerator<string> {
+export async function* readSessionLines(filePath: string, startByte?: number): AsyncGenerator<string> {
   let size: number
   try {
     size = (await stat(filePath)).size
@@ -98,7 +98,7 @@ export async function* readSessionLines(filePath: string): AsyncGenerator<string
     return
   }
 
-  const stream = createReadStream(filePath, { encoding: 'utf-8' })
+  const stream = createReadStream(filePath, { encoding: 'utf-8', start: startByte ?? 0 })
   const rl = createInterface({ input: stream, crlfDelay: Infinity })
   try {
     for await (const line of rl) yield line
