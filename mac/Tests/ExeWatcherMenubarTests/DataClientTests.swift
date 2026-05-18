@@ -48,9 +48,15 @@ struct DataClientErrorMessageTests {
         #expect(error.errorDescription == "The exe-watcher CLI was not found. Reinstall it (`npm install -g exe-watcher`) or set EXE_WATCHER_BIN.")
     }
 
-    @Test("timeout gets a retryable message")
+    @Test("timeout gets a retryable message with default duration")
     func timeoutMessage() {
-        let error = DataClientError.timeout
+        let error = DataClientError.timeout()
         #expect(error.errorDescription == "exe-watcher timed out after 60 seconds. Retry once the machine is idle.")
+    }
+
+    @Test("badge timeout gets a retryable message with shorter duration")
+    func badgeTimeoutMessage() {
+        let error = DataClientError.timeout(seconds: 15)
+        #expect(error.errorDescription == "exe-watcher timed out after 15 seconds. Retry once the machine is idle.")
     }
 }

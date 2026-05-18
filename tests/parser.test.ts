@@ -3,7 +3,7 @@ import { mkdtemp, writeFile, rm, mkdir } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
-import { parseAllSessions } from '../src/parser.js'
+import { parseAllSessions, clearParserCaches } from '../src/parser.js'
 import { loadPricing } from '../src/models.js'
 
 // parseAllSessions discovers sessions via the provider registry. The claude
@@ -319,6 +319,8 @@ describe('parser pipeline via parseAllSessions', () => {
       assistantEntry('msg_second', 'claude-opus-4-6', 200, 75, '2026-04-10T13:00:01Z'),
     ])
 
+    // Clear the source discovery cache so the new directory is found immediately.
+    clearParserCaches()
     const second = await parseAllSessions(fixedRange, 'claude')
     expect(second).toHaveLength(2)
   })

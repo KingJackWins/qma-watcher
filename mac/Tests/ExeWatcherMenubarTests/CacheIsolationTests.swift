@@ -77,6 +77,25 @@ private actor CallCounter {
     }
 }
 
+/// A simple gate that blocks waiters until opened.
+private actor Gate {
+    private var opened = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        if opened { return }
+        await withCheckedContinuation { cont in
+            waiters.append(cont)
+        }
+    }
+
+    func open() {
+        opened = true
+        for waiter in waiters { waiter.resume() }
+        waiters.removeAll()
+    }
+}
+
 @Suite("Cache isolation")
 struct CacheIsolationTests {
     @Test("different (period, provider) combos have distinct cache entries")
@@ -236,5 +255,87 @@ struct CacheIsolationTests {
 
         // The inFlightKeys guard should collapse the two into a single fetch
         #expect(await counter.value() == 1)
+    }
+
+    @Test("stale error is cleared when a retry starts so the UI shows loading")
+    @MainActor
+    func errorClearedOnRetryStart() async throws {
+        let startOfDay = ISO8601DateFormatter().date(from: "2026-05-07T00:00:00Z")!
+        let clock = TestClock(startOfDay)
+        let counter = CallCounter()
+        let gate = Gate()
+
+        let store = AppStore(
+            fetchPayload: { _, _, _ in
+                let value = await counter.next()
+                if value == 1 {
+                    throw NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "first fetch fails"])
+                }
+                // Second fetch blocks on gate so we can inspect mid-flight state.
+                await gate.wait()
+                return makePayload(label: "Today", cost: 2, providers: [:])
+            },
+            now: { clock.now }
+        )
+
+        // First fetch fails — error should be set.
+        await store.refreshQuietly(period: .today)
+        #expect(store.lastError != nil)
+
+        // Expire cache so a retry is triggered.
+        clock.now = startOfDay.addingTimeInterval(31)
+
+        // Start retry — it blocks on gate so we can observe intermediate state.
+        let retryTask = Task { @MainActor in
+            await store.refreshQuietly(period: .today)
+        }
+        try await Task.sleep(nanoseconds: 10_000_000)
+
+        // Error should be cleared while the retry is in-flight.
+        #expect(store.lastError == nil)
+
+        // Release the gate — retry succeeds.
+        await gate.open()
+        _ = await retryTask.value
+        #expect(store.lastError == nil)
+        #expect(store.payload.current.cost == 2)
+    }
+
+    @Test("colliding fetch queues one-deep and re-fetches after in-flight completes")
+    @MainActor
+    func pendingKeyRefire() async throws {
+        let counter = CallCounter()
+        let gate = Gate()
+
+        let store = AppStore(
+            fetchPayload: { _, _, _ in
+                await gate.wait()
+                let value = await counter.next()
+                return makePayload(label: "Today", cost: Double(value), providers: [:])
+            }
+        )
+
+        // First fetch blocks on gate.
+        let firstFetch = Task { @MainActor in
+            await store.refresh(includeOptimize: false)
+        }
+        try await Task.sleep(nanoseconds: 10_000_000)
+
+        // Second fetch for the same key — should queue in pendingKeys, not drop.
+        await store.refresh(includeOptimize: false)
+
+        // Third fetch for the same key — pendingKeys is a Set, so this collapses with the second.
+        await store.refresh(includeOptimize: false)
+
+        // Release the gate — first fetch completes, then pending re-fetch fires automatically.
+        await gate.open()
+        _ = await firstFetch.value
+
+        // Allow the pending re-fetch Task to run.
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        // Exactly 2 fetches: the original + one queued re-fetch (not 3).
+        #expect(await counter.value() == 2)
+        #expect(store.payload.current.cost == 2)
     }
 }

@@ -18,6 +18,7 @@ import type {
   ToolUseBlock,
 } from './types.js'
 import { classifyTurn, BASH_TOOLS } from './classifier.js'
+import { loadSessionIndex, saveSessionIndex, checkSessionFile, recordParseResult, pruneIndex, clearSessionIndex } from './session-index.js'
 import { extractBashCommands } from './bash-utils.js'
 
 function unsanitizePath(dirName: string): string {
@@ -327,14 +328,30 @@ async function collectJsonlFiles(dirPath: string): Promise<string[]> {
   return jsonlFiles
 }
 
-async function scanProjectDirs(dirs: Array<{ path: string; name: string }>, seenMsgIds: Set<string>, dateRange?: DateRange): Promise<ProjectSummary[]> {
+async function scanProjectDirs(dirs: Array<{ path: string; name: string }>, seenMsgIds: Set<string>, dateRange?: DateRange): Promise<{ projects: ProjectSummary[]; indexDirty: boolean }> {
+  const sessionIndex = await loadSessionIndex()
   const projectMap = new Map<string, SessionSummary[]>()
+  let indexDirty = false
+  const allJsonlPaths = new Set<string>()
 
   for (const { path: dirPath, name: dirName } of dirs) {
     const jsonlFiles = await collectJsonlFiles(dirPath)
+    for (const f of jsonlFiles) allJsonlPaths.add(f)
 
     for (const filePath of jsonlFiles) {
+      // Check index: skip files known to have no API calls
+      const action = await checkSessionFile(filePath, sessionIndex, dateRange)
+      if (action === 'skip') continue
+
       const session = await parseSessionFile(filePath, dirName, seenMsgIds, dateRange)
+
+      // Record result in index for future invocations
+      try {
+        const s = await stat(filePath)
+        recordParseResult(filePath, sessionIndex, s.size, s.mtimeMs, session !== null && session.apiCalls > 0)
+        indexDirty = true
+      } catch { /* stat failed, skip indexing */ }
+
       if (session && session.apiCalls > 0) {
         const existing = projectMap.get(dirName) ?? []
         existing.push(session)
@@ -343,7 +360,16 @@ async function scanProjectDirs(dirs: Array<{ path: string; name: string }>, seen
     }
   }
 
-  return Array.from(projectMap.entries())
+  // Prune entries for deleted files
+  const pruned = pruneIndex(sessionIndex, allJsonlPaths)
+  if (pruned > 0) indexDirty = true
+
+  // Save if any entries changed
+  if (indexDirty) {
+    await saveSessionIndex(sessionIndex)
+  }
+
+  const projects = Array.from(projectMap.entries())
     .map(([dirName, sessions]) => ({
       project: dirName,
       projectPath: unsanitizePath(dirName),
@@ -351,6 +377,8 @@ async function scanProjectDirs(dirs: Array<{ path: string; name: string }>, seen
       totalCostUSD: sessions.reduce((s, sess) => s + sess.totalCostUSD, 0),
       totalApiCalls: sessions.reduce((s, sess) => s + sess.apiCalls, 0),
     }))
+
+  return { projects, indexDirty }
 }
 
 function providerCallToTurn(call: ParsedProviderCall): ParsedTurn {
@@ -460,6 +488,14 @@ const CACHE_TTL_MS = 60_000
 const MAX_CACHE_ENTRIES = 10
 const sessionCache = new Map<string, { data: ProjectSummary[]; ts: number }>()
 const inFlightSourceContexts = new Map<string, Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }>>()
+/** Resolved source contexts cached for the lifetime of the process. The CLI
+ *  calls parseAllSessions() 2-3 times sequentially with different date ranges
+ *  but the same provider filter — without this, each call re-discovers 2000+
+ *  session files from disk (~200-500ms each).
+ *  Uses a short TTL (5s) to stay fresh enough for tests that add files mid-run
+ *  while still avoiding redundant discovery within a single CLI invocation. */
+const SOURCE_CONTEXT_TTL_MS = 5_000
+const resolvedSourceContexts = new Map<string, { result: { sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }; ts: number }>()
 
 function sourceContextCacheKey(providerFilter?: string): string {
   return JSON.stringify({
@@ -497,9 +533,17 @@ function buildCacheFingerprint(sources: Array<{ provider: string; project: strin
 
 async function getSourceContext(providerFilter?: string): Promise<{ sources: Array<{ provider: string; project: string; path: string }>; fingerprint: string }> {
   const key = sourceContextCacheKey(providerFilter)
-  const cached = inFlightSourceContexts.get(key)
-  if (cached) {
-    return cached
+
+  // Return recent cache hit (avoids re-discovering 2000+ files on sequential calls).
+  const resolved = resolvedSourceContexts.get(key)
+  if (resolved && Date.now() - resolved.ts < SOURCE_CONTEXT_TTL_MS) {
+    return resolved.result
+  }
+
+  // Deduplicate concurrent calls via the inflight promise map.
+  const inflight = inFlightSourceContexts.get(key)
+  if (inflight) {
+    return inflight
   }
 
   const promise = (async () => {
@@ -511,13 +555,11 @@ async function getSourceContext(providerFilter?: string): Promise<{ sources: Arr
   inFlightSourceContexts.set(key, promise)
 
   try {
-    return await promise
-  } catch (err) {
-    throw err
+    const result = await promise
+    resolvedSourceContexts.set(key, { result, ts: Date.now() })
+    return result
   } finally {
-    if (inFlightSourceContexts.get(key) === promise) {
-      inFlightSourceContexts.delete(key)
-    }
+    inFlightSourceContexts.delete(key)
   }
 }
 
@@ -531,6 +573,15 @@ function cachePut(key: string, data: ProjectSummary[]) {
     if (oldest) sessionCache.delete(oldest[0])
   }
   sessionCache.set(key, { data, ts: now })
+}
+
+/** Clear all in-process parser caches. Used by tests that modify the filesystem
+ *  between parseAllSessions() calls and need discovery to re-scan. */
+export function clearParserCaches(): void {
+  sessionCache.clear()
+  resolvedSourceContexts.clear()
+  inFlightSourceContexts.clear()
+  clearSessionIndex()
 }
 
 export function filterProjectsByName(
@@ -572,7 +623,7 @@ export async function parseAllSessions(dateRange?: DateRange, providerFilter?: s
   const nonClaudeSources = allSources.filter(s => s.provider !== 'claude')
 
   const claudeDirs = claudeSources.map(s => ({ path: s.path, name: s.project }))
-  const claudeProjects = await scanProjectDirs(claudeDirs, seenMsgIds, dateRange)
+  const { projects: claudeProjects } = await scanProjectDirs(claudeDirs, seenMsgIds, dateRange)
 
   const providerGroups = new Map<string, Array<{ path: string; project: string }>>()
   for (const source of nonClaudeSources) {

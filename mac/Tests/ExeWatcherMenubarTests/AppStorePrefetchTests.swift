@@ -77,6 +77,25 @@ private actor CallCounter {
     }
 }
 
+/// A simple gate that blocks waiters until opened.
+private actor Gate {
+    private var opened = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        if opened { return }
+        await withCheckedContinuation { cont in
+            waiters.append(cont)
+        }
+    }
+
+    func open() {
+        opened = true
+        for waiter in waiters { waiter.resume() }
+        waiters.removeAll()
+    }
+}
+
 @Suite("AppStore provider prefetch")
 struct AppStoreProviderPrefetchTests {
     @Test("refreshQuietly renders aggregate first and warms visible providers")
@@ -147,6 +166,47 @@ struct AppStoreProviderPrefetchTests {
         try await Task.sleep(nanoseconds: 50_000_000)
         let callCountAfterTabSwitch = await recorder.recordedKeys().count
         #expect(callCountAfterTabSwitch == callCountBeforeTabSwitch)
+    }
+
+    @Test("rapid period switches cancel the prior prefetch so only the latest runs")
+    @MainActor
+    func prefetchCancellationOnRapidSwitch() async throws {
+        let todayAll = PayloadCacheKey(period: .today, provider: .all)
+        let weekAll = PayloadCacheKey(period: .sevenDays, provider: .all)
+        let weekClaude = PayloadCacheKey(period: .sevenDays, provider: .claude)
+        let weekCodex = PayloadCacheKey(period: .sevenDays, provider: .codex)
+
+        let providerFetchCount = CallCounter()
+
+        let store = AppStore(
+            fetchPayload: { period, provider, _ in
+                if provider != .all {
+                    // Provider-specific prefetch — slow to simulate CLI scan time.
+                    try await Task.sleep(nanoseconds: 50_000_000)
+                    guard !Task.isCancelled else { throw CancellationError() }
+                    await providerFetchCount.next()
+                }
+                let cost: Double = period == .today ? 18 : 100
+                let providers: [String: Double] = period == .today
+                    ? ["claude": 12]
+                    : ["claude": 70, "codex": 30]
+                return makePayload(label: period.rawValue, cost: cost, providers: providers)
+            }
+        )
+
+        // First refreshQuietly triggers today prefetch (1 provider: claude).
+        await store.refreshQuietly(period: .today)
+        // Immediately switch to 7 days — should cancel today's prefetch and start week's.
+        await store.refreshQuietly(period: .sevenDays)
+
+        // Wait for the winning (week) prefetch to complete.
+        try await Task.sleep(nanoseconds: 150_000_000)
+
+        let completedCount = await providerFetchCount.value()
+        // At most the week's 2 providers should complete. Today's claude prefetch
+        // should have been cancelled. Total should be <= 2 (week's claude + codex).
+        #expect(completedCount <= 2)
+        #expect(completedCount >= 1) // at least one week provider completed
     }
 
     @Test("optimize payload stays attached after a later base refresh for the same visible selection")
@@ -356,6 +416,42 @@ struct AppStoreProviderPrefetchTests {
         #expect(store.providerTabsPayload == nil)
         #expect(!store.showProviderTabs)
         #expect(store.lastError != nil)
+    }
+
+    @Test("badge refresh succeeds even when detail fetches saturate inFlightKeys")
+    @MainActor
+    func badgeRefreshNotBlockedByDetailFetches() async throws {
+        let day = ISO8601DateFormatter().date(from: "2026-05-04T12:00:00Z")!
+        let clock = TestClock(day)
+        let badgeCounter = CallCounter()
+        let gate = Gate()
+
+        let store = AppStore(
+            fetchPayload: { period, provider, includeOptimize in
+                if period == .today && provider == .all && !includeOptimize {
+                    // Badge path — completes immediately.
+                    let value = await badgeCounter.next()
+                    return makePayload(label: "Today", cost: Double(value), providers: [:])
+                }
+                // Detail path — blocks until gate is opened.
+                await gate.wait()
+                return makePayload(label: "Detail", cost: 99, providers: ["claude": 99])
+            },
+            now: { clock.now }
+        )
+
+        // Switch to a non-today period so the detail fetch uses a different inFlightKeys slot.
+        await store.switchTo(period: .sevenDays)
+        // Give the background refresh time to enter inFlightKeys.
+        try await Task.sleep(nanoseconds: 10_000_000)
+
+        // Badge must still succeed despite detail fetch being in-flight.
+        await store.refreshTodayBadge()
+        #expect(await badgeCounter.value() == 1)
+        #expect(store.todayPayload?.current.cost == 1)
+
+        // Clean up: release the detail gate and cancel the task.
+        await gate.open()
     }
 
     @Test("a failed historical fetch does not contaminate the cached today view")
